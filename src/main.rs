@@ -39,6 +39,17 @@ struct App<'a> {
 }
 
 fn main() -> Result<(), failure::Error> {
+
+    use std::fs::File;
+    use std::io::BufReader;
+    use rodio::Source;
+
+    let device = rodio::default_output_device().unwrap();
+
+    let file = File::open("kk.mp3").unwrap();
+    let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
+    rodio::play_raw(&device, source.convert_samples());
+
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
     let stdout = termion::screen::AlternateScreen::from(stdout);
