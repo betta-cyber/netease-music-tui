@@ -1,5 +1,9 @@
 mod util;
 extern crate failure;
+extern crate gstreamer as gst;
+use gst::prelude::*;
+
+extern crate gstreamer_player as gst_player;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -40,15 +44,17 @@ struct App<'a> {
 
 fn main() -> Result<(), failure::Error> {
 
-    use std::fs::File;
-    use std::io::BufReader;
-    use rodio::Source;
+    let uri = "https://m10.music.126.net/20191014173232/405037a95995976e7ebadbad4ba63d42/ymusic/545e/0e0c/565e/c4304068049ff54d5c96a4b8f2e23cd6.mp3";
+    gst::init()?;
 
-    let device = rodio::default_output_device().unwrap();
+    let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
+    let player = gst_player::Player::new(
+        None,
+        Some(&dispatcher.upcast::<gst_player::PlayerSignalDispatcher>()),
+    );
 
-    let file = File::open("kk.mp3").unwrap();
-    let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
-    rodio::play_raw(&device, source.convert_samples());
+    player.set_uri(uri);
+    player.play();
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -101,6 +107,14 @@ fn main() -> Result<(), failure::Error> {
             Event::Input(input) => match input {
                 Key::Char('q') => {
                     break;
+                }
+                // means space
+                Key::Char(' ') => {
+                    if is_playing(&player) {
+                        player.pause();
+                    } else {
+                        player.play();
+                    }
                 }
                 Key::Right => app.tabs.next(),
                 Key::Left => app.tabs.previous(),
@@ -163,4 +177,10 @@ where
         )
         .wrap(true)
         .render(f, area);
+}
+
+
+ fn is_playing(player: &gst_player::Player) -> bool {
+    let element = player.get_pipeline();
+    element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
 }
