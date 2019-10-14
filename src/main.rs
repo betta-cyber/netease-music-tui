@@ -1,9 +1,9 @@
 mod util;
+mod app;
 extern crate failure;
 extern crate gstreamer as gst;
-use gst::prelude::*;
-
 extern crate gstreamer_player as gst_player;
+use gst::prelude::*;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -15,6 +15,8 @@ use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use util::event::{Event, Events};
 use tui::backend::Backend;
+
+use app::App;
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -38,23 +40,21 @@ impl<'a> TabsState<'a> {
     }
 }
 
-struct App<'a> {
+struct UI<'a> {
     tabs: TabsState<'a>,
 }
 
 fn main() -> Result<(), failure::Error> {
 
-    let uri = "https://m10.music.126.net/20191014173232/405037a95995976e7ebadbad4ba63d42/ymusic/545e/0e0c/565e/c4304068049ff54d5c96a4b8f2e23cd6.mp3";
+    let uri = "https://m10.music.126.net/20191014193326/964cca7871d3405099ee78e9178b5733/ymusic/545e/0e0c/565e/c4304068049ff54d5c96a4b8f2e23cd6.mp3";
+
+    // init gst
     gst::init()?;
 
-    let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
-    let player = gst_player::Player::new(
-        None,
-        Some(&dispatcher.upcast::<gst_player::PlayerSignalDispatcher>()),
-    );
+    let mut app = App::new();
 
-    player.set_uri(uri);
-    player.play();
+    app.player.set_uri(uri);
+    app.player.play();
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -65,7 +65,7 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
-    let mut app = App {
+    let mut tui = UI {
         tabs: TabsState::new(vec!["Tab0", "COOL", "Tab2", "Tab3"]),
     };
 
@@ -79,18 +79,18 @@ fn main() -> Result<(), failure::Error> {
                 .split(size);
             Tabs::default()
                 .block(Block::default().borders(Borders::ALL).title("Tabs"))
-                .titles(&app.tabs.titles)
-                .select(app.tabs.index)
+                .titles(&tui.tabs.titles)
+                .select(tui.tabs.index)
                 .style(Style::default().fg(Color::Cyan))
                 .highlight_style(Style::default().fg(Color::Yellow))
                 .render(&mut f, chunks[0]);
 
-            match app.tabs.index {
+            match tui.tabs.index {
                 0 => Block::default()
                     .title("Inner 0")
                     .borders(Borders::ALL)
                     .render(&mut f, chunks[1]),
-                1 => draw_first_tab(&mut f, &app, chunks[1]),
+                1 => draw_first_tab(&mut f, &tui, chunks[1]),
                 2 => Block::default()
                     .title("Inner 2")
                     .borders(Borders::ALL)
@@ -110,14 +110,14 @@ fn main() -> Result<(), failure::Error> {
                 }
                 // means space
                 Key::Char(' ') => {
-                    if is_playing(&player) {
-                        player.pause();
+                    if is_playing(&app.player) {
+                        app.player.pause();
                     } else {
-                        player.play();
+                        app.player.play();
                     }
                 }
-                Key::Right => app.tabs.next(),
-                Key::Left => app.tabs.previous(),
+                Key::Right => tui.tabs.next(),
+                Key::Left => tui.tabs.previous(),
                 _ => {}
             },
             _ => {}
@@ -127,7 +127,7 @@ fn main() -> Result<(), failure::Error> {
 }
 
 
-fn draw_first_tab<B>(f: &mut Frame<B>, app: &App, area: Rect)
+fn draw_first_tab<B>(f: &mut Frame<B>, tui: &UI, area: Rect)
 where
     B: Backend,
 {
