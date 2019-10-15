@@ -9,6 +9,7 @@ use gst::prelude::*;
 extern crate serde;
 extern crate serde_json;
 
+
 use std::io;
 use termion::raw::IntoRawMode;
 use tui::{Frame, Terminal};
@@ -21,6 +22,7 @@ use util::event::{Event, Events};
 use tui::backend::Backend;
 
 mod util;
+mod model;
 mod app;
 mod api;
 
@@ -55,17 +57,16 @@ struct UI<'a> {
 
 fn main() -> Result<(), failure::Error> {
 
-    let uri = "https://m10.music.126.net/20191014193326/964cca7871d3405099ee78e9178b5733/ymusic/545e/0e0c/565e/c4304068049ff54d5c96a4b8f2e23cd6.mp3";
-
     // init gst
     gst::init()?;
 
     let mut app = App::new();
     let cloud_music = CloudMusic::default();
 
-    cloud_music.user("620199516").unwrap();
+    let song = cloud_music.song("33894312").unwrap();
+    println!("{:#?}", song);
 
-    app.player.set_uri(uri);
+    app.player.set_uri(&song.url.unwrap().to_string());
     app.player.play();
 
     let stdout = io::stdout().into_raw_mode()?;

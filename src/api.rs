@@ -15,6 +15,9 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::borrow::Cow;
 
+use super::model::user::{User, Profile};
+use super::model::song::Song;
+
 lazy_static! {
     /// HTTP Client
     pub static ref CLIENT: Client = Client::new();
@@ -106,12 +109,14 @@ impl CloudMusic {
             .expect("failed to read response");
         if response.status().is_success() {
             Ok(buf)
-        } else {
+        } else if response.status().is_server_error() {
             Err(failure::Error::from(ApiError::from(&response)))
+        } else {
+            Ok(buf)
         }
     }
 
-    pub fn user(&self, user_id: &str) -> Result<(), failure::Error> {
+    pub fn user(&self, user_id: &str) -> Result<User, failure::Error> {
         let url = format!("user/detail");
         // url.push_str(&trid);
         let mut params = HashMap::new();
@@ -119,7 +124,18 @@ impl CloudMusic {
 
         let result = self.get(&url, &mut params)?;
         println!("{:#?}", result);
-        Ok(())
+        self.convert_result::<User>(&result)
+    }
+
+
+    pub fn song(&self, song_id: &str) -> Result<Song, failure::Error> {
+        let url = format!("song/url");
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), song_id.to_string());
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        self.convert_result::<Song>(&result)
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
