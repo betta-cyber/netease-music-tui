@@ -1,9 +1,13 @@
-mod util;
-mod app;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate failure;
 extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
 use gst::prelude::*;
+
+extern crate serde;
+extern crate serde_json;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -16,7 +20,12 @@ use termion::event::Key;
 use util::event::{Event, Events};
 use tui::backend::Backend;
 
+mod util;
+mod app;
+mod api;
+
 use app::App;
+use api::CloudMusic;
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -52,6 +61,9 @@ fn main() -> Result<(), failure::Error> {
     gst::init()?;
 
     let mut app = App::new();
+    let cloud_music = CloudMusic::default();
+
+    cloud_music.user("620199516").unwrap();
 
     app.player.set_uri(uri);
     app.player.play();
