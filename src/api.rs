@@ -16,7 +16,7 @@ use std::hash::Hash;
 use std::borrow::Cow;
 
 use super::model::user::{User, Profile};
-use super::model::song::Song;
+use super::model::song::{Song, Songs};
 
 lazy_static! {
     /// HTTP Client
@@ -109,10 +109,10 @@ impl CloudMusic {
             .expect("failed to read response");
         if response.status().is_success() {
             Ok(buf)
-        } else if response.status().is_server_error() {
-            Err(failure::Error::from(ApiError::from(&response)))
-        } else {
+        } else if response.status() == 403 {
             Ok(buf)
+        } else {
+            Err(failure::Error::from(ApiError::from(&response)))
         }
     }
 
@@ -135,7 +135,8 @@ impl CloudMusic {
 
         // send request
         let result = self.get(&url, &mut params)?;
-        self.convert_result::<Song>(&result)
+        let songs = self.convert_result::<Songs>(&result).unwrap();
+        Ok(songs.data[0].clone())
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
