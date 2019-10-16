@@ -14,7 +14,7 @@ use std::io;
 use termion::raw::IntoRawMode;
 use tui::{Frame, Terminal};
 use tui::backend::TermionBackend;
-use tui::widgets::{Widget, Block, Borders, Tabs, Text, Paragraph};
+use tui::widgets::{Widget, Block, Borders, Tabs, Text, Paragraph, SelectableList};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
@@ -28,6 +28,7 @@ mod api;
 
 use app::App;
 use api::CloudMusic;
+use model::playlist::Playlist;
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -53,6 +54,7 @@ impl<'a> TabsState<'a> {
 
 struct UI<'a> {
     tabs: TabsState<'a>,
+    playlist: Vec<Playlist>,
 }
 
 fn main() -> Result<(), failure::Error> {
@@ -61,16 +63,12 @@ fn main() -> Result<(), failure::Error> {
     gst::init()?;
 
     let mut app = App::new();
-    let mut cloud_music = CloudMusic::default().clone();
+    let cloud_music = CloudMusic::default();
 
-    let profile = cloud_music.status();
-    println!("{:#?}", profile);
+    // let profile = cloud_music.status();
+    // println!("{:#?}", profile);
 
-    let a = cloud_music.status();
-    println!("{:#?}", a);
-
-    // let song = cloud_music.song("33894312").unwrap();
-    // println!("{:#?}", song);
+    let playlist = cloud_music.user_playlist("620199516").unwrap();
 
     // app.player.set_uri(&song.url.unwrap().to_string());
     // app.player.play();
@@ -86,6 +84,7 @@ fn main() -> Result<(), failure::Error> {
     let events = Events::new();
     let mut tui = UI {
         tabs: TabsState::new(vec!["Tab0", "COOL", "Tab2", "Tab3"]),
+        playlist: playlist
     };
 
     loop {
@@ -105,10 +104,7 @@ fn main() -> Result<(), failure::Error> {
                 .render(&mut f, chunks[0]);
 
             match tui.tabs.index {
-                0 => Block::default()
-                    .title("Inner 0")
-                    .borders(Borders::ALL)
-                    .render(&mut f, chunks[1]),
+                0 => draw_music_tab(&mut f, &tui, chunks[1]),
                 1 => draw_first_tab(&mut f, &tui, chunks[1]),
                 2 => Block::default()
                     .title("Inner 2")
@@ -143,6 +139,31 @@ fn main() -> Result<(), failure::Error> {
         }
     }
     Ok(())
+}
+
+
+fn draw_music_tab<B>(f: &mut Frame<B>, tui: &UI, area: Rect)
+where
+    B: Backend,
+{
+
+    let playlist_items: Vec<_> = tui.playlist.iter().map(|item| item.name.as_ref().unwrap().to_string()).collect();
+
+    let chunks = SelectableList::default()
+        .block(
+            Block::default()
+                .title("Playlist")
+                .borders(Borders::ALL)
+                .title_style(Style::default().fg(Color::LightCyan))
+                .border_style(Style::default().fg(Color::LightCyan))
+            )
+        .items(&playlist_items)
+        .select(None)
+        .style(Style::default().fg(Color::White))
+        .highlight_style(Style::default().fg(Color::LightCyan))
+        .highlight_symbol(">")
+        .render(f, area);
+
 }
 
 

@@ -18,6 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
+use super::model::playlist::{PlaylistRes, Playlist};
 
 lazy_static! {
     /// HTTP Client
@@ -171,15 +172,15 @@ impl CloudMusic {
         Ok(songs.data[0].clone())
     }
 
-    pub fn user_playlist(&self, user_id: &str) -> Result<Song, failure::Error> {
+    pub fn user_playlist(&self, user_id: &str) -> Result<Vec<Playlist>, failure::Error> {
         let url = format!("user/playlist");
         let mut params = HashMap::new();
         params.insert("uid".to_owned(), user_id.to_string());
 
         // send request
         let result = self.get(&url, &mut params)?;
-        let songs = self.convert_result::<Songs>(&result).unwrap();
-        Ok(songs.data[0].clone())
+        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
+        Ok(res.playlist.clone())
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
