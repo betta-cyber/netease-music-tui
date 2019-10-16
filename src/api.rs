@@ -14,13 +14,19 @@ use std::string::{String, ToString};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::borrow::Cow;
+use std::time::Duration;
 
-use super::model::user::{User, Profile};
+use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
 
 lazy_static! {
     /// HTTP Client
-    pub static ref CLIENT: Client = Client::new();
+    pub static ref CLIENT: Client = Client::builder()
+        .gzip(true)
+        .cookie_store(true)
+        .timeout(Duration::from_secs(10))
+        .build()
+        .unwrap();
 }
 
 #[derive(Debug)]
@@ -116,6 +122,34 @@ impl CloudMusic {
         }
     }
 
+    pub fn login(&self, email: &str, password: &str) -> Result<Profile, failure::Error> {
+        let url = format!("login");
+        let mut params = HashMap::new();
+        params.insert("email".to_owned(), email.to_string());
+        params.insert("password".to_owned(), password.to_string());
+
+        let result = self.get(&url, &mut params)?;
+        let login = self.convert_result::<Login>(&result).unwrap();
+        Ok(login.profile.clone())
+    }
+
+    pub fn status(&self) -> Result<Profile, failure::Error> {
+        let url = format!("login/status");
+
+        match self.get(&url, &mut HashMap::new()) {
+            Ok(r) => {
+                let login = self.convert_result::<Status>(&r).unwrap();
+                Ok(login.profile.clone())
+            },
+            Err(e) => {
+                // panic!("error")
+                // if error, login account
+                println!("error");
+                self.login("betta551@163.com", "killer551")
+            }
+        }
+    }
+
     pub fn user(&self, user_id: &str) -> Result<User, failure::Error> {
         let url = format!("user/detail");
         // url.push_str(&trid);
@@ -123,15 +157,24 @@ impl CloudMusic {
         params.insert("uid".to_owned(), user_id.to_string());
 
         let result = self.get(&url, &mut params)?;
-        println!("{:#?}", result);
         self.convert_result::<User>(&result)
     }
-
 
     pub fn song(&self, song_id: &str) -> Result<Song, failure::Error> {
         let url = format!("song/url");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), song_id.to_string());
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        let songs = self.convert_result::<Songs>(&result).unwrap();
+        Ok(songs.data[0].clone())
+    }
+
+    pub fn user_playlist(&self, user_id: &str) -> Result<Song, failure::Error> {
+        let url = format!("user/playlist");
+        let mut params = HashMap::new();
+        params.insert("uid".to_owned(), user_id.to_string());
 
         // send request
         let result = self.get(&url, &mut params)?;

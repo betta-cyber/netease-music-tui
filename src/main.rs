@@ -61,13 +61,19 @@ fn main() -> Result<(), failure::Error> {
     gst::init()?;
 
     let mut app = App::new();
-    let cloud_music = CloudMusic::default();
+    let mut cloud_music = CloudMusic::default().clone();
 
-    let song = cloud_music.song("33894312").unwrap();
-    println!("{:#?}", song);
+    let profile = cloud_music.status();
+    println!("{:#?}", profile);
 
-    app.player.set_uri(&song.url.unwrap().to_string());
-    app.player.play();
+    let a = cloud_music.status();
+    println!("{:#?}", a);
+
+    // let song = cloud_music.song("33894312").unwrap();
+    // println!("{:#?}", song);
+
+    // app.player.set_uri(&song.url.unwrap().to_string());
+    // app.player.play();
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);

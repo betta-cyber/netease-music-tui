@@ -17,5 +17,23 @@ pub struct Profile {
     pub gender: Option<i32>,
     pub userId: Option<i32>,
     pub followeds: Option<i32>,
-    pub follows: Option<i32>
+    pub follows: Option<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Account {
+    pub id: Option<i32>,
+    pub userName: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Login {
+    pub account: Account,
+    pub profile: Profile,
+    pub code: Option<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Status {
+    pub profile: Profile,
 }
