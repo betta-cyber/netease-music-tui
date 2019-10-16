@@ -1,17 +1,17 @@
 mod playlist;
 
-use super::app::App;
+use super::app::{App, ActiveBlock};
 use termion::event::Key;
 
 pub fn handle_app(key: Key, app: &mut App) {
     match key {
-        Key::Char('a') => {
-            if let Some(current_playback_context) = &app.current_playback_context {
-                if let Some(full_track) = &current_playback_context.item.clone() {
-                    app.get_album_tracks(full_track.album.clone());
-                }
-            };
-        }
+        // Key::Char('a') => {
+            // if let Some(current_playback_context) = &app.current_playback_context {
+                // if let Some(full_track) = &current_playback_context.item.clone() {
+                    // app.get_album_tracks(full_track.album.clone());
+                // }
+            // };
+        // }
         Key::Char('-') => {
             app.decrease_volume();
         }

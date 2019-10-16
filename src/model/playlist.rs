@@ -7,7 +7,6 @@ use std::collections::HashMap;
 pub struct PlaylistRes {
     pub playlist: Vec<Playlist>,
     pub code: Option<i32>,
-    pub more: Option<bool>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -25,4 +24,26 @@ pub struct Playlist {
 pub struct Creator {
     pub nickname: Option<String>,
     pub signature: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlaylistDetailRes {
+    pub playlist: Option<PlaylistDetail>,
+    pub code: Option<i32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlaylistDetail {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub id: Option<i64>,
+    pub playCount: Option<i32>,
+    pub creator: Option<Creator>,
+    pub tracks: Vec<Track>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Track {
+    pub name: Option<String>,
+    pub id: Option<i64>,
 }

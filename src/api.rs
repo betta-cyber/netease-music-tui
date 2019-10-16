@@ -18,7 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
-use super::model::playlist::{PlaylistRes, Playlist};
+use super::model::playlist::{PlaylistRes, Playlist, PlaylistDetailRes, PlaylistDetail};
 
 lazy_static! {
     /// HTTP Client
@@ -88,7 +88,7 @@ impl CloudMusic {
     fn internal_call(&self, method: Method, url: &str, payload: Option<&Value>) -> Result<String, failure::Error> {
         let mut url: Cow<str> = url.into();
         if !url.starts_with("http") {
-            url = ["http://127.0.0.1:3000/", &url].concat().into();
+            url = ["http://127.0.0.1:3000", &url].concat().into();
         }
 
         let mut headers = HeaderMap::new();
@@ -135,7 +135,7 @@ impl CloudMusic {
     }
 
     pub fn status(&self) -> Result<Profile, failure::Error> {
-        let url = format!("login/status");
+        let url = format!("/login/status");
 
         match self.get(&url, &mut HashMap::new()) {
             Ok(r) => {
@@ -152,7 +152,7 @@ impl CloudMusic {
     }
 
     pub fn user(&self, user_id: &str) -> Result<User, failure::Error> {
-        let url = format!("user/detail");
+        let url = format!("/user/detail");
         // url.push_str(&trid);
         let mut params = HashMap::new();
         params.insert("uid".to_owned(), user_id.to_string());
@@ -162,7 +162,7 @@ impl CloudMusic {
     }
 
     pub fn song(&self, song_id: &str) -> Result<Song, failure::Error> {
-        let url = format!("song/url");
+        let url = format!("/song/url");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), song_id.to_string());
 
@@ -173,7 +173,7 @@ impl CloudMusic {
     }
 
     pub fn user_playlist(&self, user_id: &str) -> Result<Vec<Playlist>, failure::Error> {
-        let url = format!("user/playlist");
+        let url = format!("/user/playlist");
         let mut params = HashMap::new();
         params.insert("uid".to_owned(), user_id.to_string());
 
@@ -181,6 +181,17 @@ impl CloudMusic {
         let result = self.get(&url, &mut params)?;
         let res = self.convert_result::<PlaylistRes>(&result).unwrap();
         Ok(res.playlist.clone())
+    }
+
+    pub fn playlist_detail(&self, playlist_id: &str) -> Result<PlaylistDetail, failure::Error> {
+        let url = format!("/playlist/detail");
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), playlist_id.to_string());
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
+        Ok(res.playlist.unwrap().clone())
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {

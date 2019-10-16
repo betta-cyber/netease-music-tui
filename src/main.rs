@@ -25,10 +25,11 @@ mod util;
 mod model;
 mod app;
 mod api;
+// mod handlers;
 
 use app::App;
 use api::CloudMusic;
-use model::playlist::Playlist;
+use model::playlist::PlaylistDetail;
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -54,7 +55,7 @@ impl<'a> TabsState<'a> {
 
 struct UI<'a> {
     tabs: TabsState<'a>,
-    playlist: Vec<Playlist>,
+    playlist: PlaylistDetail,
 }
 
 fn main() -> Result<(), failure::Error> {
@@ -68,7 +69,8 @@ fn main() -> Result<(), failure::Error> {
     // let profile = cloud_music.status();
     // println!("{:#?}", profile);
 
-    let playlist = cloud_music.user_playlist("620199516").unwrap();
+    let playlist = cloud_music.playlist_detail("2991850857").unwrap();
+    // app.playlist = playlist;
 
     // app.player.set_uri(&song.url.unwrap().to_string());
     // app.player.play();
@@ -133,7 +135,9 @@ fn main() -> Result<(), failure::Error> {
                 }
                 Key::Right => tui.tabs.next(),
                 Key::Left => tui.tabs.previous(),
-                _ => {}
+                _ => {
+                    // handlers::handle_app(input, &mut app);
+                }
             },
             _ => {}
         }
@@ -147,7 +151,7 @@ where
     B: Backend,
 {
 
-    let playlist_items: Vec<_> = tui.playlist.iter().map(|item| item.name.as_ref().unwrap().to_string()).collect();
+    let playlist_items: Vec<_> = tui.playlist.tracks.iter().map(|item| item.name.as_ref().unwrap().to_string()).collect();
 
     let chunks = SelectableList::default()
         .block(
