@@ -70,6 +70,8 @@ fn main() -> Result<(), failure::Error> {
     // println!("{:#?}", profile);
 
     let playlist = cloud_music.playlist_detail("2991850857").unwrap().clone();
+    app.track_table.tracks = playlist.tracks.clone();
+    app.get_playlist_tracks("2991850857".to_owned());
     // app.playlist = serde::export::Some(playlist);
 
     // app.player.set_uri(&song.url.unwrap().to_string());
@@ -106,7 +108,7 @@ fn main() -> Result<(), failure::Error> {
                 .render(&mut f, chunks[0]);
 
             match tui.tabs.index {
-                0 => draw_music_tab(&mut f, &tui, chunks[1]),
+                0 => draw_music_tab(&mut f, &tui, chunks[1], &app),
                 1 => draw_first_tab(&mut f, &tui, chunks[1]),
                 2 => Block::default()
                     .title("Inner 2")
@@ -146,7 +148,7 @@ fn main() -> Result<(), failure::Error> {
 }
 
 
-fn draw_music_tab<B>(f: &mut Frame<B>, tui: &UI, area: Rect)
+fn draw_music_tab<B>(f: &mut Frame<B>, tui: &UI, area: Rect, app: &App)
 where
     B: Backend,
 {
@@ -162,7 +164,7 @@ where
                 .border_style(Style::default().fg(Color::LightCyan))
             )
         .items(&playlist_items)
-        .select(None)
+        .select(Some(app.track_table.selected_index))
         .style(Style::default().fg(Color::White))
         .highlight_style(Style::default().fg(Color::LightCyan))
         .highlight_symbol(">")

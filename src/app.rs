@@ -110,4 +110,20 @@ impl App {
             None => &DEFAULT_ROUTE, // if for some reason there is no route return the default
         }
     }
+
+    pub fn push_navigation_stack(
+        &mut self,
+        next_route_id: RouteId,
+        next_active_block: ActiveBlock,
+    ) {
+        self.navigation_stack.push(Route {
+            id: next_route_id,
+            active_block: next_active_block,
+            hovered_block: next_active_block,
+        });
+    }
+
+    pub fn get_playlist_tracks(&mut self, playlist_id: String) {
+        self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
+    }
 }
