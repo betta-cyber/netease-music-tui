@@ -1,4 +1,6 @@
 mod playlist;
+mod track;
+mod common_events;
 
 use super::app::{App, ActiveBlock};
 use termion::event::Key;
@@ -32,5 +34,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         ActiveBlock::MyPlaylists => {
             playlist::handler(key, app);
         }
+        ActiveBlock:: TrackTable=> {
+            track::handler(key, app);
+        }
+        _ => {}
     }
 }

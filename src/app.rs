@@ -1,7 +1,7 @@
 extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
 use tui::layout::{Layout, Constraint, Direction, Rect};
-use super::model::playlist::Playlist;
+use super::model::playlist::{PlaylistDetail, Track};
 
 use gst::prelude::*;
 
@@ -54,14 +54,21 @@ pub enum ActiveBlock {
     Artists,
 }
 
+#[derive(Default)]
+pub struct TrackTable {
+    pub tracks: Vec<Track>,
+    pub selected_index: usize,
+}
+
 pub struct App {
     navigation_stack: Vec<Route>,
     pub player: gst_player::Player,
     pub size: Rect,
     pub input: String,
     pub song_progress_ms: u128,
-    pub playlist: Vec<Playlist>,
+    pub playlist: Option<PlaylistDetail>,
     pub selected_playlist_index: Option<usize>,
+    pub track_table: TrackTable,
 }
 
 impl App {
@@ -79,8 +86,9 @@ impl App {
             size: Rect::default(),
             input: String::new(),
             song_progress_ms: 0,
-            playlist: vec![],
+            playlist: None,
             selected_playlist_index: None,
+            track_table: Default::default(),
         }
     }
 
