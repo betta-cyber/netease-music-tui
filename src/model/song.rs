@@ -1,3 +1,4 @@
+#[allow(non_snake_case)]
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 

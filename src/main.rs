@@ -26,10 +26,12 @@ mod model;
 mod app;
 mod api;
 mod handlers;
+mod ui;
 
 use app::App;
 use api::CloudMusic;
 use model::playlist::PlaylistDetail;
+use ui::{draw_track_table, draw_main_layout};
 
 pub struct TabsState<'a> {
     pub titles: Vec<&'a str>,
@@ -69,9 +71,9 @@ fn main() -> Result<(), failure::Error> {
     // let profile = cloud_music.status();
     // println!("{:#?}", profile);
 
-    let playlist = cloud_music.playlist_detail("2991850857").unwrap().clone();
+    let playlist = cloud_music.playlist_detail("2330204571").unwrap().clone();
     app.track_table.tracks = playlist.tracks.clone();
-    app.get_playlist_tracks("2991850857".to_owned());
+    app.get_playlist_tracks("2330204571".to_owned());
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -89,33 +91,34 @@ fn main() -> Result<(), failure::Error> {
 
     loop {
         terminal.draw(|mut f| {
-            let size = f.size();
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .margin(2)
-                .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
-                .split(size);
-            Tabs::default()
-                .block(Block::default().borders(Borders::ALL).title("Tabs"))
-                .titles(&tui.tabs.titles)
-                .select(tui.tabs.index)
-                .style(Style::default().fg(Color::Cyan))
-                .highlight_style(Style::default().fg(Color::Yellow))
-                .render(&mut f, chunks[0]);
+            ui::draw_main_layout(&mut f, &app);
+            /* let size = f.size(); */
+            // let chunks = Layout::default()
+                // .direction(Direction::Vertical)
+                // .margin(2)
+                // .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+                // .split(size);
+            // Tabs::default()
+                // .block(Block::default().borders(Borders::ALL).title("Tabs"))
+                // .titles(&tui.tabs.titles)
+                // .select(tui.tabs.index)
+                // .style(Style::default().fg(Color::Cyan))
+                // .highlight_style(Style::default().fg(Color::Yellow))
+                // .render(&mut f, chunks[0]);
 
-            match tui.tabs.index {
-                0 => draw_music_tab(&mut f, &tui, chunks[1], &app),
-                1 => draw_first_tab(&mut f, &tui, chunks[1]),
-                2 => Block::default()
-                    .title("Inner 2")
-                    .borders(Borders::ALL)
-                    .render(&mut f, chunks[1]),
-                3 => Block::default()
-                    .title("Inner 3")
-                    .borders(Borders::ALL)
-                    .render(&mut f, chunks[1]),
-                _ => {}
-            }
+            // match tui.tabs.index {
+                // 0 => draw_track_table(&mut f, &app, chunks[1]),
+                // 1 => draw_first_tab(&mut f, &tui, chunks[1]),
+                // 2 => Block::default()
+                    // .title("Inner 2")
+                    // .borders(Borders::ALL)
+                    // .render(&mut f, chunks[1]),
+                // 3 => Block::default()
+                    // .title("Inner 3")
+                    // .borders(Borders::ALL)
+                    // .render(&mut f, chunks[1]),
+                // _ => {}
+            /* } */
         })?;
 
         match events.next()? {
@@ -154,7 +157,7 @@ where
     let chunks = SelectableList::default()
         .block(
             Block::default()
-                .title("Playlist")
+                .title("歌曲列表")
                 .borders(Borders::ALL)
                 .title_style(Style::default().fg(Color::LightCyan))
                 .border_style(Style::default().fg(Color::LightCyan))
