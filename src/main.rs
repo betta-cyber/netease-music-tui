@@ -72,10 +72,6 @@ fn main() -> Result<(), failure::Error> {
     let playlist = cloud_music.playlist_detail("2991850857").unwrap().clone();
     app.track_table.tracks = playlist.tracks.clone();
     app.get_playlist_tracks("2991850857".to_owned());
-    // app.playlist = serde::export::Some(playlist);
-
-    // app.player.set_uri(&song.url.unwrap().to_string());
-    // app.player.play();
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);

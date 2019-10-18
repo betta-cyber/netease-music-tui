@@ -18,6 +18,13 @@ pub fn handler(key: Key, app: &mut App) {
             );
             app.track_table.selected_index = next_index;
         }
+        Key::Char('\n') => {
+            let TrackTable = &app.track_table;
+            let track = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap();
+            // println!("{:#?}", track);
+            // let url = &app.get_song_url();
+            app.start_playback(track.id.unwrap().to_string());
+        }
         _ => {}
     }
 }

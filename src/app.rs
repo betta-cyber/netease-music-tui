@@ -2,6 +2,7 @@ extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use super::model::playlist::{PlaylistDetail, Track};
+use super::api::CloudMusic;
 
 use gst::prelude::*;
 
@@ -69,6 +70,7 @@ pub struct App {
     pub playlist: Option<PlaylistDetail>,
     pub selected_playlist_index: Option<usize>,
     pub track_table: TrackTable,
+    pub cloud_music: CloudMusic,
 }
 
 impl App {
@@ -89,6 +91,7 @@ impl App {
             playlist: None,
             selected_playlist_index: None,
             track_table: Default::default(),
+            cloud_music: CloudMusic::default(),
         }
     }
 
@@ -125,5 +128,15 @@ impl App {
 
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {
         self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
+    }
+
+    pub fn start_playback(
+        &mut self,
+        id: String,
+    ) {
+        let song = self.cloud_music.song(&id).unwrap();
+        let url = song.url.unwrap().to_string();
+        self.player.set_uri(&url);
+        self.player.play();
     }
 }
