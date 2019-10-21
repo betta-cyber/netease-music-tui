@@ -9,8 +9,16 @@ use gst::prelude::*;
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
     active_block: ActiveBlock::Empty,
-    hovered_block: ActiveBlock::Library,
+    hovered_block: ActiveBlock::Recommend,
 };
+
+pub const RECOMMEND_OPTIONS: [&str; 5] = [
+    "My Playlist",
+    "Discover",
+    "Personal FM",
+    "Albums",
+    "Artists",
+];
 
 pub struct Route {
     pub id: RouteId,
@@ -44,7 +52,7 @@ pub enum ActiveBlock {
     HelpMenu,
     Home,
     Input,
-    Library,
+    Recommend,
     MyPlaylists,
     Podcasts,
     RecentlyPlayed,
@@ -61,6 +69,11 @@ pub struct TrackTable {
     pub selected_index: usize,
 }
 
+#[derive(Clone)]
+pub struct Recommend {
+    pub selected_index: usize,
+}
+
 pub struct App {
     navigation_stack: Vec<Route>,
     pub player: gst_player::Player,
@@ -71,6 +84,7 @@ pub struct App {
     pub selected_playlist_index: Option<usize>,
     pub track_table: TrackTable,
     pub cloud_music: Option<CloudMusic>,
+    pub recommend: Recommend,
 }
 
 impl App {
@@ -92,6 +106,9 @@ impl App {
             selected_playlist_index: None,
             track_table: Default::default(),
             cloud_music: Some(CloudMusic::default()),
+            recommend: Recommend {
+                selected_index: 0,
+            },
         }
     }
 
@@ -114,6 +131,10 @@ impl App {
         }
     }
 
+    fn get_current_route_mut(&mut self) -> &mut Route {
+        self.navigation_stack.last_mut().unwrap()
+    }
+
     pub fn push_navigation_stack(
         &mut self,
         next_route_id: RouteId,
@@ -124,6 +145,21 @@ impl App {
             active_block: next_active_block,
             hovered_block: next_active_block,
         });
+    }
+
+    // set current route
+    pub fn set_current_route_state(
+        &mut self,
+        active_block: Option<ActiveBlock>,
+        hovered_block: Option<ActiveBlock>,
+    ) {
+        let mut current_route = self.get_current_route_mut();
+        if let Some(active_block) = active_block {
+            current_route.active_block = active_block;
+        }
+        if let Some(hovered_block) = hovered_block {
+            current_route.hovered_block = hovered_block;
+        }
     }
 
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {

@@ -28,7 +28,7 @@ mod api;
 mod handlers;
 mod ui;
 
-use app::App;
+use app::{App, ActiveBlock};
 use api::CloudMusic;
 use model::playlist::PlaylistDetail;
 use ui::{draw_track_table, draw_main_layout};
@@ -151,7 +151,7 @@ fn main() -> Result<(), failure::Error> {
                 Ok(p) => {
                     app.playlists = Some(p);
                     app.selected_playlist_index = Some(0);
-                    app.get_user_playlists()
+                    app.set_current_route_state(Some(ActiveBlock::Recommend), None);
                 }
                 Err(e) => {
                     panic!("error")

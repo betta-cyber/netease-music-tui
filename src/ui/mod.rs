@@ -1,6 +1,6 @@
 mod util;
 
-use super::app::{App, ActiveBlock, RouteId};
+use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS};
 use tui::{Frame, Terminal};
 use tui::backend::TermionBackend;
 use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph};
@@ -198,8 +198,27 @@ where
         .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
         .split(layout_chunk);
 
-    // draw_library_block(f, app, chunks[0]);
+    draw_recommend_block(f, app, chunks[0]);
     draw_playlist_block(f, app, chunks[1]);
+}
+
+pub fn draw_recommend_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::Recommend,
+        current_route.hovered_block == ActiveBlock::Recommend,
+    );
+    draw_selectable_list(
+        f,
+        layout_chunk,
+        "recommend",
+        &RECOMMEND_OPTIONS,
+        highlight_state,
+        Some(app.recommend.selected_index),
+    );
 }
 
 pub fn draw_playlist_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
