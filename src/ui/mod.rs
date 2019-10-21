@@ -96,7 +96,7 @@ where
         .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
         .split(layout_chunk);
 
-    // draw_user_block(f, app, chunks[0]);
+    draw_user_block(f, app, chunks[0]);
 
     let current_route = app.get_current_route();
 
@@ -187,6 +187,45 @@ where
             .percent(0.3_f64 as u16)
             .label(&"1:00".to_string())
             .render(f, chunks[1]);
+}
+
+pub fn draw_user_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)].as_ref())
+        .split(layout_chunk);
+
+    // draw_library_block(f, app, chunks[0]);
+    draw_playlist_block(f, app, chunks[1]);
+}
+
+pub fn draw_playlist_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let playlist_items = match &app.playlists {
+        Some(p) => p.iter().map(|item| item.name.as_ref().unwrap().to_owned()).collect(),
+        None => vec![],
+    };
+
+    let current_route = app.get_current_route();
+
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::MyPlaylists,
+        current_route.hovered_block == ActiveBlock::MyPlaylists,
+    );
+
+    draw_selectable_list(
+        f,
+        layout_chunk,
+        "Playlists",
+        &playlist_items,
+        highlight_state,
+        app.selected_playlist_index,
+    );
 }
 
 fn draw_selectable_list<B, S>(
@@ -286,7 +325,7 @@ where
     let chunks = SelectableList::default()
         .block(
             Block::default()
-                .title("Playlist")
+                .title("Songs")
                 .borders(Borders::ALL)
                 .title_style(Style::default().fg(Color::LightCyan))
                 .border_style(Style::default().fg(Color::LightCyan))

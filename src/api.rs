@@ -194,6 +194,18 @@ impl CloudMusic {
         Ok(res.playlist.unwrap().clone())
     }
 
+    // get current user playlist
+    pub fn current_user_playlists(&self) -> Result<Vec<Playlist>, failure::Error> {
+        let url = format!("/user/playlist");
+        let mut params = HashMap::new();
+        params.insert("uid".to_owned(), "620199516".to_string());
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
+        Ok(res.playlist.clone())
+    }
+
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;

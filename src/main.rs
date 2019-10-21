@@ -68,12 +68,14 @@ fn main() -> Result<(), failure::Error> {
     let mut app = App::new();
     let cloud_music = CloudMusic::default();
 
+    let mut is_first_render = true;
+
     // let profile = cloud_music.status();
     // println!("{:#?}", profile);
 
-    let playlist = cloud_music.playlist_detail("2330204571").unwrap().clone();
-    app.track_table.tracks = playlist.tracks.clone();
-    app.get_playlist_tracks("2330204571".to_owned());
+    // let playlist = cloud_music.playlist_detail("2330204571").unwrap().clone();
+    // app.track_table.tracks = playlist.tracks.clone();
+    // app.get_playlist_tracks("2330204571".to_owned());
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -84,10 +86,10 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
-    let mut tui = UI {
-        tabs: TabsState::new(vec!["Tab0", "COOL", "Tab2", "Tab3"]),
-        playlist: playlist
-    };
+    // let mut tui = UI {
+        // tabs: TabsState::new(vec!["Tab0", "COOL", "Tab2", "Tab3"]),
+        // playlist: playlist
+    // };
 
     loop {
         terminal.draw(|mut f| {
@@ -134,13 +136,28 @@ fn main() -> Result<(), failure::Error> {
                         app.player.play();
                     }
                 }
-                Key::Right => tui.tabs.next(),
-                Key::Left => tui.tabs.previous(),
+                // Key::Right => tui.tabs.next(),
+                // Key::Left => tui.tabs.previous(),
                 _ => {
                     handlers::handle_app(input, &mut app);
                 }
             },
             _ => {}
+        }
+
+        if is_first_render {
+            let playlists = cloud_music.current_user_playlists();
+            match playlists {
+                Ok(p) => {
+                    app.playlists = Some(p);
+                    app.selected_playlist_index = Some(0);
+                    app.get_user_playlists()
+                }
+                Err(e) => {
+                    panic!("error")
+                }
+            }
+            is_first_render = false;
         }
     }
     Ok(())

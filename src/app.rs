@@ -1,7 +1,7 @@
 extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
 use tui::layout::{Layout, Constraint, Direction, Rect};
-use super::model::playlist::{PlaylistDetail, Track};
+use super::model::playlist::{Playlist, Track};
 use super::api::CloudMusic;
 
 use gst::prelude::*;
@@ -67,10 +67,10 @@ pub struct App {
     pub size: Rect,
     pub input: String,
     pub song_progress_ms: u128,
-    pub playlist: Option<PlaylistDetail>,
+    pub playlists: Option<Vec<Playlist>>,
     pub selected_playlist_index: Option<usize>,
     pub track_table: TrackTable,
-    pub cloud_music: CloudMusic,
+    pub cloud_music: Option<CloudMusic>,
 }
 
 impl App {
@@ -88,10 +88,10 @@ impl App {
             size: Rect::default(),
             input: String::new(),
             song_progress_ms: 0,
-            playlist: None,
+            playlists: None,
             selected_playlist_index: None,
             track_table: Default::default(),
-            cloud_music: CloudMusic::default(),
+            cloud_music: Some(CloudMusic::default()),
         }
     }
 
@@ -127,16 +127,34 @@ impl App {
     }
 
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(playlist_tracks) = api.playlist_detail(&playlist_id) {
+                    self.track_table.tracks = playlist_tracks.tracks;
+                }
+            }
+            None => {}
+        }
         self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
+    }
+
+    pub fn get_user_playlists(&mut self) {
+        self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::MyPlaylists)
     }
 
     pub fn start_playback(
         &mut self,
         id: String,
     ) {
-        let song = self.cloud_music.song(&id).unwrap();
-        let url = song.url.unwrap().to_string();
-        self.player.set_uri(&url);
-        self.player.play();
+
+        match &self.cloud_music {
+            Some(api) => {
+                let song = api.song(&id).unwrap();
+                let url = song.url.unwrap().to_string();
+                self.player.set_uri(&url);
+                self.player.play();
+            }
+            None => {}
+        }
     }
 }
