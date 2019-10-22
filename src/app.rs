@@ -1,10 +1,8 @@
-extern crate gstreamer as gst;
-extern crate gstreamer_player as gst_player;
+extern crate vlc;
+use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use super::model::playlist::{Playlist, Track};
 use super::api::CloudMusic;
-
-use gst::prelude::*;
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
@@ -76,7 +74,8 @@ pub struct Recommend {
 
 pub struct App {
     navigation_stack: Vec<Route>,
-    pub player: gst_player::Player,
+    pub player: MediaPlayer,
+    pub vlc_instance: Instance,
     pub size: Rect,
     pub input: String,
     pub song_progress_ms: u128,
@@ -90,15 +89,13 @@ pub struct App {
 impl App {
     pub fn new() -> App {
 
-        let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
-        let music_player = gst_player::Player::new(
-            None,
-            Some(&dispatcher.upcast::<gst_player::PlayerSignalDispatcher>()),
-        );
+        let instance = Instance::new().unwrap();
+        let music_player = MediaPlayer::new(&instance).unwrap();
 
         App {
             navigation_stack: vec![DEFAULT_ROUTE],
             player: music_player,
+            vlc_instance: instance,
             size: Rect::default(),
             input: String::new(),
             song_progress_ms: 0,
@@ -114,14 +111,14 @@ impl App {
 
     pub fn increase_volume(&mut self) {
         let current = self.player.get_volume();
-        let volume = current + 0.1_f64;
-        self.player.set_volume(volume)
+        let volume = current + 10_i32;
+        self.player.set_volume(volume);
     }
 
     pub fn decrease_volume(&mut self) {
         let current = self.player.get_volume();
-        let volume = current - 0.1_f64;
-        self.player.set_volume(volume)
+        let volume = current - 10_i32;
+        self.player.set_volume(volume);
     }
 
     pub fn get_current_route(&self) -> &Route {
@@ -182,12 +179,12 @@ impl App {
         &mut self,
         id: String,
     ) {
-
         match &self.cloud_music {
             Some(api) => {
                 let song = api.song(&id).unwrap();
                 let url = song.url.unwrap().to_string();
-                self.player.set_uri(&url);
+                let md = Media::new_location(&self.vlc_instance, &url).unwrap();
+                self.player.set_media(&md);
                 self.player.play();
             }
             None => {}

@@ -313,152 +313,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "glib"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "glib-sys"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gobject-sys"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer"
-version = "0.14.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "cfg-if 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "muldiv 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-rational 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-base"
-version = "0.14.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-base-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-base-sys"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-player"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-player-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-video 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-player-sys"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-video-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-sys"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-video"
-version = "0.14.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "bitflags 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-base 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-base-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-video-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "gstreamer-video-sys"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-base-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "h2"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -702,11 +556,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "muldiv"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "native-tls"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -738,8 +587,6 @@ name = "netease_music_tui"
 version = "0.1.0"
 dependencies = [
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "gstreamer-player 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -747,39 +594,13 @@ dependencies = [
  "termion 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tui 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vlc-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "num-integer"
-version = "0.1.41"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "num-rational"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)",
- "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "num-traits"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "num_cpus"
@@ -1576,6 +1397,14 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "vlc-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "want"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1677,17 +1506,6 @@ dependencies = [
 "checksum futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)" = "1b980f2816d6ee8673b6517b52cb0e808a180efc92e5c19d02cdda79066703ef"
 "checksum futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "ab90cde24b3319636588d0c35fe03b1333857621051837ed769faefb4c2162e4"
 "checksum getrandom 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "473a1265acc8ff1e808cd0a1af8cee3c2ee5200916058a2ca113c29f2d903571"
-"checksum glib 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "be27232841baa43e0fd5ae003f7941925735b2f733a336dc75f07b9eff415e7b"
-"checksum glib-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4b86a9169fbc9cf9a0ef315039c2304b09d5c575c5fde7defba3576a0311b863"
-"checksum gobject-sys 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "61d55bc9202447ca776f6ad0048c36e3312010f66f82ab478e97513e93f3604b"
-"checksum gstreamer 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fa91e470b0cd4b05611f7d0e89caf76e39752156440877f04c23ad34ffc9761c"
-"checksum gstreamer-base 0.14.4 (registry+https://github.com/rust-lang/crates.io-index)" = "37ed3ddb8f1a65e401340afb5657d2107d78c82f06a081e19393fc8d4c5ee720"
-"checksum gstreamer-base-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9ba1955ea091323c17fdf8ff54fd7cf3dfed1a6035193ba08f85eb76bf549056"
-"checksum gstreamer-player 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)" = "78395f87de2b954ca3e33a594a4eb85e68246f5f41a70bf0ab52187aacb4d3a9"
-"checksum gstreamer-player-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c3608d3e96c8977f31b9b8db7da0b8d0e96758b060e3f05fc3ee9626d75ab1c5"
-"checksum gstreamer-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bdfc2f6cc9b6a1f5159bfd500310fe431cfb0b74b3af17ce3fdf8353cf586975"
-"checksum gstreamer-video 0.14.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0b48c3edfa6c0419ad7587a557bbed716caf5585c3be65bfbe3584703735df51"
-"checksum gstreamer-video-sys 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6b8fcb1e577de93d1ad1e5117234ce64d40f215143d752140719923651608983"
 "checksum h2 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)" = "a5b34c246847f938a410a03c5458c7fee2274436675e76d8b903c08efc29c462"
 "checksum http 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "372bcb56f939e449117fb0869c2e8fd8753a8223d92a172c6e808cf123a5b6e4"
 "checksum http-body 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6741c859c1b2463a423a1dbce98d418e6c3c3fc720fb0d45528657320920292d"
@@ -1714,13 +1532,9 @@ dependencies = [
 "checksum mio 0.6.19 (registry+https://github.com/rust-lang/crates.io-index)" = "83f51996a3ed004ef184e16818edc51fadffe8e7ca68be67f9dee67d84d0ff23"
 "checksum mio-uds 0.6.7 (registry+https://github.com/rust-lang/crates.io-index)" = "966257a94e196b11bb43aca423754d87429960a768de9414f3691d6957abf125"
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
-"checksum muldiv 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "451a9a05d2a32c566c897835e0ea95cf79ed2fdfe957924045a1721a36c9980f"
 "checksum native-tls 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "4b2df1a4c22fd44a62147fd8f13dd0f95c9d8ca7b2610299b2a2f9cf8964274e"
 "checksum net2 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)" = "42550d9fb7b6684a6d404d9fa7250c2eb2646df731d1c06afc06dcee9e1bcf88"
 "checksum nodrop 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)" = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
-"checksum num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "b85e541ef8255f6cf42bbfe4ef361305c6c135d10919ecc26126c4e5ae94bc09"
-"checksum num-rational 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f2885278d5fe2adc2f75ced642d52d879bffaceb5a2e0b1d4309ffdfb239b454"
-"checksum num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "6ba9a427cfca2be13aa6f6403b0b7e7368fe982bfa16fccc450ce74c46cd9b32"
 "checksum num_cpus 1.10.1 (registry+https://github.com/rust-lang/crates.io-index)" = "bcef43580c035376c0705c42792c294b66974abbfd2789b511784023f71f3273"
 "checksum numtoa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b8f8bdf33df195859076e54ab11ee78a1b208382d3a26ec40d142ffc1ecc49ef"
 "checksum openssl 0.10.25 (registry+https://github.com/rust-lang/crates.io-index)" = "2f372b2b53ce10fb823a337aaa674e3a7d072b957c6264d0f4ff0bd86e657449"
@@ -1806,6 +1620,7 @@ dependencies = [
 "checksum uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)" = "90dbc611eb48397705a6b0f6e917da23ae517e4d127123d2cf7674206627d32a"
 "checksum vcpkg 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)" = "33dd455d0f96e90a75803cfeb7f948768c08d70a6de9a8d2362461935698bf95"
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
+"checksum vlc-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6223b2d4a7b2977e0758cbff1cb00df37236f91de4593da47f8a2737ac59a96e"
 "checksum want 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b6395efa4784b027708f7451087e647ec73cc74f5d9bc2e418404248d679a230"
 "checksum wasi 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b89c3ce4ce14bdc6fb6beaf9ec7928ca331de5df7e5ea278375642a2f478570d"
 "checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"

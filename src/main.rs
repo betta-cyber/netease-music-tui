@@ -2,10 +2,6 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate failure;
-extern crate gstreamer as gst;
-extern crate gstreamer_player as gst_player;
-use gst::prelude::*;
-
 extern crate serde;
 extern crate serde_json;
 
@@ -62,9 +58,7 @@ struct UI<'a> {
 
 fn main() -> Result<(), failure::Error> {
 
-    // init gst
-    gst::init()?;
-
+    // init application
     let mut app = App::new();
     let cloud_music = CloudMusic::default();
 
@@ -92,10 +86,10 @@ fn main() -> Result<(), failure::Error> {
                 }
                 // means space
                 Key::Char(' ') => {
-                    if is_playing(&app.player) {
+                    if app.player.is_playing() {
                         app.player.pause();
                     } else {
-                        app.player.play();
+                        app.player.play().unwrap();
                     }
                 }
                 // Key::Right => tui.tabs.next(),
@@ -123,9 +117,4 @@ fn main() -> Result<(), failure::Error> {
         }
     }
     Ok(())
-}
-
-pub fn is_playing(player: &gst_player::Player) -> bool {
-    let element = player.get_pipeline();
-    element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
 }
