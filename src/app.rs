@@ -1,8 +1,9 @@
 extern crate vlc;
-use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx};
+use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx, State};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use super::model::playlist::{Playlist, Track};
 use super::api::CloudMusic;
+use std::time::Instant;
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
@@ -78,12 +79,13 @@ pub struct App {
     pub vlc_instance: Instance,
     pub size: Rect,
     pub input: String,
-    pub song_progress_ms: u128,
+    pub song_progress_ms: u64,
     pub playlists: Option<Vec<Playlist>>,
     pub selected_playlist_index: Option<usize>,
     pub track_table: TrackTable,
     pub cloud_music: Option<CloudMusic>,
     pub recommend: Recommend,
+    pub duration_ms: Option<u64>,
 }
 
 impl App {
@@ -99,6 +101,7 @@ impl App {
             size: Rect::default(),
             input: String::new(),
             song_progress_ms: 0,
+            duration_ms: None,
             playlists: None,
             selected_playlist_index: None,
             track_table: Default::default(),
@@ -106,6 +109,12 @@ impl App {
             recommend: Recommend {
                 selected_index: 0,
             },
+        }
+    }
+
+    pub fn update_on_tick(&mut self) {
+        if self.player.is_playing() {
+            self.song_progress_ms = self.player.get_time().unwrap() as u64;
         }
     }
 
@@ -185,7 +194,15 @@ impl App {
                 let url = song.url.unwrap().to_string();
                 let md = Media::new_location(&self.vlc_instance, &url).unwrap();
                 self.player.set_media(&md);
-                self.player.play();
+                self.player.play().unwrap();
+
+                let mut flag = false;
+                while !flag {
+                    if md.state() == State::Playing {
+                        self.duration_ms = Some(md.duration().unwrap() as u64);
+                        flag = true;
+                    }
+                }
             }
             None => {}
         }

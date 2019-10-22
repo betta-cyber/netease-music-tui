@@ -8,7 +8,7 @@ use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use tui::backend::Backend;
-use util::{get_color, get_percentage_width};
+use util::{get_color, get_percentage_width, display_track_progress};
 
 // table item for render
 pub struct TableItem {
@@ -174,7 +174,17 @@ where
         )
         .render(f, chunks[0]);
 
-        // let perc = (app.song_progress_ms as f64 / f64::from(track_item.duration_ms)) * 100_f64;
+        let (perc, label) = match app.duration_ms {
+            Some(duration_ms) => {
+                (
+                    (app.song_progress_ms as f64 / duration_ms as f64) * 100_f64,
+                    display_track_progress(app.song_progress_ms, duration_ms)
+                )
+            }
+            None => {
+                (0.0_f64, " ".to_string())
+            }
+        };
 
         Gauge::default()
             .block(Block::default().title(""))
@@ -184,8 +194,8 @@ where
                     .bg(Color::Black)
                     .modifier(Modifier::ITALIC | Modifier::BOLD),
             )
-            .percent(0.3_f64 as u16)
-            .label(&"1:00".to_string())
+            .percent(perc as u16)
+            .label(&label)
             .render(f, chunks[1]);
 }
 

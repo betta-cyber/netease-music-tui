@@ -8,14 +8,13 @@ extern crate serde_json;
 
 use std::io;
 use termion::raw::IntoRawMode;
-use tui::{Frame, Terminal};
+use tui::Terminal;
 use tui::backend::TermionBackend;
 use tui::widgets::{Widget, Block, Borders, Tabs, Text, Paragraph, SelectableList};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use util::event::{Event, Events};
-use tui::backend::Backend;
 
 mod util;
 mod model;
@@ -26,35 +25,7 @@ mod ui;
 
 use app::{App, ActiveBlock};
 use api::CloudMusic;
-use model::playlist::PlaylistDetail;
-use ui::{draw_track_table, draw_main_layout};
 
-pub struct TabsState<'a> {
-    pub titles: Vec<&'a str>,
-    pub index: usize,
-}
-
-impl<'a> TabsState<'a> {
-    pub fn new(titles: Vec<&'a str>) -> TabsState {
-        TabsState { titles, index: 0 }
-    }
-    pub fn next(&mut self) {
-        self.index = (self.index + 1) % self.titles.len();
-    }
-
-    pub fn previous(&mut self) {
-        if self.index > 0 {
-            self.index -= 1;
-        } else {
-            self.index = self.titles.len() - 1;
-        }
-    }
-}
-
-struct UI<'a> {
-    tabs: TabsState<'a>,
-    playlist: PlaylistDetail,
-}
 
 fn main() -> Result<(), failure::Error> {
 
@@ -98,7 +69,9 @@ fn main() -> Result<(), failure::Error> {
                     handlers::handle_app(input, &mut app);
                 }
             },
-            _ => {}
+            Event::Tick => {
+                app.update_on_tick();
+            }
         }
 
         if is_first_render {
