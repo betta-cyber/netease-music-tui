@@ -20,10 +20,11 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Char('\n') => {
             let TrackTable = &app.track_table;
-            let track = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap();
+            let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
             // println!("{:#?}", track);
             // let url = &app.get_song_url();
-            app.start_playback(track.id.unwrap().to_string());
+            app.start_playback(track_playing.id.unwrap().to_string());
+            app.current_playing = Some(track_playing);
         }
         _ => {}
     }

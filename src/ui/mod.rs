@@ -118,43 +118,25 @@ where
         .margin(1)
         .split(layout_chunk);
 
-    // If no track is playing, render paragraph showing which device is selected, if no selected
-    // give hint to choose a device
-    // if let Some(current_playback_context) = &app.current_playback_context {
-        // if let Some(track_item) = &current_playback_context.item {
-            // let play_title = if current_playback_context.is_playing {
-                // "Playing"
-            // } else {
-                // "Paused"
-            // };
+        let state_title = if app.player.is_playing() {
+            "Playing"
+        } else {
+            "Pause"
+        };
 
-            // let shuffle_text = if current_playback_context.shuffle_state {
-                // "On"
-            // } else {
-                // "Off"
-            // };
+        let title = format!("{}", state_title);
 
-            // let repeat_text = match current_playback_context.repeat_state {
-                // RepeatState::Off => "Off",
-                // RepeatState::Track => "Track",
-                // RepeatState::Context => "All",
-            // };
-
-       /* let title = format!( */
-           // "{} ({} | Shuffle: {} | Repeat: {} | Volume: {}%)",
-           // play_title,
-           // current_playback_context.device.name,
-           // shuffle_text,
-           // repeat_text,
-           // current_playback_context.device.volume_percent
-       /* ); */
-        let title = "1111".to_string();
+        let current_route = app.get_current_route();
+        let highlight_state = (
+            current_route.active_block == ActiveBlock::PlayBar,
+            current_route.hovered_block == ActiveBlock::PlayBar,
+        );
 
         Block::default()
             .borders(Borders::ALL)
             .title(&title)
-            .title_style(Style::default().fg(Color::Gray))
-            .border_style(Style::default().fg(Color::Gray))
+            .title_style(get_color(highlight_state))
+            .border_style(get_color(highlight_state))
             .render(f, layout_chunk);
 
         Paragraph::new(

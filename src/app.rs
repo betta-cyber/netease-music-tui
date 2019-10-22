@@ -58,8 +58,8 @@ pub enum ActiveBlock {
     SearchResultBlock,
     SelectDevice,
     TrackTable,
-    MadeForYou,
     Artists,
+    PlayBar,
 }
 
 #[derive(Default)]
@@ -80,6 +80,7 @@ pub struct App {
     pub size: Rect,
     pub input: String,
     pub song_progress_ms: u64,
+    pub current_playing: Option<Track>,
     pub playlists: Option<Vec<Playlist>>,
     pub selected_playlist_index: Option<usize>,
     pub track_table: TrackTable,
@@ -101,6 +102,7 @@ impl App {
             size: Rect::default(),
             input: String::new(),
             song_progress_ms: 0,
+            current_playing: None,
             duration_ms: None,
             playlists: None,
             selected_playlist_index: None,
