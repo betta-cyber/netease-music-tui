@@ -108,6 +108,7 @@ where
     };
 }
 
+// draw track playing block in the bottom
 pub fn draw_playing_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
@@ -280,18 +281,71 @@ fn draw_selectable_list<B, S>(
         .render(f, layout_chunk);
 }
 
-// fn draw_table<B>(
-    // f: &mut Frame<B>,
-    // app: &App,
-    // layout_chunk: Rect,
-    // table_layout: (&str, &[TableHeader]), // (title, header colums)
-    // items: &[TableItem], // The nested vector must have the same length as the `header_columns`
-    // selected_index: usize,
-    // highlight_state: (bool, bool),
-// ) where
-    // B: Backend,
-// {
-    // let selected_style = get_color(highlight_state).modifier(Modifier::BOLD);
+// draw track table
+pub fn draw_track_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let header = [
+        TableHeader {
+            text: "Title",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Artist",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "AlbumTracks",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::TrackTable,
+        current_route.hovered_block == ActiveBlock::TrackTable,
+    );
+
+    let items = app
+        .track_table
+        .tracks
+        .iter()
+        .map(|item| TableItem {
+            id: item.id.as_ref().unwrap().to_string(),
+            format: vec![
+                item.name.as_ref().unwrap().to_string(),
+                create_artist_string(&item.ar.to_owned().unwrap()),
+                item.al.as_ref().unwrap().name.to_owned(),
+            ],
+        })
+        .collect::<Vec<TableItem>>();
+
+    // draw track table by draw_table function
+    draw_table(
+        f,
+        app,
+        layout_chunk,
+        ("Songs", &header),
+        &items,
+        app.track_table.selected_index,
+        highlight_state,
+    )
+}
+
+fn draw_table<B>(
+    f: &mut Frame<B>,
+    app: &App,
+    layout_chunk: Rect,
+    table_layout: (&str, &[TableHeader]), // (title, header colums)
+    items: &[TableItem], // The nested vector must have the same length as the `header_columns`
+    selected_index: usize,
+    highlight_state: (bool, bool),
+) where
+    B: Backend,
+{
+    let selected_style = get_color(highlight_state).modifier(Modifier::BOLD);
 
     // let track_playing_index = match &app.current_playback_context {
         // Some(ctx) => items.iter().position(|t| match &ctx.item {
@@ -301,12 +355,12 @@ fn draw_selectable_list<B, S>(
         // None => None,
     // };
 
-    // let rows = items.iter().enumerate().map(|(i, item)| {
-        // // Show this ♥ if the song is liked
-        // let mut formatted_row = item.format.clone();
-        // let mut style = Style::default().fg(Color::White); // default styling
+    let rows = items.iter().enumerate().map(|(i, item)| {
+        // Show this ♥ if the song is liked
+        let mut formatted_row = item.format.clone();
+        let mut style = Style::default().fg(Color::White); // default styling
 
-        // // First check if the song should be highlighted because it is currently playing
+        // First check if the song should be highlighted because it is currently playing
         // if let Some(_track_playing_index) = track_playing_index {
             // if i == _track_playing_index {
                 // formatted_row[0] = format!("|> {}", &formatted_row[0]);
@@ -314,108 +368,29 @@ fn draw_selectable_list<B, S>(
             // }
         // }
 
-        // // Next check if the item is under selection
-        // if i == selected_index {
-            // style = selected_style;
-        // }
+        // Next check if the item is under selection
+        if i == selected_index {
+            style = selected_style;
+        }
 
-        // // Return row styled data
-        // Row::StyledData(formatted_row.into_iter(), style)
-    // });
+        // Return row styled data
+        Row::StyledData(formatted_row.into_iter(), style)
+    });
 
-    // let (title, header_columns) = table_layout;
+    let (title, header_columns) = table_layout;
 
-    // let widths = header_columns.iter().map(|h| h.width).collect::<Vec<u16>>();
+    let widths = header_columns.iter().map(|h| h.width).collect::<Vec<u16>>();
 
-    // Table::new(header_columns.iter().map(|h| h.text), rows)
-        // .block(
-            // Block::default()
-                // .borders(Borders::ALL)
-                // .style(Style::default().fg(Color::White))
-                // .title(title)
-                // .title_style(get_color(highlight_state))
-                // .border_style(get_color(highlight_state)),
-        // )
-        // .style(Style::default().fg(Color::White))
-        // .widths(&widths)
-        // .render(f, layout_chunk);
-// }
-
-pub fn draw_track_table<B>(f: &mut Frame<B>, app: &App, area: Rect)
-where
-    B: Backend,
-{
-
-    let playlist_items: Vec<_> = app.track_table.tracks.iter().map(|item| item.name.as_ref().unwrap().to_string()).collect();
-
-    let chunks = SelectableList::default()
+    Table::new(header_columns.iter().map(|h| h.text), rows)
         .block(
             Block::default()
-                .title("Songs")
                 .borders(Borders::ALL)
-                .title_style(Style::default().fg(Color::LightCyan))
-                .border_style(Style::default().fg(Color::LightCyan))
-            )
-        .items(&playlist_items)
-        .select(Some(app.track_table.selected_index))
+                .style(Style::default().fg(Color::White))
+                .title(title)
+                .title_style(get_color(highlight_state))
+                .border_style(get_color(highlight_state)),
+        )
         .style(Style::default().fg(Color::White))
-        .highlight_style(Style::default().fg(Color::LightCyan))
-        .highlight_symbol(">")
-        .render(f, area);
+        .widths(&widths)
+        .render(f, layout_chunk);
 }
-
-
-// pub fn draw_song_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
-// where
-    // B: Backend,
-// {
-    // let header = [
-        // TableHeader {
-            // text: "Title",
-            // width: get_percentage_width(layout_chunk.width, 0.3),
-        // },
-        // TableHeader {
-            // text: "Artist",
-            // width: get_percentage_width(layout_chunk.width, 0.3),
-        // },
-        // TableHeader {
-            // text: "AlbumTracks",
-            // width: get_percentage_width(layout_chunk.width, 0.3),
-        // },
-        // TableHeader {
-            // text: "Length",
-            // width: get_percentage_width(layout_chunk.width, 0.1),
-        // },
-    // ];
-
-    // let current_route = app.get_current_route();
-    // let highlight_state = (
-        // current_route.active_block == ActiveBlock::TrackTable,
-        // current_route.hovered_block == ActiveBlock::TrackTable,
-    // );
-
-    // let items = app
-        // .track_table
-        // .tracks
-        // .iter()
-        // .map(|item| TableItem {
-            // id: item.id.clone().unwrap_or_else(|| "".to_string()),
-            // format: vec![
-                // item.name.to_owned(),
-                // create_artist_string(&item.artists),
-                // item.album.name.to_owned(),
-                // millis_to_minutes(u128::from(item.duration_ms)),
-            // ],
-        // })
-        // .collect::<Vec<TableItem>>();
-
-    // draw_table(
-        // f,
-        // app,
-        // layout_chunk,
-        // ("Songs", &header),
-        // &items,
-        // app.track_table.selected_index,
-        // highlight_state,
-    // )
-// }
