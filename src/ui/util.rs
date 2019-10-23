@@ -1,4 +1,5 @@
 use tui::style::{Color, Style};
+use super::super::model::playlist::Artist;
 
 pub fn get_color((is_active, is_hovered): (bool, bool)) -> Style {
     match (is_active, is_hovered) {
@@ -38,4 +39,12 @@ pub fn display_track_progress(progress: u64, track_duration: u64) -> String {
     let remaining = millis_to_minutes(u64::from(track_duration) - progress);
 
     format!("{}/{} (-{})", progress_display, duration, remaining,)
+}
+
+pub fn create_artist_string(artists: &[Artist]) -> String {
+    artists
+        .iter()
+        .map(|artist| artist.name.to_string())
+        .collect::<Vec<String>>()
+        .join("/ ")
 }

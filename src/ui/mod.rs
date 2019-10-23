@@ -8,7 +8,7 @@ use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use tui::backend::Backend;
-use util::{get_color, get_percentage_width, display_track_progress};
+use util::{get_color, get_percentage_width, display_track_progress, create_artist_string};
 
 // table item for render
 pub struct TableItem {
@@ -132,6 +132,21 @@ where
             current_route.hovered_block == ActiveBlock::PlayBar,
         );
 
+        let (track_name, artist_name) = match &app.current_playing {
+            Some(track) => {
+                (
+                    track.name.to_owned().unwrap(),
+                    create_artist_string(&track.ar.to_owned().unwrap())
+                )
+            }
+            None => {
+                (
+                    String::new(),
+                    String::new(),
+                )
+            }
+        };
+
         Block::default()
             .borders(Borders::ALL)
             .title(&title)
@@ -141,14 +156,14 @@ where
 
         Paragraph::new(
             [Text::styled(
-                "111".to_string(),
+                artist_name,
                 Style::default().fg(Color::White),
             )]
             .iter(),
         )
         .style(Style::default().fg(Color::White))
         .block(
-            Block::default().title("ddd").title_style(
+            Block::default().title(&track_name).title_style(
                 Style::default()
                     .fg(Color::LightCyan)
                     .modifier(Modifier::BOLD),
@@ -206,7 +221,7 @@ where
     draw_selectable_list(
         f,
         layout_chunk,
-        "recommend",
+        "Recommend",
         &RECOMMEND_OPTIONS,
         highlight_state,
         Some(app.recommend.selected_index),
