@@ -102,6 +102,15 @@ where
 
     match current_route.id {
         RouteId::Error => {} // This is handled as a "full screen" route in main.rs
+        RouteId::TrackTable => {
+            draw_track_table(f, &app, chunks[1]);
+        }
+        RouteId::Home => {
+            draw_home(f, app, chunks[1]);
+        }
+        RouteId::PersonalFm => {
+            draw_personal_fm(f, &app, chunks[1]);
+        }
         _ => {
             draw_track_table(f, &app, chunks[1]);
         }
@@ -297,7 +306,7 @@ where
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
         TableHeader {
-            text: "AlbumTracks",
+            text: "Album",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
     ];
@@ -392,5 +401,67 @@ fn draw_table<B>(
         )
         .style(Style::default().fg(Color::White))
         .widths(&widths)
+        .render(f, layout_chunk);
+}
+
+fn draw_home<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(25), Constraint::Percentage(75)].as_ref())
+        .margin(2)
+        .split(layout_chunk);
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::Home,
+        current_route.hovered_block == ActiveBlock::Home,
+    );
+
+    Block::default()
+        .title("Welcome!")
+        .borders(Borders::ALL)
+        .title_style(get_color(highlight_state))
+        .border_style(get_color(highlight_state))
+        .render(f, layout_chunk);
+
+    let top_text = vec![
+        Text::styled("网易云音乐", Style::default().fg(Color::LightCyan)),
+    ];
+
+    // Contains the banner
+    Paragraph::new(top_text.iter())
+        .style(Style::default().fg(Color::White))
+        .block(Block::default())
+        .render(f, chunks[0]);
+}
+
+
+fn draw_personal_fm<B>(
+    f: &mut Frame<B>,
+    app: &App,
+    layout_chunk: Rect,
+) where
+    B: Backend,
+{
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::PersonalFm,
+        current_route.hovered_block == ActiveBlock::PersonalFm,
+    );
+    let display_block = Block::default()
+        .title(&"PERSONAL FM")
+        .borders(Borders::ALL)
+        .title_style(get_color(highlight_state))
+        .border_style(get_color(highlight_state));
+
+    let text = vec![Text::raw("Not implemented yet!")];
+
+    Paragraph::new(text.iter())
+        .style(Style::default().fg(Color::White))
+        .block(display_block)
+        .wrap(true)
         .render(f, layout_chunk);
 }

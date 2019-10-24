@@ -27,6 +27,9 @@ pub fn handler(key: Key, app: &mut App) {
                 0 => {
                     app.push_navigation_stack(RouteId::TrackTable, ActiveBlock::MyPlaylists)
                 }
+                2 => {
+                    app.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm)
+                }
                 _ => {}
             }
         }

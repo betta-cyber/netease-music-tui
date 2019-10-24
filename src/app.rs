@@ -39,6 +39,7 @@ pub enum RouteId {
     MadeForYou,
     Artists,
     Podcasts,
+    PersonalFm,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -60,6 +61,7 @@ pub enum ActiveBlock {
     TrackTable,
     Artists,
     PlayBar,
+    PersonalFm,
 }
 
 #[derive(Default)]
