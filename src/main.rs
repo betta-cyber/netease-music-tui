@@ -80,7 +80,7 @@ fn main() -> Result<(), failure::Error> {
                 Ok(p) => {
                     app.playlists = Some(p);
                     app.selected_playlist_index = Some(0);
-                    app.set_current_route_state(Some(ActiveBlock::Recommend), None);
+                    // app.set_current_route_state(Some(ActiveBlock::Recommend), None);
                 }
                 Err(e) => {
                     panic!("error")

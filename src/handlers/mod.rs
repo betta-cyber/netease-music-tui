@@ -3,6 +3,7 @@ mod playlist;
 mod track;
 mod recommend;
 mod empty;
+mod home;
 
 use super::app::{App, ActiveBlock};
 use termion::event::Key;
@@ -44,6 +45,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::Empty => {
             empty::handler(key, app);
+        }
+        ActiveBlock::Home => {
+            home::handler(key, app);
         }
         _ => {}
     }

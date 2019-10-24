@@ -61,3 +61,35 @@ pub fn on_up_press_handler<T>(selection_data: &[T], selection_index: Option<usiz
         None => 0,
     }
 }
+
+pub fn handle_left_event(app: &mut App) {
+    app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Recommend));
+}
+
+// handle right key event
+pub fn handle_right_event(app: &mut App) {
+    match app.get_current_route().hovered_block {
+        ActiveBlock::MyPlaylists | ActiveBlock::Recommend => {
+            match app.get_current_route().id {
+                RouteId::TrackTable => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::TrackTable),
+                        Some(ActiveBlock::TrackTable),
+                    );
+                }
+                RouteId::Search => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::SearchResultBlock),
+                        Some(ActiveBlock::SearchResultBlock),
+                    );
+                }
+                RouteId::Home => {
+                    app.set_current_route_state(Some(ActiveBlock::Home), Some(ActiveBlock::Home));
+                }
+                RouteId::Error => {}
+                _ => {}
+            }
+        }
+        _ => {}
+    };
+}

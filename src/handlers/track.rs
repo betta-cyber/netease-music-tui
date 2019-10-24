@@ -5,6 +5,7 @@ use std::collections::HashSet;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
+        k if common_events::left_event(k) => common_events::handle_left_event(app),
         k if common_events::down_event(k) => {
             let next_index = common_events::on_down_press_handler(
                 &app.track_table.tracks,
