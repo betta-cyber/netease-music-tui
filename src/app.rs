@@ -64,7 +64,8 @@ pub enum ActiveBlock {
     PersonalFm,
 }
 
-#[derive(Default)]
+// #[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct TrackTable {
     pub tracks: Vec<Track>,
     pub selected_index: usize,
@@ -73,6 +74,18 @@ pub struct TrackTable {
 #[derive(Clone)]
 pub struct Recommend {
     pub selected_index: usize,
+}
+
+// 顺序播放
+// 单曲循环
+// 列表循环
+// 随机播放
+#[derive(Clone, PartialEq, Debug)]
+pub enum RepeatState {
+    Off,
+    Track,
+    All,
+    Shuffle,
 }
 
 pub struct App {
@@ -89,6 +102,8 @@ pub struct App {
     pub cloud_music: Option<CloudMusic>,
     pub recommend: Recommend,
     pub duration_ms: Option<u64>,
+    pub my_playlist: Option<TrackTable>,
+    pub repeat_state: RepeatState,
 }
 
 impl App {
@@ -113,25 +128,55 @@ impl App {
             recommend: Recommend {
                 selected_index: 0,
             },
+            my_playlist: None,
+            repeat_state: RepeatState::All,
         }
     }
 
+    // update app every tick
     pub fn update_on_tick(&mut self) {
         if self.player.is_playing() {
             self.song_progress_ms = self.player.get_time().unwrap() as u64;
+        } else if self.player.state() == State::Ended {
+            match self.repeat_state {
+                RepeatState::Track => {
+                    // loop current song
+                    match &self.current_playing {
+                        Some(track) => {
+                            self.start_playback(track.id.unwrap().to_string());
+                        }
+                        None => {
+                            panic!("error");
+                        }
+                    };
+                }
+                RepeatState::All => {
+                    // loop current my playlist
+                    match &self.my_playlist {
+                        Some(list) => {
+                            let mut list = list.to_owned();
+                            list.selected_index = 1;
+                            let track_playing = list.tracks.get(list.selected_index.to_owned()).unwrap().to_owned();
+                            self.start_playback(track_playing.id.unwrap().to_string());
+                        }
+                        None => {}
+                    }
+                }
+                _ => {}
+            }
         }
     }
 
     pub fn increase_volume(&mut self) {
         let current = self.player.get_volume();
         let volume = current + 10_i32;
-        self.player.set_volume(volume);
+        self.player.set_volume(volume).unwrap();
     }
 
     pub fn decrease_volume(&mut self) {
         let current = self.player.get_volume();
         let volume = current - 10_i32;
-        self.player.set_volume(volume);
+        self.player.set_volume(volume).unwrap();
     }
 
     pub fn get_current_route(&self) -> &Route {
@@ -179,13 +224,11 @@ impl App {
                     self.track_table.tracks = playlist_tracks.tracks;
                 }
             }
-            None => {}
+            None => {
+                panic!("get playlist track error");
+            }
         }
         self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
-    }
-
-    pub fn get_user_playlists(&mut self) {
-        self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::MyPlaylists)
     }
 
     pub fn start_playback(

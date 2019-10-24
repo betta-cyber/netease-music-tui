@@ -23,6 +23,16 @@ pub fn handler(key: Key, app: &mut App) {
             let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
             // println!("{:#?}", track);
             // let url = &app.get_song_url();
+            match &mut app.my_playlist {
+                Some(list) => {
+                    // if exist, append tracktable to my playlist
+                    list.tracks.append(&mut TrackTable.tracks.to_owned());
+                }
+                None => {
+                    // if none, add this tracktable to my playlist
+                    app.my_playlist = Some(TrackTable.to_owned());
+                }
+            }
             app.start_playback(track_playing.id.unwrap().to_string());
             app.current_playing = Some(track_playing);
         }
