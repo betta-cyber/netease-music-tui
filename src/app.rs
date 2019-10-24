@@ -155,9 +155,15 @@ impl App {
                     match &self.my_playlist {
                         Some(list) => {
                             let mut list = list.to_owned();
-                            list.selected_index = 1;
+                            // catulate next index
+                            let mut next_index = list.selected_index + 1;
+                            if next_index > list.tracks.len() - 1 {
+                                next_index = 0;
+                            }
+                            list.selected_index = next_index;
                             let track_playing = list.tracks.get(list.selected_index.to_owned()).unwrap().to_owned();
                             self.start_playback(track_playing.id.unwrap().to_string());
+                            self.current_playing = Some(track_playing);
                         }
                         None => {}
                     }

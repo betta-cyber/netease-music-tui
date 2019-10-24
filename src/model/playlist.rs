@@ -43,7 +43,7 @@ pub struct PlaylistDetail {
     pub tracks: Vec<Track>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct Track {
     pub name: Option<String>,
     pub id: Option<i64>,
@@ -51,13 +51,21 @@ pub struct Track {
     pub al: Option<Album>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+impl PartialEq for Track {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Track {}
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct Artist {
     pub name: String,
     pub id: i64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct Album {
     pub name: String,
     pub id: i64,

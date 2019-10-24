@@ -1,6 +1,7 @@
 use super::super::app::App;
 use termion::event::Key;
 use super::common_events;
+use std::collections::HashSet;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -27,6 +28,11 @@ pub fn handler(key: Key, app: &mut App) {
                 Some(list) => {
                     // if exist, append tracktable to my playlist
                     list.tracks.append(&mut TrackTable.tracks.to_owned());
+                    // unique
+                    // println!("{:#?}", list.tracks.len());
+                    let set: HashSet<_> = list.tracks.drain(..).collect();
+                    list.tracks.extend(set.into_iter());
+                    // println!("{:#?}", list.tracks.len());
                 }
                 None => {
                     // if none, add this tracktable to my playlist
