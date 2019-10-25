@@ -363,6 +363,11 @@ fn draw_table<B>(
         // }),
         // None => None,
     // };
+    // let count = layout_chunk.height - 4;
+    // if count as usize - selected_index <= 3 {
+        // let track = &items.remove(0);
+        // &items.push(track);
+    // }
 
     let rows = items.iter().enumerate().map(|(i, item)| {
         // Show this ♥ if the song is liked
