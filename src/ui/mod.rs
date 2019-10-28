@@ -11,6 +11,7 @@ use tui::backend::Backend;
 use util::{get_color, get_percentage_width, display_track_progress, create_artist_string};
 
 // table item for render
+#[derive(Clone, Debug)]
 pub struct TableItem {
     id: String,
     format: Vec<String>,
@@ -298,6 +299,10 @@ where
 
     let header = [
         TableHeader {
+            text: "ID",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
             text: "Title",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
@@ -317,17 +322,22 @@ where
         current_route.hovered_block == ActiveBlock::TrackTable,
     );
 
+    let mut num = 0;
     let items = app
         .track_table
         .tracks
         .iter()
-        .map(|item| TableItem {
-            id: item.id.as_ref().unwrap().to_string(),
-            format: vec![
-                item.name.as_ref().unwrap().to_string(),
-                create_artist_string(&item.ar.to_owned().unwrap()),
-                item.al.as_ref().unwrap().name.to_owned(),
-            ],
+        .map(|item| {
+            num += 1;
+            TableItem {
+                id: item.id.as_ref().unwrap().to_string(),
+                format: vec![
+                    num.to_string(),
+                    item.name.as_ref().unwrap().to_string(),
+                    create_artist_string(&item.ar.to_owned().unwrap()),
+                    item.al.as_ref().unwrap().name.to_owned(),
+                ],
+            }
         })
         .collect::<Vec<TableItem>>();
 
@@ -356,20 +366,27 @@ fn draw_table<B>(
 {
     let selected_style = get_color(highlight_state).modifier(Modifier::BOLD);
 
-    // let track_playing_index = match &app.current_playback_context {
-        // Some(ctx) => items.iter().position(|t| match &ctx.item {
-            // Some(item) => Some(t.id.to_owned()) == item.id,
-            // None => false,
-        // }),
-        // None => None,
-    // };
-    // let count = layout_chunk.height - 4;
-    // if count as usize - selected_index <= 3 {
-        // let track = &items.remove(0);
-        // &items.push(track);
-    // }
+    // caculate index and row
+    let interval = (layout_chunk.height / 2) as usize;
+    let (row_items, margin) = if !items.is_empty() {
+        let count = (layout_chunk.height - 4) as usize;
+        let total = items.len();
+        if selected_index >= count - interval && total > count {
+            if selected_index >= total - interval {
+                let margin = total - count;
+                (&items[margin..], margin)
+            } else {
+                let margin = selected_index + interval - count;
+                (&items[margin..], margin)
+            }
+        } else {
+            (items, 0)
+        }
+    } else {
+        (items, 0)
+    };
 
-    let rows = items.iter().enumerate().map(|(i, item)| {
+    let rows = row_items.iter().enumerate().map(|(i, item)| {
         // Show this ♥ if the song is liked
         let mut formatted_row = item.format.clone();
         let mut style = Style::default().fg(Color::White); // default styling
@@ -383,7 +400,7 @@ fn draw_table<B>(
         // }
 
         // Next check if the item is under selection
-        if i == selected_index {
+        if i == selected_index - margin {
             style = selected_style;
         }
 
