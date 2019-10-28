@@ -61,8 +61,8 @@ where
     let current_route = app.get_current_route();
 
     let highlight_state = (
-        current_route.active_block == ActiveBlock::Input,
-        current_route.hovered_block == ActiveBlock::Input,
+        current_route.active_block == ActiveBlock::Search,
+        current_route.hovered_block == ActiveBlock::Search,
     );
 
     Paragraph::new([Text::raw(&app.input)].iter())

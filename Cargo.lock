@@ -594,6 +594,7 @@ dependencies = [
  "termion 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tui 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "unicode-width 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "vlc-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

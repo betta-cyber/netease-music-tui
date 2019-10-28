@@ -4,6 +4,7 @@ mod track;
 mod recommend;
 mod empty;
 mod home;
+mod search;
 
 use super::app::{App, ActiveBlock};
 use termion::event::Key;
@@ -22,6 +23,9 @@ pub fn handle_app(key: Key, app: &mut App) {
         }
         Key::Char('+') => {
             app.increase_volume();
+        }
+        Key::Char('/') => {
+            app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
         }
         _ => handle_block_events(key, app),
     }
@@ -48,6 +52,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::Home => {
             home::handler(key, app);
+        }
+        ActiveBlock::Search => {
+            search::handler(key, app);
         }
         _ => {}
     }
