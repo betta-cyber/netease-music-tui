@@ -26,7 +26,7 @@ pub fn handler(key: Key, app: &mut App) {
         Key::Char('\n') => {
             match app.recommend.selected_index {
                 0 => {
-                    app.push_navigation_stack(RouteId::TrackTable, ActiveBlock::MyPlaylists)
+                    app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists)
                 }
                 2 => {
                     app.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm)

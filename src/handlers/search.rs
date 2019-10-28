@@ -54,6 +54,9 @@ pub fn handler(key: Key, app: &mut App) {
                 app.input.remove(remove_idx);
             }
         }
+        Key::Char('\n') => {
+            // app.cloud_music
+        }
         // search input
         Key::Char(c) => {
             let (insert_idx, _) = app

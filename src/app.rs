@@ -36,7 +36,7 @@ pub enum RouteId {
     Search,
     SelectedDevice,
     TrackTable,
-    MadeForYou,
+    MyPlaylists,
     Artists,
     Podcasts,
     PersonalFm,
@@ -147,7 +147,7 @@ impl App {
                     // loop current song
                     match &self.current_playing {
                         Some(track) => {
-                            self.start_playback(track.id.unwrap().to_string());
+                            &self.start_playback(track.id.unwrap().to_string());
                         }
                         None => {
                             panic!("error");

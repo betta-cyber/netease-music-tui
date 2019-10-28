@@ -18,6 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
+use super::model::search::{SearchResult, SearchTracks};
 use super::model::playlist::{PlaylistRes, Playlist, PlaylistDetailRes, PlaylistDetail};
 
 lazy_static! {
@@ -192,6 +193,24 @@ impl CloudMusic {
         let result = self.get(&url, &mut params)?;
         let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
         Ok(res.playlist.unwrap().clone())
+    }
+
+    // search api
+    pub fn search(&self, keyword: &str, search_type: &str, limit: i32, offset: i32) -> Result<SearchResult, failure::Error> {
+        let url = format!("search");
+        let mut params = HashMap::new();
+        params.insert("keywords".to_owned(), keyword.to_string());
+        params.insert("type".to_owned(), search_type.to_string());
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        let res = self.convert_result::<SearchTracks>(&result).unwrap();
+        match search_type.as_ref() {
+            "1" => Ok(SearchResult::Track(res.tracks.clone())),
+            _ => panic!("error")
+        }
     }
 
     // get current user playlist
