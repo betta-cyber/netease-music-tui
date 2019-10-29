@@ -5,6 +5,7 @@ mod recommend;
 mod empty;
 mod home;
 mod search;
+mod search_results;
 
 use super::app::{App, ActiveBlock};
 use termion::event::Key;
@@ -55,6 +56,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::Search => {
             search::handler(key, app);
+        }
+        ActiveBlock::SearchResult => {
+            search_results::handler(key, app);
         }
         _ => {}
     }

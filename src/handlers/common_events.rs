@@ -79,8 +79,8 @@ pub fn handle_right_event(app: &mut App) {
                 }
                 RouteId::Search => {
                     app.set_current_route_state(
-                        Some(ActiveBlock::SearchResultBlock),
-                        Some(ActiveBlock::SearchResultBlock),
+                        Some(ActiveBlock::SearchResult),
+                        Some(ActiveBlock::SearchResult),
                     );
                 }
                 RouteId::Home => {

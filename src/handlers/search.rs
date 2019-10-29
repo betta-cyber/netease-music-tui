@@ -70,7 +70,7 @@ pub fn handler(key: Key, app: &mut App) {
                 }
             }
             app.selected_playlist_index = None;
-            app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResultBlock);
+            app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResult);
         }
         // search input
         Key::Char(c) => {

@@ -3,7 +3,7 @@ mod util;
 use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS};
 use tui::{Frame, Terminal};
 use tui::backend::TermionBackend;
-use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph};
+use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
@@ -497,15 +497,10 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(layout_chunk);
 
     {
-        let song_artist_block = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-            .split(chunks[0]);
-
         let songs = match &app.search_results.tracks {
             Some(r) => r
                 .songs
@@ -516,13 +511,36 @@ where
             None => vec![],
         };
 
-        draw_selectable_list(
-            f,
-            song_artist_block[0],
-            "Songs",
-            &songs,
-            (true, true),
-            app.search_results.selected_tracks_index,
-        );
+        Tabs::default()
+            .block(Block::default().borders(Borders::ALL).title("Search Result"))
+            .titles(&app.tabs.titles)
+            .select(app.tabs.index)
+            .style(Style::default().fg(Color::Cyan))
+            .highlight_style(Style::default().fg(Color::Yellow))
+            .render(f, chunks[0]);
+
+        match app.tabs.index {
+            0 => draw_selectable_list(
+                f,
+                chunks[1],
+                "Songs",
+                &songs,
+                (true, true),
+                app.search_results.selected_tracks_index,
+            ),
+            1 => Block::default()
+                .title("Inner 1")
+                .borders(Borders::ALL)
+                .render(f, chunks[1]),
+            2 => Block::default()
+                .title("Inner 2")
+                .borders(Borders::ALL)
+                .render(f, chunks[1]),
+            3 => Block::default()
+                .title("Inner 3")
+                .borders(Borders::ALL)
+                .render(f, chunks[1]),
+            _ => {}
+        }
     }
 }

@@ -56,8 +56,7 @@ pub enum ActiveBlock {
     MyPlaylists,
     Podcasts,
     RecentlyPlayed,
-    SearchResultBlock,
-    SelectDevice,
+    SearchResult,
     TrackTable,
     Artists,
     PlayBar,
@@ -98,6 +97,16 @@ pub enum RepeatState {
     Shuffle,
 }
 
+pub struct TabsState {
+    pub titles: Vec<String>,
+    pub index: usize,
+}
+impl TabsState {
+    pub fn new(titles: Vec<String>) -> TabsState {
+        TabsState { titles, index: 0 }
+    }
+}
+
 pub struct App {
     navigation_stack: Vec<Route>,
     pub player: MediaPlayer,
@@ -117,6 +126,7 @@ pub struct App {
     pub my_playlist: Option<TrackTable>,
     pub repeat_state: RepeatState,
     pub search_results: SearchResult,
+    pub tabs: TabsState,
 }
 
 impl App {
@@ -153,6 +163,12 @@ impl App {
                 selected_playlists_index: None,
                 selected_tracks_index: None,
             },
+            tabs: TabsState::new(vec![
+                "Songs".to_string(),
+                "Artists".to_string(),
+                "Albums".to_string(),
+                "Playlists".to_string(),
+            ]),
         }
     }
 
