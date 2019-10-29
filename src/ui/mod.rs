@@ -150,7 +150,12 @@ where
             Some(track) => {
                 (
                     track.name.to_owned().unwrap(),
-                    create_artist_string(&track.ar.to_owned().unwrap())
+                    match &track.ar {
+                        Some(ar) => {
+                            create_artist_string(&ar)
+                        }
+                        None => "Unknown".to_string()
+                    }
                 )
             }
             None => {
@@ -503,13 +508,19 @@ where
     {
         let songs = match &app.search_results.tracks {
             Some(r) => r
-                .songs
                 .iter()
-                // TODO: reuse the function formatting this text for `playing` block
                 .map(|item| item.name.as_ref().unwrap().to_owned())
                 .collect(),
             None => vec![],
         };
+        let playlists = match &app.search_results.playlists {
+            Some(r) => r
+                .iter()
+                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .collect(),
+            None => vec![],
+        };
+
 
         Tabs::default()
             .block(Block::default().borders(Borders::ALL).title("Search Result"))
@@ -526,7 +537,7 @@ where
                 "Songs",
                 &songs,
                 (true, true),
-                app.search_results.selected_tracks_index,
+                Some(app.search_results.selected_tracks_index),
             ),
             1 => Block::default()
                 .title("Inner 1")
@@ -536,10 +547,14 @@ where
                 .title("Inner 2")
                 .borders(Borders::ALL)
                 .render(f, chunks[1]),
-            3 => Block::default()
-                .title("Inner 3")
-                .borders(Borders::ALL)
-                .render(f, chunks[1]),
+            3 => draw_selectable_list(
+                f,
+                chunks[1],
+                "Playlists",
+                &playlists,
+                (true, true),
+                Some(app.search_results.selected_playlists_index),
+            ),
             _ => {}
         }
     }

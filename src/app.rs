@@ -76,13 +76,13 @@ pub struct Recommend {
 }
 
 pub struct SearchResult {
-    pub tracks: Option<SearchTracks>,
-    pub playlists: Option<SearchPlaylists>,
+    pub tracks: Option<Vec<Track>>,
+    pub playlists: Option<Vec<Playlist>>,
 
-    pub selected_album_index: Option<usize>,
-    pub selected_artists_index: Option<usize>,
-    pub selected_playlists_index: Option<usize>,
-    pub selected_tracks_index: Option<usize>,
+    pub selected_album_index: usize,
+    pub selected_artists_index: usize,
+    pub selected_playlists_index: usize,
+    pub selected_tracks_index: usize,
 }
 
 // 顺序播放
@@ -158,10 +158,10 @@ impl App {
             search_results: SearchResult {
                 tracks: None,
                 playlists: None,
-                selected_album_index: None,
-                selected_artists_index: None,
-                selected_playlists_index: None,
-                selected_tracks_index: None,
+                selected_album_index: 0,
+                selected_artists_index: 0,
+                selected_playlists_index: 0,
+                selected_tracks_index: 0,
             },
             tabs: TabsState::new(vec![
                 "Songs".to_string(),

@@ -28,11 +28,17 @@ pub struct SearchTrackResult {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SearchPlaylistResult {
+    pub result: Option<SearchPlaylists>,
+    pub code: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchTracks {
     pub songs: Vec<Track>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchPlaylists {
-    pub playlist: Vec<Playlist>,
+    pub playlists: Vec<Playlist>,
 }

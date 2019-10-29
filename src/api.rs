@@ -18,7 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
-use super::model::search::{SearchTrackResult, SearchPlaylists, SearchTracks};
+use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks};
 use super::model::playlist::{PlaylistRes, Playlist, PlaylistDetailRes, PlaylistDetail};
 
 lazy_static! {
@@ -218,7 +218,8 @@ impl CloudMusic {
     // search for playlist
     pub fn search_playlist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchPlaylists, failure::Error> {
         let result = self.search(keyword, "1000", limit, offset)?;
-        self.convert_result::<SearchPlaylists>(&result)
+        let res = self.convert_result::<SearchPlaylistResult>(&result)?;
+        Ok(res.result.unwrap())
     }
 
     // get current user playlist

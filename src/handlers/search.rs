@@ -58,12 +58,25 @@ pub fn handler(key: Key, app: &mut App) {
             // search tracks
             match app.cloud_music.as_ref().unwrap().search_track(
                 &app.input,
-                30,
+                50,
                 0
             ) {
                 Ok(result) => {
                     app.track_table.tracks = result.songs.clone();
-                    app.search_results.tracks = Some(result);
+                    app.search_results.tracks = Some(result.songs);
+                }
+                Err(e) => {
+                    panic!("api error {}", e);
+                }
+            }
+            match app.cloud_music.as_ref().unwrap().search_playlist(
+                &app.input,
+                50,
+                0
+            ) {
+                Ok(result) => {
+                    // app.track_table.playlists = result.playlists.clone();
+                    app.search_results.playlists = Some(result.playlists);
                 }
                 Err(e) => {
                     panic!("api error {}", e);
