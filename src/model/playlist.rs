@@ -40,11 +40,19 @@ pub struct PlaylistDetail {
     pub id: Option<i64>,
     pub playCount: Option<i32>,
     pub creator: Option<Creator>,
-    pub tracks: Vec<Track>,
+    pub tracks: Vec<PlaylistTrack>,
 }
 
 #[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct Track {
+    pub name: Option<String>,
+    pub id: Option<i64>,
+    pub artists: Option<Vec<Artist>>,
+    pub album: Option<Album>,
+}
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct PlaylistTrack {
     pub name: Option<String>,
     pub id: Option<i64>,
     pub ar: Option<Vec<Artist>>,

@@ -150,9 +150,9 @@ where
             Some(track) => {
                 (
                     track.name.to_owned().unwrap(),
-                    match &track.ar {
-                        Some(ar) => {
-                            create_artist_string(&ar)
+                    match &track.artists {
+                        Some(artists) => {
+                            create_artist_string(&artists)
                         }
                         None => "Unknown".to_string()
                     }
@@ -343,8 +343,8 @@ where
                 format: vec![
                     num.to_string(),
                     item.name.as_ref().unwrap().to_string(),
-                    create_artist_string(&item.ar.to_owned().unwrap()),
-                    item.al.as_ref().unwrap().name.to_owned(),
+                    create_artist_string(&item.artists.to_owned().unwrap()),
+                    item.album.as_ref().unwrap().name.to_owned(),
                 ],
             }
         })

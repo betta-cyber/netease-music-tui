@@ -268,7 +268,18 @@ impl App {
         match &self.cloud_music {
             Some(api) => {
                 if let Ok(playlist_tracks) = api.playlist_detail(&playlist_id) {
-                    self.track_table.tracks = playlist_tracks.tracks;
+                    let tracks = playlist_tracks.tracks
+                        .into_iter()
+                        .map(|t| {
+                            Track{
+                                name: t.name,
+                                id: t.id,
+                                artists: t.ar,
+                                album: t.al,
+                            }
+                        })
+                        .collect();
+                    self.track_table.tracks = tracks;
                 }
             }
             None => {
@@ -284,8 +295,9 @@ impl App {
     ) {
         match &self.cloud_music {
             Some(api) => {
-                let song = api.song(&id).unwrap();
+                let song = api.get_song_url(&id).unwrap();
                 let url = song.url.unwrap().to_string();
+
                 let md = Media::new_location(&self.vlc_instance, &url).unwrap();
                 self.player.set_media(&md);
                 self.player.play().unwrap();

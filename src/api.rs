@@ -162,7 +162,7 @@ impl CloudMusic {
         self.convert_result::<User>(&result)
     }
 
-    pub fn song(&self, song_id: &str) -> Result<Song, failure::Error> {
+    pub fn get_song_url(&self, song_id: &str) -> Result<Song, failure::Error> {
         let url = format!("/song/url");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), song_id.to_string());
