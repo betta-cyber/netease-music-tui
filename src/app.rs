@@ -3,7 +3,7 @@ use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx, State};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use super::model::playlist::{Playlist, Track};
 use super::api::CloudMusic;
-use std::time::Instant;
+use super::model::search::{SearchPlaylists, SearchTracks};
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
@@ -76,6 +76,16 @@ pub struct Recommend {
     pub selected_index: usize,
 }
 
+pub struct SearchResult {
+    pub tracks: Option<SearchTracks>,
+    pub playlists: Option<SearchPlaylists>,
+
+    pub selected_album_index: Option<usize>,
+    pub selected_artists_index: Option<usize>,
+    pub selected_playlists_index: Option<usize>,
+    pub selected_tracks_index: Option<usize>,
+}
+
 // 顺序播放
 // 单曲循环
 // 列表循环
@@ -106,6 +116,7 @@ pub struct App {
     pub duration_ms: Option<u64>,
     pub my_playlist: Option<TrackTable>,
     pub repeat_state: RepeatState,
+    pub search_results: SearchResult,
 }
 
 impl App {
@@ -134,6 +145,14 @@ impl App {
             },
             my_playlist: None,
             repeat_state: RepeatState::All,
+            search_results: SearchResult {
+                tracks: None,
+                playlists: None,
+                selected_album_index: None,
+                selected_artists_index: None,
+                selected_playlists_index: None,
+                selected_tracks_index: None,
+            },
         }
     }
 

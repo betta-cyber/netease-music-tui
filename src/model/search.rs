@@ -1,6 +1,7 @@
 //! All object related to search
 use super::playlist::{Track, Playlist};
 use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 // #[derive(Clone, Debug, Serialize, Deserialize)]
 // pub struct SearchPlaylists {
@@ -20,15 +21,18 @@ use serde::{Serialize, Deserialize};
 // pub struct SearchTracks {
     // pub tracks: Page<FullTrack>,
 // }
-
-#[derive(Debug)]
-pub enum SearchResult {
-    Track(Vec<Track>),
-    Playlist(Vec<Playlist>)
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SearchTrackResult {
+    pub result: Option<SearchTracks>,
+    pub code: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchTracks {
-    pub tracks: Vec<Track>,
+    pub songs: Vec<Track>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SearchPlaylists {
+    pub playlist: Vec<Playlist>,
+}

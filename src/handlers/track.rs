@@ -12,9 +12,6 @@ pub fn handler(key: Key, app: &mut App) {
                 Some(app.track_table.selected_index),
             );
             app.track_table.selected_index = next_index;
-
-            // let track = app.track_table.tracks.remove(0);
-            // app.track_table.tracks.push(track);
         }
         k if common_events::up_event(k) => {
             let next_index = common_events::on_up_press_handler(
@@ -22,9 +19,6 @@ pub fn handler(key: Key, app: &mut App) {
                 Some(app.track_table.selected_index),
             );
             app.track_table.selected_index = next_index;
-
-            // let track = app.track_table.tracks.pop().unwrap();
-            // app.track_table.tracks.insert(0, track);
         }
         Key::Char('\n') => {
             let TrackTable = &app.track_table;

@@ -106,6 +106,9 @@ where
         RouteId::TrackTable => {
             draw_track_table(f, &app, chunks[1]);
         }
+        RouteId::Search => {
+            draw_search_results(f, app, chunks[1]);
+        }
         RouteId::Home => {
             draw_home(f, app, chunks[1]);
         }
@@ -265,6 +268,7 @@ where
     );
 }
 
+// draw selectable list
 fn draw_selectable_list<B, S>(
     f: &mut Frame<B>,
     layout_chunk: Rect,
@@ -460,7 +464,6 @@ where
         .render(f, chunks[0]);
 }
 
-
 fn draw_personal_fm<B>(
     f: &mut Frame<B>,
     app: &App,
@@ -486,4 +489,40 @@ fn draw_personal_fm<B>(
         .block(display_block)
         .wrap(true)
         .render(f, layout_chunk);
+}
+
+pub fn draw_search_results<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(layout_chunk);
+
+    {
+        let song_artist_block = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+            .split(chunks[0]);
+
+        let songs = match &app.search_results.tracks {
+            Some(r) => r
+                .songs
+                .iter()
+                // TODO: reuse the function formatting this text for `playing` block
+                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .collect(),
+            None => vec![],
+        };
+
+        draw_selectable_list(
+            f,
+            song_artist_block[0],
+            "Songs",
+            &songs,
+            (true, true),
+            app.search_results.selected_tracks_index,
+        );
+    }
 }

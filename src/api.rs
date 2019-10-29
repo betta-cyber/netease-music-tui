@@ -18,7 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
-use super::model::search::{SearchResult, SearchTracks};
+use super::model::search::{SearchTrackResult, SearchPlaylists, SearchTracks};
 use super::model::playlist::{PlaylistRes, Playlist, PlaylistDetailRes, PlaylistDetail};
 
 lazy_static! {
@@ -196,8 +196,8 @@ impl CloudMusic {
     }
 
     // search api
-    pub fn search(&self, keyword: &str, search_type: &str, limit: i32, offset: i32) -> Result<SearchResult, failure::Error> {
-        let url = format!("search");
+    pub fn search(&self, keyword: &str, search_type: &str, limit: i32, offset: i32) -> Result<String, failure::Error> {
+        let url = format!("/search");
         let mut params = HashMap::new();
         params.insert("keywords".to_owned(), keyword.to_string());
         params.insert("type".to_owned(), search_type.to_string());
@@ -205,12 +205,20 @@ impl CloudMusic {
         params.insert("offset".to_owned(), offset.to_string());
 
         // send request
-        let result = self.get(&url, &mut params)?;
-        let res = self.convert_result::<SearchTracks>(&result).unwrap();
-        match search_type.as_ref() {
-            "1" => Ok(SearchResult::Track(res.tracks.clone())),
-            _ => panic!("error")
-        }
+        self.get(&url, &mut params)
+    }
+
+    // search for track
+    pub fn search_track(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchTracks, failure::Error> {
+        let result = self.search(keyword, "1", limit, offset)?;
+        let res = self.convert_result::<SearchTrackResult>(&result)?;
+        Ok(res.result.unwrap())
+    }
+
+    // search for playlist
+    pub fn search_playlist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchPlaylists, failure::Error> {
+        let result = self.search(keyword, "1000", limit, offset)?;
+        self.convert_result::<SearchPlaylists>(&result)
     }
 
     // get current user playlist

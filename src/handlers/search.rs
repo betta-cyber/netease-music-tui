@@ -55,7 +55,22 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            // app.cloud_music
+            // search tracks
+            match app.cloud_music.as_ref().unwrap().search_track(
+                &app.input,
+                30,
+                0
+            ) {
+                Ok(result) => {
+                    app.track_table.tracks = result.songs.clone();
+                    app.search_results.tracks = Some(result);
+                }
+                Err(e) => {
+                    panic!("api error {}", e);
+                }
+            }
+            app.selected_playlist_index = None;
+            app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResultBlock);
         }
         // search input
         Key::Char(c) => {
