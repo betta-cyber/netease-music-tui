@@ -107,6 +107,7 @@ impl TabsState {
     }
 }
 
+
 pub struct App {
     navigation_stack: Vec<Route>,
     pub player: MediaPlayer,

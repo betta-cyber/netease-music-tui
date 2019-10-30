@@ -125,14 +125,14 @@ impl CloudMusic {
     }
 
     pub fn login(&self, email: &str, password: &str) -> Result<Profile, failure::Error> {
-        let url = format!("login");
+        let url = format!("/login");
         let mut params = HashMap::new();
         params.insert("email".to_owned(), email.to_string());
         params.insert("password".to_owned(), password.to_string());
 
         let result = self.get(&url, &mut params)?;
         let login = self.convert_result::<Login>(&result).unwrap();
-        Ok(login.profile.clone())
+        Ok(login.profile.unwrap())
     }
 
     pub fn status(&self) -> Result<Profile, failure::Error> {
@@ -144,10 +144,7 @@ impl CloudMusic {
                 Ok(login.profile.clone())
             },
             Err(e) => {
-                // panic!("error")
-                // if error, login account
-                println!("error");
-                self.login("betta551@163.com", "killer551")
+                Err(format_err!("need login"))
             }
         }
     }
@@ -223,10 +220,10 @@ impl CloudMusic {
     }
 
     // get current user playlist
-    pub fn current_user_playlists(&self) -> Result<Vec<Playlist>, failure::Error> {
+    pub fn user_playlists(&self, uid: &str) -> Result<Vec<Playlist>, failure::Error> {
         let url = format!("/user/playlist");
         let mut params = HashMap::new();
-        params.insert("uid".to_owned(), "620199516".to_string());
+        params.insert("uid".to_owned(), uid.to_string());
 
         // send request
         let result = self.get(&url, &mut params)?;

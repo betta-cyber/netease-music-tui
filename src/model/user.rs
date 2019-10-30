@@ -29,8 +29,8 @@ pub struct Account {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Login {
-    pub account: Account,
-    pub profile: Profile,
+    pub account: Option<Account>,
+    pub profile: Option<Profile>,
     pub code: Option<i32>,
 }
 

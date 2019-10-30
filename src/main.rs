@@ -4,6 +4,7 @@ extern crate lazy_static;
 extern crate failure;
 extern crate serde;
 extern crate serde_json;
+extern crate config;
 
 
 use std::io;
@@ -30,9 +31,13 @@ use api::CloudMusic;
 fn main() -> Result<(), failure::Error> {
 
     // init application
-    let mut app = App::new();
-    let cloud_music = CloudMusic::default();
+    let mut settings = config::Config::default();
+    settings.merge(config::File::with_name("Settings")).unwrap();
 
+    let username = settings.get::<String>("username")?;
+    let password = settings.get::<String>("password")?;
+
+    let mut app = App::new();
     let mut is_first_render = true;
 
     let stdout = io::stdout().into_raw_mode()?;
@@ -75,15 +80,17 @@ fn main() -> Result<(), failure::Error> {
         }
 
         if is_first_render {
-            let playlists = cloud_music.current_user_playlists();
+            let cloud_music = app.cloud_music.to_owned().unwrap();
+            let profile = cloud_music.login(&username, &password)?;
+
+            let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());
             match playlists {
                 Ok(p) => {
                     app.playlists = Some(p);
                     app.selected_playlist_index = Some(0);
-                    // app.set_current_route_state(Some(ActiveBlock::Recommend), None);
                 }
                 Err(e) => {
-                    panic!("error")
+                    panic!("error {}", e)
                 }
             }
             is_first_render = false;
