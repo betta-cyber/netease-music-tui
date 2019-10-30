@@ -25,8 +25,6 @@ mod handlers;
 mod ui;
 
 use app::{App, ActiveBlock};
-use api::CloudMusic;
-
 
 fn main() -> Result<(), failure::Error> {
 

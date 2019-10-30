@@ -19,7 +19,7 @@ use std::time::Duration;
 use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks};
-use super::model::playlist::{PlaylistRes, Playlist, PlaylistDetailRes, PlaylistDetail};
+use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
 
 lazy_static! {
     /// HTTP Client
@@ -217,6 +217,17 @@ impl CloudMusic {
         let result = self.search(keyword, "1000", limit, offset)?;
         let res = self.convert_result::<SearchPlaylistResult>(&result)?;
         Ok(res.result.unwrap())
+    }
+
+    // get user personal fm
+    pub fn personal_fm(&self, keyword: &str, limit: i32, offset: i32) -> Result<Vec<Track>, failure::Error> {
+        let url = format!("/personal_fm");
+        let mut params = HashMap::new();
+
+        // send request
+        let result = self.get(&url, &mut params)?;
+        let res = self.convert_result::<PersonalFmRes>(&result).unwrap();
+        Ok(res.data)
     }
 
     // get current user playlist

@@ -78,3 +78,9 @@ pub struct Album {
     pub name: String,
     pub id: i64,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PersonalFmRes {
+    pub data: Vec<Track>,
+    pub code: Option<i32>,
+}

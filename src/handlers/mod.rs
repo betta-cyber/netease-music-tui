@@ -28,6 +28,9 @@ pub fn handle_app(key: Key, app: &mut App) {
         Key::Char('/') => {
             app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
         }
+        Key::Char('?') => {
+            app.set_current_route_state(Some(ActiveBlock::Help), None);
+        }
         _ => handle_block_events(key, app),
     }
 }

@@ -32,7 +32,6 @@ pub enum RouteId {
     Artist,
     Error,
     Home,
-    RecentlyPlayed,
     Search,
     SelectedDevice,
     TrackTable,
@@ -40,6 +39,7 @@ pub enum RouteId {
     Artists,
     Podcasts,
     PersonalFm,
+    Help,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -49,7 +49,7 @@ pub enum ActiveBlock {
     Artist,
     Empty,
     Error,
-    HelpMenu,
+    Help,
     Home,
     Search,
     Recommend,
@@ -68,6 +68,7 @@ pub enum ActiveBlock {
 pub struct TrackTable {
     pub tracks: Vec<Track>,
     pub selected_index: usize,
+    pub name: String,
 }
 
 #[derive(Clone)]
@@ -155,7 +156,7 @@ impl App {
                 selected_index: 0,
             },
             my_playlist: None,
-            repeat_state: RepeatState::All,
+            repeat_state: RepeatState::Track,
             search_results: SearchResult {
                 tracks: None,
                 playlists: None,
@@ -281,6 +282,7 @@ impl App {
                         })
                         .collect();
                     self.track_table.tracks = tracks;
+                    self.track_table.name = playlist_tracks.name.unwrap();
                 }
             }
             None => {

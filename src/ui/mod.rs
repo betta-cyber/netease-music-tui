@@ -115,6 +115,9 @@ where
         RouteId::PersonalFm => {
             draw_personal_fm(f, &app, chunks[1]);
         }
+        // RouteId::Help => {
+            // draw_help(f);
+        // }
         _ => {
             draw_track_table(f, &app, chunks[1]);
         }
@@ -355,7 +358,7 @@ where
         f,
         app,
         layout_chunk,
-        ("Songs", &header),
+        (&app.track_table.name, &header),
         &items,
         app.track_table.selected_index,
         highlight_state,
@@ -559,3 +562,4 @@ where
         }
     }
 }
+
