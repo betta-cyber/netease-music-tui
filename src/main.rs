@@ -79,6 +79,7 @@ fn main() -> Result<(), failure::Error> {
 
         if is_first_render {
             let cloud_music = app.cloud_music.to_owned().unwrap();
+            // cloud_music.playlist_detail_v1("620199516")?;
             let profile = cloud_music.login(&username, &password)?;
 
             let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());

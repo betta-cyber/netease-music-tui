@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use reqwest::Client;
 use reqwest::Method;
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, HeaderMap};
+use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, REFERER, USER_AGENT, HOST, ACCEPT_ENCODING};
 use reqwest::StatusCode;
 
 use std::collections::HashMap;
@@ -20,6 +20,8 @@ use super::model::user::{User, Profile, Login, Status};
 use super::model::song::{Song, Songs};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
+
+use super::util::Encrypt;
 
 lazy_static! {
     /// HTTP Client
@@ -83,6 +85,60 @@ impl CloudMusic {
             self.internal_call(Method::GET, &url_with_params, None)
         } else {
             self.internal_call(Method::GET, url, None)
+        }
+    }
+
+    // send post request
+    #[allow(unused)]
+    fn post(&self, url: &str, params: &mut HashMap<String, String>) -> Result<String, failure::Error> {
+        let mut csrf_token = String::new();
+        params.insert("csrf_token".to_owned(), csrf_token);
+        let params = Encrypt::encrypt_login(params);
+        // let param = json!(params);
+        let a = self.internal_call_v1(Method::POST, &url, Some(params));
+        Ok(a.unwrap())
+    }
+
+    fn internal_call_v1(&self, method: Method, url: &str, payload: Option<String>) -> Result<String, failure::Error> {
+        let mut url: Cow<str> = url.into();
+        if !url.starts_with("http") {
+            url = ["https://music.163.com", &url].concat().into();
+        }
+
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, "application/x-www-form-urlencoded".parse().unwrap());
+        headers.insert(ACCEPT, "*/*".parse().unwrap());
+        headers.insert(REFERER, "https://music.163.com".parse().unwrap());
+        headers.insert(USER_AGENT, "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0".parse().unwrap());
+        headers.insert(HOST, "music.163.com".parse().unwrap());
+        headers.insert(ACCEPT_ENCODING, "gzip,deflate,br".parse().unwrap());
+
+        let mut response = {
+            let builder = CLIENT
+                .request(method, &url.into_owned())
+                .headers(headers);
+
+            // only add body if necessary
+            // spotify rejects GET requests that have a body with a 400 response
+            let builder = if let Some(data) = payload {
+                builder.body(data)
+            } else {
+                builder
+            };
+
+            builder.send().unwrap()
+        };
+
+        let mut buf = String::new();
+        response
+            .read_to_string(&mut buf)
+            .expect("failed to read response");
+        if response.status().is_success() {
+            Ok(buf)
+        } else if response.status() == 403 {
+            Ok(buf)
+        } else {
+            Err(failure::Error::from(ApiError::from(&response)))
         }
     }
 
@@ -246,6 +302,36 @@ impl CloudMusic {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
         Ok(result)
+    }
+
+    pub fn login_v1(&self, email: &str, password: &str) -> Result<String, failure::Error> {
+        let url = format!("/weapi/login");
+        let client_token =
+            "1_jVUMqWEPke0/1/Vu56xCmJpo5vP1grjn_SOVVDzOc78w8OKLVZ2JH7IfkjSXqgfmh";
+        let mut params = HashMap::new();
+        params.insert("clientToken".to_owned(), client_token.to_string());
+        params.insert("username".to_owned(), email.to_string());
+        params.insert("password".to_owned(), hex::encode(password.to_string()));
+        params.insert("rememberLogin".to_owned(), "true".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        // let login = self.convert_result::<Login>(&result).unwrap();
+        // Ok(login.profile.unwrap())
+        Ok("ddd".to_string())
+    }
+
+    pub fn playlist_detail_v1(&self, playlist_id: &str) -> Result<PlaylistDetail, failure::Error> {
+        let url = format!("/weapi/v3/playlist/detail");
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), playlist_id.to_string());
+        params.insert("total".to_owned(), true.to_string());
+        params.insert("limit".to_owned(), 1.to_string());
+        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("n".to_owned(), 1000.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
+        Ok(res.playlist.unwrap().clone())
     }
 }
 
