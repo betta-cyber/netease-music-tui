@@ -131,6 +131,9 @@ impl CloudMusic {
         };
 
         let mut buf = String::new();
+
+        // self.store_cookies(&response);
+
         response
             .read_to_string(&mut buf)
             .expect("failed to read response");
@@ -141,6 +144,15 @@ impl CloudMusic {
         } else {
             Err(failure::Error::from(ApiError::from(&response)))
         }
+    }
+
+    fn store_cookies(&self, res: &reqwest::Response) {
+        res.cookies()
+            .into_iter()
+            .map(|s| format!("{}-{}", s.name().to_string(), s.value().to_string()))
+            .for_each(|cookie_str| {
+                println!("{:#?}", cookie_str);
+            });
     }
 
     fn internal_call(&self, method: Method, url: &str, payload: Option<&Value>) -> Result<String, failure::Error> {
