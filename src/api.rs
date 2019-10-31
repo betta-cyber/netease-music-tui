@@ -22,6 +22,7 @@ use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlayli
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
 
 use super::util::Encrypt;
+use openssl::hash::{hash, MessageDigest};
 
 lazy_static! {
     /// HTTP Client
@@ -320,18 +321,45 @@ impl CloudMusic {
         Ok("ddd".to_string())
     }
 
+    pub fn phone_login_v1(&self, phone: &str, password: &str) -> Result<Profile, failure::Error> {
+        let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
+        let url = format!("/weapi/login/cellphone");
+        let mut params = HashMap::new();
+        params.insert("phone".to_owned(), phone.to_string());
+        params.insert("password".to_owned(), hex::encode(password));
+        params.insert("rememberLogin".to_owned(), "true".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        let login = self.convert_result::<Login>(&result).unwrap();
+        Ok(login.profile.unwrap())
+        // Ok("ddd".to_string())
+    }
+
     pub fn playlist_detail_v1(&self, playlist_id: &str) -> Result<PlaylistDetail, failure::Error> {
         let url = format!("/weapi/v3/playlist/detail");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), playlist_id.to_string());
         params.insert("total".to_owned(), true.to_string());
-        params.insert("limit".to_owned(), 1.to_string());
+        params.insert("limit".to_owned(), 1000.to_string());
         params.insert("offest".to_owned(), 0.to_string());
         params.insert("n".to_owned(), 1000.to_string());
 
         let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
         Ok(res.playlist.unwrap().clone())
+    }
+
+    pub fn user_playlists_v1(&self, uid: &str) -> Result<Vec<Playlist>, failure::Error> {
+        let url = format!("/weapi/user/playlist");
+        let mut params = HashMap::new();
+        params.insert("uid".to_owned(), uid.to_string());
+        params.insert("limit".to_owned(), 1000.to_string());
+        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("csrf_token".to_owned(), "".to_string());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
+        Ok(res.playlist.clone())
     }
 }
 
