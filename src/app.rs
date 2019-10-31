@@ -269,7 +269,7 @@ impl App {
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(playlist_tracks) = api.playlist_detail_v1(&playlist_id) {
+                if let Ok(playlist_tracks) = api.playlist_detail(&playlist_id) {
                     let tracks = playlist_tracks.tracks
                         .into_iter()
                         .map(|t| {

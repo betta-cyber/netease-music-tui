@@ -79,9 +79,9 @@ fn main() -> Result<(), failure::Error> {
 
         if is_first_render {
             let cloud_music = app.cloud_music.to_owned().unwrap();
-            let profile = cloud_music.phone_login_v1(&username, &password)?;
+            let profile = cloud_music.phone_login(&username, &password)?;
 
-            let playlists = cloud_music.user_playlists_v1(&profile.userId.unwrap().to_string());
+            let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());
             match playlists {
                 Ok(p) => {
                     app.playlists = Some(p);

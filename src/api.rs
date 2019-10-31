@@ -192,6 +192,19 @@ impl CloudMusic {
         Ok(login.profile.unwrap())
     }
 
+    pub fn phone_login(&self, phone: &str, password: &str) -> Result<Profile, failure::Error> {
+        let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
+        let url = format!("/weapi/login/cellphone");
+        let mut params = HashMap::new();
+        params.insert("phone".to_owned(), phone.to_string());
+        params.insert("password".to_owned(), hex::encode(password));
+        params.insert("rememberLogin".to_owned(), "true".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        let login = self.convert_result::<Login>(&result).unwrap();
+        Ok(login.profile.unwrap())
+    }
+
     pub fn status(&self) -> Result<Profile, failure::Error> {
         let url = format!("/login/status");
 
@@ -216,50 +229,60 @@ impl CloudMusic {
         self.convert_result::<User>(&result)
     }
 
+    // get song url
     pub fn get_song_url(&self, song_id: &str) -> Result<Song, failure::Error> {
-        let url = format!("/song/url");
+        let url = format!("/weapi/song/enhance/player/url");
         let mut params = HashMap::new();
-        params.insert("id".to_owned(), song_id.to_string());
+        let song_id = song_id.to_string().parse::<u32>().unwrap();
+        params.insert("ids".to_owned(), serde_json::to_string(&vec![song_id]).unwrap_or("[]".to_owned()));
+        params.insert("br".to_owned(), 999000.to_string());
 
         // send request
-        let result = self.get(&url, &mut params)?;
+        let result = self.post(&url, &mut params)?;
         let songs = self.convert_result::<Songs>(&result).unwrap();
         Ok(songs.data[0].clone())
     }
 
-    pub fn user_playlist(&self, user_id: &str) -> Result<Vec<Playlist>, failure::Error> {
-        let url = format!("/user/playlist");
+    // user playlist api
+    pub fn user_playlists(&self, uid: &str) -> Result<Vec<Playlist>, failure::Error> {
+        let url = format!("/weapi/user/playlist");
         let mut params = HashMap::new();
-        params.insert("uid".to_owned(), user_id.to_string());
+        params.insert("uid".to_owned(), uid.to_string());
+        params.insert("limit".to_owned(), 1000.to_string());
+        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("csrf_token".to_owned(), "".to_string());
 
-        // send request
-        let result = self.get(&url, &mut params)?;
+        let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<PlaylistRes>(&result).unwrap();
         Ok(res.playlist.clone())
     }
 
+    // get playlist detail api
     pub fn playlist_detail(&self, playlist_id: &str) -> Result<PlaylistDetail, failure::Error> {
-        let url = format!("/playlist/detail");
+        let url = format!("/weapi/v3/playlist/detail");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), playlist_id.to_string());
+        params.insert("total".to_owned(), true.to_string());
+        params.insert("limit".to_owned(), 1000.to_string());
+        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("n".to_owned(), 1000.to_string());
 
-        // send request
-        let result = self.get(&url, &mut params)?;
+        let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
         Ok(res.playlist.unwrap().clone())
     }
 
     // search api
     pub fn search(&self, keyword: &str, search_type: &str, limit: i32, offset: i32) -> Result<String, failure::Error> {
-        let url = format!("/search");
+        let url = format!("/weapi/search/get");
         let mut params = HashMap::new();
-        params.insert("keywords".to_owned(), keyword.to_string());
+        params.insert("s".to_owned(), keyword.to_string());
         params.insert("type".to_owned(), search_type.to_string());
         params.insert("limit".to_owned(), limit.to_string());
         params.insert("offset".to_owned(), offset.to_string());
 
         // send request
-        self.get(&url, &mut params)
+        self.post(&url, &mut params)
     }
 
     // search for track
@@ -287,18 +310,6 @@ impl CloudMusic {
         Ok(res.data)
     }
 
-    // get current user playlist
-    pub fn user_playlists(&self, uid: &str) -> Result<Vec<Playlist>, failure::Error> {
-        let url = format!("/user/playlist");
-        let mut params = HashMap::new();
-        params.insert("uid".to_owned(), uid.to_string());
-
-        // send request
-        let result = self.get(&url, &mut params)?;
-        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
-        Ok(res.playlist.clone())
-    }
-
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
@@ -319,47 +330,6 @@ impl CloudMusic {
         // let login = self.convert_result::<Login>(&result).unwrap();
         // Ok(login.profile.unwrap())
         Ok("ddd".to_string())
-    }
-
-    pub fn phone_login_v1(&self, phone: &str, password: &str) -> Result<Profile, failure::Error> {
-        let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
-        let url = format!("/weapi/login/cellphone");
-        let mut params = HashMap::new();
-        params.insert("phone".to_owned(), phone.to_string());
-        params.insert("password".to_owned(), hex::encode(password));
-        params.insert("rememberLogin".to_owned(), "true".to_owned());
-
-        let result = self.post(&url, &mut params)?;
-        let login = self.convert_result::<Login>(&result).unwrap();
-        Ok(login.profile.unwrap())
-        // Ok("ddd".to_string())
-    }
-
-    pub fn playlist_detail_v1(&self, playlist_id: &str) -> Result<PlaylistDetail, failure::Error> {
-        let url = format!("/weapi/v3/playlist/detail");
-        let mut params = HashMap::new();
-        params.insert("id".to_owned(), playlist_id.to_string());
-        params.insert("total".to_owned(), true.to_string());
-        params.insert("limit".to_owned(), 1000.to_string());
-        params.insert("offest".to_owned(), 0.to_string());
-        params.insert("n".to_owned(), 1000.to_string());
-
-        let result = self.post(&url, &mut params)?;
-        let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
-        Ok(res.playlist.unwrap().clone())
-    }
-
-    pub fn user_playlists_v1(&self, uid: &str) -> Result<Vec<Playlist>, failure::Error> {
-        let url = format!("/weapi/user/playlist");
-        let mut params = HashMap::new();
-        params.insert("uid".to_owned(), uid.to_string());
-        params.insert("limit".to_owned(), 1000.to_string());
-        params.insert("offest".to_owned(), 0.to_string());
-        params.insert("csrf_token".to_owned(), "".to_string());
-
-        let result = self.post(&url, &mut params)?;
-        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
-        Ok(res.playlist.clone())
     }
 }
 
