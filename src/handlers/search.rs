@@ -62,8 +62,7 @@ pub fn handler(key: Key, app: &mut App) {
                 0
             ) {
                 Ok(result) => {
-                    app.track_table.tracks = result.songs.clone();
-                    app.search_results.tracks = Some(result.songs);
+                    app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
                 }
                 Err(e) => {
                     panic!("api error {}", e);
@@ -75,8 +74,31 @@ pub fn handler(key: Key, app: &mut App) {
                 0
             ) {
                 Ok(result) => {
-                    // app.track_table.playlists = result.playlists.clone();
-                    app.search_results.playlists = Some(result.playlists);
+                    app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                }
+                Err(e) => {
+                    panic!("api error {}", e);
+                }
+            }
+            match app.cloud_music.as_ref().unwrap().search_artist(
+                &app.input,
+                50,
+                0
+            ) {
+                Ok(result) => {
+                    app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                }
+                Err(e) => {
+                    panic!("api error {}", e);
+                }
+            }
+            match app.cloud_music.as_ref().unwrap().search_album(
+                &app.input,
+                50,
+                0
+            ) {
+                Ok(result) => {
+                    app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
                 }
                 Err(e) => {
                     panic!("api error {}", e);

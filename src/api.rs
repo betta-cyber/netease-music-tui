@@ -16,9 +16,9 @@ use std::hash::Hash;
 use std::borrow::Cow;
 use std::time::Duration;
 
-use super::model::user::{User, Profile, Login, Status};
+use super::model::user::{User, Profile, Login};
 use super::model::song::{Song, Songs};
-use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks};
+use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
 
 use super::util::Encrypt;
@@ -85,9 +85,9 @@ impl CloudMusic {
             let mut url_with_params = url.to_owned();
             url_with_params.push('?');
             url_with_params.push_str(&param);
-            self.internal_call_v1(Method::GET, &url_with_params, None)
+            self.internal_call(Method::GET, &url_with_params, None)
         } else {
-            self.internal_call_v1(Method::GET, url, None)
+            self.internal_call(Method::GET, url, None)
         }
     }
 
@@ -98,11 +98,11 @@ impl CloudMusic {
         params.insert("csrf_token".to_owned(), csrf_token);
         let params = Encrypt::encrypt_login(params);
         // let param = json!(params);
-        let a = self.internal_call_v1(Method::POST, &url, Some(params));
+        let a = self.internal_call(Method::POST, &url, Some(params));
         Ok(a.unwrap())
     }
 
-    fn internal_call_v1(&self, method: Method, url: &str, payload: Option<String>) -> Result<String, failure::Error> {
+    fn internal_call(&self, method: Method, url: &str, payload: Option<String>) -> Result<String, failure::Error> {
         let mut url: Cow<str> = url.into();
         if !url.starts_with("http") {
             url = ["https://music.163.com", &url].concat().into();
@@ -181,44 +181,6 @@ impl CloudMusic {
         if c.len() > 0 {
             let cookie_path = format!("cookie");
             fs::write(&cookie_path, &c).expect("Unable to write file");
-        }
-    }
-
-    fn internal_call(&self, method: Method, url: &str, payload: Option<&Value>) -> Result<String, failure::Error> {
-        let mut url: Cow<str> = url.into();
-        if !url.starts_with("http") {
-            url = ["http://127.0.0.1:3000", &url].concat().into();
-        }
-
-        let mut headers = HeaderMap::new();
-        headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
-
-        let mut response = {
-            let builder = CLIENT
-                .request(method, &url.into_owned())
-                .headers(headers);
-
-            // only add body if necessary
-            // spotify rejects GET requests that have a body with a 400 response
-            let builder = if let Some(json) = payload {
-                builder.json(json)
-            } else {
-                builder
-            };
-
-            builder.send().unwrap()
-        };
-
-        let mut buf = String::new();
-        response
-            .read_to_string(&mut buf)
-            .expect("failed to read response");
-        if response.status().is_success() {
-            Ok(buf)
-        } else if response.status() == 403 {
-            Ok(buf)
-        } else {
-            Err(failure::Error::from(ApiError::from(&response)))
         }
     }
 
@@ -345,14 +307,28 @@ impl CloudMusic {
     pub fn search_track(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchTracks, failure::Error> {
         let result = self.search(keyword, "1", limit, offset)?;
         let res = self.convert_result::<SearchTrackResult>(&result)?;
-        Ok(res.result.unwrap())
+        Ok(res.result)
     }
 
     // search for playlist
     pub fn search_playlist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchPlaylists, failure::Error> {
         let result = self.search(keyword, "1000", limit, offset)?;
         let res = self.convert_result::<SearchPlaylistResult>(&result)?;
-        Ok(res.result.unwrap())
+        Ok(res.result)
+    }
+
+    // search for artist
+    pub fn search_artist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchArtists, failure::Error> {
+        let result = self.search(keyword, "100", limit, offset)?;
+        let res = self.convert_result::<SearchArtistResult>(&result)?;
+        Ok(res.result)
+    }
+
+    // search for album
+    pub fn search_album(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchAlbums, failure::Error> {
+        let result = self.search(keyword, "10", limit, offset)?;
+        let res = self.convert_result::<SearchAlbumResult>(&result)?;
+        Ok(res.result)
     }
 
     // get user personal fm

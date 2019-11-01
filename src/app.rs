@@ -2,6 +2,8 @@ extern crate vlc;
 use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx, State};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use super::model::playlist::{Playlist, Track};
+use super::model::artist::Artist;
+use super::model::album::Album;
 use super::api::CloudMusic;
 use super::model::search::{SearchPlaylists, SearchTracks};
 
@@ -79,8 +81,10 @@ pub struct Recommend {
 pub struct SearchResult {
     pub tracks: Option<Vec<Track>>,
     pub playlists: Option<Vec<Playlist>>,
+    pub artists: Option<Vec<Artist>>,
+    pub albums: Option<Vec<Album>>,
 
-    pub selected_album_index: usize,
+    pub selected_albums_index: usize,
     pub selected_artists_index: usize,
     pub selected_playlists_index: usize,
     pub selected_tracks_index: usize,
@@ -160,7 +164,9 @@ impl App {
             search_results: SearchResult {
                 tracks: None,
                 playlists: None,
-                selected_album_index: 0,
+                artists: None,
+                albums: None,
+                selected_albums_index: 0,
                 selected_artists_index: 0,
                 selected_playlists_index: 0,
                 selected_tracks_index: 0,

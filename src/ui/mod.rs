@@ -523,6 +523,20 @@ where
                 .collect(),
             None => vec![],
         };
+        let artists = match &app.search_results.artists {
+            Some(r) => r
+                .iter()
+                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .collect(),
+            None => vec![],
+        };
+        let albums = match &app.search_results.albums {
+            Some(r) => r
+                .iter()
+                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .collect(),
+            None => vec![],
+        };
 
 
         Tabs::default()
@@ -542,14 +556,22 @@ where
                 (true, true),
                 Some(app.search_results.selected_tracks_index),
             ),
-            1 => Block::default()
-                .title("Inner 1")
-                .borders(Borders::ALL)
-                .render(f, chunks[1]),
-            2 => Block::default()
-                .title("Inner 2")
-                .borders(Borders::ALL)
-                .render(f, chunks[1]),
+            1 => draw_selectable_list(
+                f,
+                chunks[1],
+                "Artists",
+                &artists,
+                (true, true),
+                Some(app.search_results.selected_artists_index),
+            ),
+            2 => draw_selectable_list(
+                f,
+                chunks[1],
+                "Albums",
+                &albums,
+                (true, true),
+                Some(app.search_results.selected_albums_index),
+            ),
             3 => draw_selectable_list(
                 f,
                 chunks[1],
