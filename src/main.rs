@@ -42,11 +42,14 @@ fn main() -> Result<(), failure::Error> {
     let stdout = termion::input::MouseTerminal::from(stdout);
     let stdout = termion::screen::AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
+
     let mut terminal = Terminal::new(backend)?;
+
 
     terminal.hide_cursor()?;
 
     let events = Events::new();
+
 
     loop {
         terminal.draw(|mut f| {
@@ -79,7 +82,13 @@ fn main() -> Result<(), failure::Error> {
 
         if is_first_render {
             let cloud_music = app.cloud_music.to_owned().unwrap();
-            let profile = cloud_music.phone_login(&username, &password)?;
+            let profile = match cloud_music.login_status()? {
+                Some(p) => {p}
+                None => {
+                    // need login
+                    cloud_music.phone_login(&username, &password)?
+                }
+            };
 
             let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());
             match playlists {

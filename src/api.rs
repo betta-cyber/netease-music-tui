@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use reqwest::Client;
 use reqwest::Method;
-use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, REFERER, USER_AGENT, HOST, ACCEPT_ENCODING};
+use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, REFERER, USER_AGENT, HOST, ACCEPT_ENCODING, COOKIE};
 use reqwest::StatusCode;
 
 use std::collections::HashMap;
@@ -23,12 +23,14 @@ use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, Pl
 
 use super::util::Encrypt;
 use openssl::hash::{hash, MessageDigest};
+use std::fs;
+use chrono::prelude::*;
 
 lazy_static! {
     /// HTTP Client
     pub static ref CLIENT: Client = Client::builder()
         .gzip(true)
-        .cookie_store(true)
+        // .cookie_store(true)
         .timeout(Duration::from_secs(10))
         .build()
         .unwrap();
@@ -83,9 +85,9 @@ impl CloudMusic {
             let mut url_with_params = url.to_owned();
             url_with_params.push('?');
             url_with_params.push_str(&param);
-            self.internal_call(Method::GET, &url_with_params, None)
+            self.internal_call_v1(Method::GET, &url_with_params, None)
         } else {
-            self.internal_call(Method::GET, url, None)
+            self.internal_call_v1(Method::GET, url, None)
         }
     }
 
@@ -114,6 +116,27 @@ impl CloudMusic {
         headers.insert(HOST, "music.163.com".parse().unwrap());
         headers.insert(ACCEPT_ENCODING, "gzip,deflate,br".parse().unwrap());
 
+        match method {
+            Method::POST => {
+                let name = "os";
+                let value = "pc";
+                let local: DateTime<Local> = Local::now();
+                let times = local.timestamp();
+                let hextoken = hex::encode(hash(MessageDigest::md5(), &times.to_string().as_bytes()).unwrap());
+
+                // read local save cookie
+                let data = fs::read_to_string("cookie").unwrap_or(String::new());
+                let make_cookie = format!("version=0;{}={};JSESSIONID-WYYY=%2FKSy%2B4xG6fYVld42G9E%2BxAj9OyjC0BYXENKxOIRH%5CR72cpy9aBjkohZ24BNkpjnBxlB6lzAG4D%5C%2FMNUZ7VUeRUeVPJKYu%2BKBnZJjEmqgpOx%2BU6VYmypKB%5CXb%2F3W7%2BDjOElCb8KlhDS2cRkxkTb9PBDXro41Oq7aBB6M6OStEK8E%2Flyc8%3A{}; _iuqxldmzr_=32; _ntes_nnid={},{}; _ntes_nuid={}; {}", name, value,times,hextoken,hextoken,times+50, data);
+                headers.insert(COOKIE, make_cookie.parse().unwrap());
+
+            }
+            Method::GET => {
+                let data = fs::read_to_string("cookie").unwrap_or(String::new());
+                let make_cookie = format!("{}", data);
+                headers.insert(COOKIE, make_cookie.parse().unwrap());
+            }
+            _ => {}
+        }
         let mut response = {
             let builder = CLIENT
                 .request(method, &url.into_owned())
@@ -129,10 +152,9 @@ impl CloudMusic {
 
             builder.send().unwrap()
         };
-
         let mut buf = String::new();
 
-        // self.store_cookies(&response);
+        self.store_cookies(&response);
 
         response
             .read_to_string(&mut buf)
@@ -147,12 +169,19 @@ impl CloudMusic {
     }
 
     fn store_cookies(&self, res: &reqwest::Response) {
-        res.cookies()
+        let cookies: Vec<String> = res.cookies()
             .into_iter()
-            .map(|s| format!("{}-{}", s.name().to_string(), s.value().to_string()))
-            .for_each(|cookie_str| {
-                println!("{:#?}", cookie_str);
-            });
+            .map(|s| format!("{}={}", s.name().to_string(), s.value().to_string()))
+            .collect();
+        let mut c: String = cookies
+            .into_iter()
+            .map(|s| format!("{}; ", s))
+            .collect();
+        c.pop();
+        if c.len() > 0 {
+            let cookie_path = format!("cookie");
+            fs::write(&cookie_path, &c).expect("Unable to write file");
+        }
     }
 
     fn internal_call(&self, method: Method, url: &str, payload: Option<&Value>) -> Result<String, failure::Error> {
@@ -217,16 +246,31 @@ impl CloudMusic {
         Ok(login.profile.unwrap())
     }
 
-    pub fn status(&self) -> Result<Profile, failure::Error> {
-        let url = format!("/login/status");
-
+    pub fn login_status(&self) -> Result<Option<Profile>, failure::Error> {
+        let url = format!("/");
         match self.get(&url, &mut HashMap::new()) {
             Ok(r) => {
-                let login = self.convert_result::<Status>(&r).unwrap();
-                Ok(login.profile.clone())
-            },
+                let re = regex::Regex::new(
+                    r#"userId:(?P<id>\d+),nickname:"(?P<nickname>\w+)""#,
+                ).unwrap();
+                if let Some(cap) = re.captures(&r) {
+                    let uid = cap.name("id").unwrap().as_str().parse::<i32>().unwrap_or(0);
+                    let nickname = cap.name("nickname").unwrap().as_str().to_owned();
+                    Ok(Some(
+                        Profile{
+                            userId: Some(uid),
+                            nickname: Some(nickname),
+                            gender: None,
+                            follows: None,
+                            followeds: None,
+                        }
+                    ))
+                } else {
+                    Ok(None)
+                }
+            }
             Err(e) => {
-                Err(format_err!("need login"))
+                panic!("api error {}", e);
             }
         }
     }
