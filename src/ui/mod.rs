@@ -512,14 +512,14 @@ where
         let songs = match &app.search_results.tracks {
             Some(r) => r
                 .iter()
-                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .map(|item| format!("{} - {}", item.name.as_ref().unwrap().to_owned(), create_artist_string(&item.artists.as_ref().unwrap())))
                 .collect(),
             None => vec![],
         };
         let playlists = match &app.search_results.playlists {
             Some(r) => r
                 .iter()
-                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .map(|item| format!("{} - {}", item.name.as_ref().unwrap().to_owned(), item.creator.as_ref().unwrap().nickname.as_ref().unwrap().to_owned()))
                 .collect(),
             None => vec![],
         };
