@@ -21,6 +21,7 @@ pub fn handler(key: Key, app: &mut App) {
             app.track_table.selected_index = next_index;
         }
         Key::Char('\n') => {
+            #[allow(non_snake_case)]
             let TrackTable = &app.track_table;
             let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
             // println!("{:#?}", track);
@@ -28,12 +29,7 @@ pub fn handler(key: Key, app: &mut App) {
             match &mut app.my_playlist {
                 Some(list) => {
                     // if exist, append tracktable to my playlist
-                    list.tracks.append(&mut TrackTable.tracks.to_owned());
-                    // unique
-                    // println!("{:#?}", list.tracks.len());
-                    let set: HashSet<_> = list.tracks.drain(..).collect();
-                    list.tracks.extend(set.into_iter());
-                    // println!("{:#?}", list.tracks.len());
+                    list.tracks = TrackTable.tracks.to_owned();
                 }
                 None => {
                     // if none, add this tracktable to my playlist

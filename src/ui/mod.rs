@@ -503,6 +503,14 @@ pub fn draw_search_results<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
+
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::SearchResult,
+        current_route.hovered_block == ActiveBlock::SearchResult,
+    );
+
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
@@ -546,6 +554,7 @@ where
             .style(Style::default().fg(Color::Cyan))
             .highlight_style(Style::default().fg(Color::Yellow))
             .render(f, chunks[0]);
+
 
         match app.tabs.index {
             0 => draw_selectable_list(

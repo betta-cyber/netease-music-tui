@@ -160,7 +160,7 @@ impl App {
                 selected_index: 0,
             },
             my_playlist: None,
-            repeat_state: RepeatState::Track,
+            repeat_state: RepeatState::All,
             search_results: SearchResult {
                 tracks: None,
                 playlists: None,
@@ -199,26 +199,41 @@ impl App {
                 }
                 RepeatState::All => {
                     // loop current my playlist
-                    match &self.my_playlist {
+                    let list = self.my_playlist.as_ref();
+                    match list {
                         Some(list) => {
-                            let mut list = list.to_owned();
-                            // catulate next index
-                            let mut next_index = list.selected_index + 1;
-                            if next_index > list.tracks.len() - 1 {
-                                next_index = 0;
-                            }
+                            let next_index = App::next_index(
+                                &list.tracks,
+                                Some(list.selected_index),
+                            );
                             let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                             self.start_playback(track_playing.id.unwrap().to_string());
                             self.current_playing = Some(track_playing);
 
-                            list.selected_index = next_index;
-                            println!("{:#?}", next_index);
+                            // list.selected_index = next_index;
                         }
                         None => {}
                     }
                 }
                 _ => {}
             }
+        }
+    }
+
+    pub fn next_index<T>(selection_data: &[T], selection_index: Option<usize>) -> usize {
+        match selection_index {
+            Some(selection_index) => {
+                if !selection_data.is_empty() {
+                    let next_index = selection_index + 1;
+                    if next_index > selection_data.len() - 1 {
+                        return 0;
+                    } else {
+                        return next_index;
+                    }
+                }
+                0
+            }
+            None => 0,
         }
     }
 

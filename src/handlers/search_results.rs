@@ -4,9 +4,10 @@ use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
-        // Key::Esc => {
-            // app.search_results.selected_block = SearchResultBlock::Empty;
-        // }
+        Key::Esc => {
+            app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::SearchResult));
+            // app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Recommend));
+        }
         k if common_events::down_event(k) => {
             // track tab
             if app.tabs.index == 0 {
