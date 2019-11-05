@@ -129,7 +129,7 @@ pub struct App {
     pub cloud_music: Option<CloudMusic>,
     pub recommend: Recommend,
     pub duration_ms: Option<u64>,
-    pub my_playlist: Option<TrackTable>,
+    pub my_playlist: TrackTable,
     pub repeat_state: RepeatState,
     pub search_results: SearchResult,
     pub tabs: TabsState,
@@ -159,7 +159,7 @@ impl App {
             recommend: Recommend {
                 selected_index: 0,
             },
-            my_playlist: None,
+            my_playlist: Default::default(),
             repeat_state: RepeatState::All,
             search_results: SearchResult {
                 tracks: None,
@@ -199,21 +199,17 @@ impl App {
                 }
                 RepeatState::All => {
                     // loop current my playlist
-                    let list = self.my_playlist.as_ref();
-                    match list {
-                        Some(list) => {
-                            let next_index = App::next_index(
-                                &list.tracks,
-                                Some(list.selected_index),
-                            );
-                            let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                            self.start_playback(track_playing.id.unwrap().to_string());
-                            self.current_playing = Some(track_playing);
+                    let list = &mut self.my_playlist;
+                    let next_index = App::next_index(
+                        &list.tracks,
+                        Some(list.selected_index),
+                    );
+                    list.selected_index = next_index;
 
-                            // list.selected_index = next_index;
-                        }
-                        None => {}
-                    }
+                    let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                    self.start_playback(track_playing.id.unwrap().to_string());
+                    self.current_playing = Some(track_playing);
+
                 }
                 _ => {}
             }
