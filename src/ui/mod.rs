@@ -1,6 +1,6 @@
 mod util;
 
-use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS};
+use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
 use tui::{Frame, Terminal};
 use tui::backend::TermionBackend;
 use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs};
@@ -141,7 +141,14 @@ where
             "Pause"
         };
 
-        let title = format!("{}", state_title);
+        let repeat_text = match app.repeat_state {
+            RepeatState::Off => "Off",
+            RepeatState::Track => "Track",
+            RepeatState::All => "All",
+            RepeatState::Shuffle => "Shuffle",
+        };
+
+        let title = format!("{} | Repeat: {}", state_title, repeat_text);
 
         let current_route = app.get_current_route();
         let highlight_state = (
@@ -404,12 +411,15 @@ fn draw_table<B>(
         let mut style = Style::default().fg(Color::White); // default styling
 
         // First check if the song should be highlighted because it is currently playing
-        // if let Some(_track_playing_index) = track_playing_index {
-            // if i == _track_playing_index {
-                // formatted_row[0] = format!("|> {}", &formatted_row[0]);
-                // style = Style::default().fg(Color::Cyan).modifier(Modifier::BOLD);
-            // }
-        // }
+        match &app.current_playing {
+            Some(track) => {
+                if item.id == track.id.unwrap().to_string() {
+                    formatted_row[0] = format!("|> {}", &formatted_row[0]);
+                    style = Style::default().fg(Color::White).modifier(Modifier::BOLD);
+                }
+            }
+            None => {}
+        }
 
         // Next check if the item is under selection
         if i == selected_index - margin {

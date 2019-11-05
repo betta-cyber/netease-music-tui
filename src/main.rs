@@ -69,8 +69,15 @@ fn main() -> Result<(), failure::Error> {
                         app.player.play().unwrap();
                     }
                 }
-                // Key::Right => tui.tabs.next(),
-                // Key::Left => tui.tabs.previous(),
+                Key::Esc => {
+                    if app.get_current_route().active_block != ActiveBlock::Search {
+                        // Go back through navigation stack when not in search input mode and exit the app if there are no more places to back to
+                        let pop_result = app.pop_navigation_stack();
+                        if pop_result.is_none() {
+                            break; // Exit application
+                        }
+                    }
+                }
                 _ => {
                     handlers::handle_app(input, &mut app);
                 }

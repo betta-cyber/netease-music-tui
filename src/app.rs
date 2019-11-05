@@ -6,6 +6,7 @@ use super::model::artist::Artist;
 use super::model::album::Album;
 use super::api::CloudMusic;
 use super::model::search::{SearchPlaylists, SearchTracks};
+use rand::Rng;
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
@@ -35,11 +36,9 @@ pub enum RouteId {
     Error,
     Home,
     Search,
-    SelectedDevice,
     TrackTable,
     MyPlaylists,
     Artists,
-    Podcasts,
     PersonalFm,
     Help,
 }
@@ -56,8 +55,6 @@ pub enum ActiveBlock {
     Search,
     Recommend,
     MyPlaylists,
-    Podcasts,
-    RecentlyPlayed,
     SearchResult,
     TrackTable,
     Artists,
@@ -205,11 +202,22 @@ impl App {
                         Some(list.selected_index),
                     );
                     list.selected_index = next_index;
+                    // println!("{:#?}", next_index);
 
                     let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                     self.start_playback(track_playing.id.unwrap().to_string());
                     self.current_playing = Some(track_playing);
 
+                }
+                RepeatState::Shuffle => {
+                    let list = &mut self.my_playlist;
+                    let mut rng = rand::thread_rng();
+                    let next_index = rng.gen_range(0, list.tracks.len());
+                    list.selected_index = next_index;
+
+                    let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                    self.start_playback(track_playing.id.unwrap().to_string());
+                    self.current_playing = Some(track_playing);
                 }
                 _ => {}
             }
@@ -268,6 +276,14 @@ impl App {
         });
     }
 
+    pub fn pop_navigation_stack(&mut self) -> Option<Route> {
+        if self.navigation_stack.len() == 1 {
+            None
+        } else {
+            self.navigation_stack.pop()
+        }
+    }
+
     // set current route
     pub fn set_current_route_state(
         &mut self,
@@ -281,6 +297,17 @@ impl App {
         if let Some(hovered_block) = hovered_block {
             current_route.hovered_block = hovered_block;
         }
+    }
+
+    // shuffle
+    pub fn repeat(&mut self) {
+        let next_repeat_state = match self.repeat_state {
+            RepeatState::All => RepeatState::Off,
+            RepeatState::Off => RepeatState::Track,
+            RepeatState::Track => RepeatState::Shuffle,
+            RepeatState::Shuffle => RepeatState::All,
+        };
+        self.repeat_state = next_repeat_state;
     }
 
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {
