@@ -4,6 +4,7 @@ use super::common_events;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
+        k if common_events::right_event(k) => common_events::handle_right_event(app),
         k if common_events::down_event(k) => {
             match &app.playlists {
                 Some(p) => {

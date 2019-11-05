@@ -14,12 +14,44 @@ pub fn handler(key: Key, app: &mut App) {
             | ActiveBlock::AlbumTracks
             | ActiveBlock::Artists
             | ActiveBlock::Home
-            | ActiveBlock::RecentlyPlayed
+            | ActiveBlock::SearchResult
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }
             _ => {}
         },
+        k if common_events::up_event(k) => match app.get_current_route().hovered_block {
+            ActiveBlock::MyPlaylists => {
+                app.set_current_route_state(None, Some(ActiveBlock::Recommend));
+            }
+            ActiveBlock::PlayBar => {
+                app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
+            }
+            ActiveBlock::Recommend => {
+                app.set_current_route_state(None, Some(ActiveBlock::Search));
+            }
+            _ => {}
+        },
+        k if common_events::down_event(k) => match app.get_current_route().hovered_block {
+            ActiveBlock::Recommend => {
+                app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
+            }
+            ActiveBlock::Search => {
+                app.set_current_route_state(None, Some(ActiveBlock::Recommend));
+            }
+            ActiveBlock::Artist
+            | ActiveBlock::AlbumList
+            | ActiveBlock::AlbumTracks
+            | ActiveBlock::Artists
+            | ActiveBlock::Home
+            | ActiveBlock::MyPlaylists
+            | ActiveBlock::SearchResult
+            | ActiveBlock::TrackTable => {
+                app.set_current_route_state(None, Some(ActiveBlock::PlayBar));
+            }
+            _ => {}
+        },
+        k if common_events::right_event(k) => common_events::handle_right_event(app),
         _ => {}
     }
 }

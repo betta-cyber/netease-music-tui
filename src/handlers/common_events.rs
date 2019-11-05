@@ -73,18 +73,18 @@ pub fn handle_right_event(app: &mut App) {
             match app.get_current_route().id {
                 RouteId::TrackTable => {
                     app.set_current_route_state(
-                        Some(ActiveBlock::TrackTable),
+                        Some(ActiveBlock::Empty),
                         Some(ActiveBlock::TrackTable),
                     );
                 }
                 RouteId::Search => {
                     app.set_current_route_state(
-                        Some(ActiveBlock::SearchResult),
+                        Some(ActiveBlock::Empty),
                         Some(ActiveBlock::SearchResult),
                     );
                 }
                 RouteId::Home => {
-                    app.set_current_route_state(Some(ActiveBlock::Home), Some(ActiveBlock::Home));
+                    app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
                 }
                 RouteId::Error => {}
                 _ => {}

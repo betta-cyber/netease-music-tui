@@ -548,13 +548,18 @@ where
 
 
         Tabs::default()
-            .block(Block::default().borders(Borders::ALL).title("Search Result"))
+            .block(
+                Block::default()
+                .borders(Borders::ALL)
+                .title("Search Result")
+                .title_style(get_color(highlight_state))
+                .border_style(get_color(highlight_state)),
+            )
             .titles(&app.tabs.titles)
             .select(app.tabs.index)
             .style(Style::default().fg(Color::Cyan))
             .highlight_style(Style::default().fg(Color::Yellow))
             .render(f, chunks[0]);
-
 
         match app.tabs.index {
             0 => draw_selectable_list(
@@ -562,7 +567,7 @@ where
                 chunks[1],
                 "Songs",
                 &songs,
-                (true, true),
+                highlight_state,
                 Some(app.search_results.selected_tracks_index),
             ),
             1 => draw_selectable_list(
@@ -570,7 +575,7 @@ where
                 chunks[1],
                 "Artists",
                 &artists,
-                (true, true),
+                highlight_state,
                 Some(app.search_results.selected_artists_index),
             ),
             2 => draw_selectable_list(
@@ -578,7 +583,7 @@ where
                 chunks[1],
                 "Albums",
                 &albums,
-                (true, true),
+                highlight_state,
                 Some(app.search_results.selected_albums_index),
             ),
             3 => draw_selectable_list(
@@ -586,7 +591,7 @@ where
                 chunks[1],
                 "Playlists",
                 &playlists,
-                (true, true),
+                highlight_state,
                 Some(app.search_results.selected_playlists_index),
             ),
             _ => {}
