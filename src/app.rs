@@ -1,11 +1,12 @@
 extern crate vlc;
 use vlc::{Instance, Media, MediaPlayer, MediaPlayerAudioEx, State};
-use tui::layout::{Layout, Constraint, Direction, Rect};
+use tui::layout::Rect;
+use tui::style::Color;
 use super::model::playlist::{Playlist, Track};
 use super::model::artist::Artist;
 use super::model::album::Album;
 use super::api::CloudMusic;
-use super::model::search::{SearchPlaylists, SearchTracks};
+use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
 use rand::Rng;
 
 const DEFAULT_ROUTE: Route = Route {
@@ -41,6 +42,7 @@ pub enum RouteId {
     Artists,
     PersonalFm,
     Help,
+    Playing,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -60,6 +62,7 @@ pub enum ActiveBlock {
     Artists,
     PlayBar,
     PersonalFm,
+    Playing,
 }
 
 // #[derive(Default)]
@@ -130,6 +133,8 @@ pub struct App {
     pub repeat_state: RepeatState,
     pub search_results: SearchResult,
     pub tabs: TabsState,
+    pub playing_circle: Circle,
+    pub circle_flag: bool,
 }
 
 impl App {
@@ -174,6 +179,8 @@ impl App {
                 "Albums".to_string(),
                 "Playlists".to_string(),
             ]),
+            playing_circle: Circle::default(),
+            circle_flag: true,
         }
     }
 
@@ -181,6 +188,22 @@ impl App {
     pub fn update_on_tick(&mut self) {
         if self.player.is_playing() {
             self.song_progress_ms = self.player.get_time().unwrap() as u64;
+
+            let current_route = self.get_current_route();
+            if current_route.active_block == ActiveBlock::Playing {
+                if self.circle_flag {
+                    self.playing_circle = Circle {
+                        circle: &CIRCLE,
+                        color: Color::Reset,
+                    }
+                } else {
+                    self.playing_circle = Circle {
+                        circle: &CIRCLE_TICK,
+                        color: Color::Reset,
+                    }
+                }
+                self.circle_flag = !self.circle_flag;
+            }
         } else if self.player.state() == State::Ended {
             match self.repeat_state {
                 RepeatState::Track => {

@@ -1,5 +1,5 @@
 mod util;
-mod circle;
+pub mod circle;
 
 use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
 use tui::{Frame, Terminal};
@@ -622,3 +622,63 @@ where
     }
 }
 
+
+pub fn draw_help_menu<B>(f: &mut Frame<B>)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .margin(2)
+        .split(f.size());
+
+    let white = Style::default().fg(Color::White);
+    let gray = Style::default().fg(Color::White);
+    let header = ["Context", "Event", "Description"];
+
+    let help_docs = vec![
+        vec!["General", "a", "Jump to currently playing album"],
+    ];
+
+    let rows = help_docs
+        .iter()
+        .map(|item| Row::StyledData(item.iter(), gray));
+
+    Table::new(header.iter(), rows)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .style(white)
+                .title("Help (press <Esc> to go back)")
+                .title_style(gray)
+                .border_style(gray),
+        )
+        .style(Style::default().fg(Color::White))
+        .widths(&[20, 40, 50])
+        .render(f, chunks[0]);
+}
+
+pub fn draw_playing_detail<B>(f: &mut Frame<B>, app: &App)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .margin(2)
+        .split(f.size());
+
+    Canvas::default()
+        .block(
+            Block::default()
+            .borders(Borders::ALL)
+            .title("Playing")
+        )
+        .paint(|ctx| {
+            ctx.draw(&app.playing_circle);
+        })
+        .x_bounds([-90.0, 270.0])
+        .y_bounds([-90.0, 90.0])
+        .render(f, chunks[0]);
+}

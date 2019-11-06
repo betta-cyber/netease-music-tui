@@ -7,7 +7,7 @@ mod home;
 mod search;
 mod search_results;
 
-use super::app::{App, ActiveBlock};
+use super::app::{App, ActiveBlock, RouteId};
 use termion::event::Key;
 
 pub fn handle_app(key: Key, app: &mut App) {
@@ -33,6 +33,9 @@ pub fn handle_app(key: Key, app: &mut App) {
         }
         Key::Char('?') => {
             app.set_current_route_state(Some(ActiveBlock::Help), None);
+        }
+        Key::Char('f') => {
+            app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
         }
         _ => handle_block_events(key, app),
     }
