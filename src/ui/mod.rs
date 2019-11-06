@@ -1,13 +1,13 @@
 mod util;
+mod circle;
 
 use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
 use tui::{Frame, Terminal};
-use tui::backend::TermionBackend;
-use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs};
+use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs, canvas::Canvas};
 use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
-use termion::event::Key;
 use tui::backend::Backend;
+use circle::Circle;
 use util::{get_color, get_percentage_width, display_track_progress, create_artist_string};
 
 // table item for render
@@ -480,6 +480,19 @@ where
         .style(Style::default().fg(Color::White))
         .block(Block::default())
         .render(f, chunks[0]);
+
+    // Canvas::default()
+        // .block(
+            // Block::default()
+            // .borders(Borders::ALL)
+            // .title("Welcome!")
+        // )
+        // .paint(|ctx| {
+            // ctx.draw(&Circle::default());
+        // })
+        // .x_bounds([-180.0, 180.0])
+        // .y_bounds([-90.0, 90.0])
+        // .render(f, layout_chunk);
 }
 
 fn draw_personal_fm<B>(
