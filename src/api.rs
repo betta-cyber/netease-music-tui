@@ -18,6 +18,7 @@ use std::time::Duration;
 
 use super::model::user::{User, Profile, Login};
 use super::model::song::{Song, Songs};
+use super::model::album::{ArtistAlbums, Album};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
 
@@ -288,6 +289,19 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
         Ok(res.playlist.unwrap().clone())
+    }
+
+    // artist albums
+    pub fn artist_albums(&self, artist_id: &str) -> Result<Vec<Album>, failure::Error> {
+        let url = format!("/weapi/artist/albums/{}", artist_id);
+        let mut params = HashMap::new();
+        params.insert("total".to_owned(), true.to_string());
+        params.insert("limit".to_owned(), 1000.to_string());
+        params.insert("offest".to_owned(), 0.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<ArtistAlbums>(&result).unwrap();
+        Ok(res.hotAlbums.unwrap().clone())
     }
 
     // search api

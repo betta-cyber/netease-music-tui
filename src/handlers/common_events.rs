@@ -83,6 +83,18 @@ pub fn handle_right_event(app: &mut App) {
                         Some(ActiveBlock::SearchResult),
                     );
                 }
+                RouteId::AlbumList => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::AlbumList),
+                        Some(ActiveBlock::AlbumList),
+                    );
+                }
+                RouteId::Artist => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Artist),
+                        Some(ActiveBlock::Artist),
+                    );
+                }
                 RouteId::Home => {
                     app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
                 }

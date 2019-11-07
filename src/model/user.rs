@@ -4,6 +4,7 @@ use serde_json::Value;
 
 use std::collections::HashMap;
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct User {
     pub level: Option<i32>,
@@ -12,6 +13,7 @@ pub struct User {
     pub profile: Option<Profile>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Profile {
     pub nickname: Option<String>,
@@ -21,6 +23,7 @@ pub struct Profile {
     pub follows: Option<i32>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Account {
     pub id: Option<i32>,

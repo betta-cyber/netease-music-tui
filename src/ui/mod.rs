@@ -115,9 +115,9 @@ where
         RouteId::PersonalFm => {
             draw_personal_fm(f, &app, chunks[1]);
         }
-        // RouteId::Help => {
-            // draw_help(f);
-        // }
+        RouteId::Artist => {
+            draw_artist_albums(f, app, chunks[1]);
+        }
         _ => {
             draw_track_table(f, &app, chunks[1]);
         }
@@ -697,4 +697,31 @@ where
         .style(Style::default().fg(Color::White))
         .select(selected_index)
         .render(f, chunks[1]);
+}
+
+fn draw_artist_albums<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::Artist,
+        current_route.hovered_block == ActiveBlock::Artist,
+    );
+
+    if let Some(artist_albums) = &app.artist_albums {
+        let items = &artist_albums.albums
+            .iter()
+            .map(|item| item.name.to_owned().unwrap())
+            .collect::<Vec<String>>();
+
+        draw_selectable_list(
+            f,
+            layout_chunk,
+            &artist_albums.artist_name,
+            &items,
+            highlight_state,
+            Some(artist_albums.selected_index),
+        );
+    };
 }

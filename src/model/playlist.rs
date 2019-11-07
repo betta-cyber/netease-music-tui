@@ -1,4 +1,3 @@
-#[allow(non_snake_case)]
 use serde::{Serialize, Deserialize};
 use serde_json::Value;
 
@@ -10,6 +9,7 @@ pub struct PlaylistRes {
     pub code: Option<i32>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Playlist {
     pub name: Option<String>,
@@ -33,6 +33,7 @@ pub struct PlaylistDetailRes {
     pub code: Option<i32>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlaylistDetail {
     pub name: Option<String>,

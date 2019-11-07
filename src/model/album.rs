@@ -1,4 +1,3 @@
-#[allow(non_snake_case)]
 use serde::{Serialize, Deserialize};
 use super::artist::Artist;
 
@@ -8,4 +7,13 @@ pub struct Album {
     pub name: Option<String>,
     pub size: Option<i32>,
     pub artist: Option<Artist>,
+}
+
+
+#[allow(non_snake_case)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ArtistAlbums {
+    pub artist: Option<Artist>,
+    pub hotAlbums: Option<Vec<Album>>,
+    pub code: i32,
 }

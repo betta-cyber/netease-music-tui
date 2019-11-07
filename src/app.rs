@@ -65,6 +65,13 @@ pub enum ActiveBlock {
     Playing,
 }
 
+#[derive(Clone)]
+pub struct ArtistAlbums {
+    pub artist_name: String,
+    pub albums: Vec<Album>,
+    pub selected_index: usize,
+}
+
 // #[derive(Default)]
 #[derive(Clone, Debug, Default)]
 pub struct TrackTable {
@@ -135,6 +142,7 @@ pub struct App {
     pub tabs: TabsState,
     pub playing_circle: Circle,
     pub circle_flag: bool,
+    pub artist_albums: Option<ArtistAlbums>,
 }
 
 impl App {
@@ -181,6 +189,7 @@ impl App {
             ]),
             playing_circle: Circle::default(),
             circle_flag: true,
+            artist_albums: None,
         }
     }
 
@@ -357,6 +366,24 @@ impl App {
             }
         }
         self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
+    }
+
+    pub fn get_artist_albums(&mut self, artist_id: String) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(albums) = api.artist_albums(&artist_id) {
+                    self.artist_albums = Some(ArtistAlbums {
+                        artist_name: String::new(),
+                        albums: albums,
+                        selected_index: 0
+                    })
+                }
+                self.push_navigation_stack(RouteId::Artist, ActiveBlock::Artist);
+            }
+            None => {
+                panic!("get artist albums error");
+            }
+        }
     }
 
     pub fn start_playback(
