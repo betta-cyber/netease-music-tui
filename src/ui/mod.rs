@@ -122,7 +122,7 @@ where
             draw_album_table(f, app, chunks[1]);
         }
         _ => {
-            draw_track_table(f, &app, chunks[1]);
+            draw_home(f, app, chunks[1]);
         }
     };
 }
@@ -546,14 +546,14 @@ where
         let songs = match &app.search_results.tracks {
             Some(r) => r
                 .iter()
-                .map(|item| format!("{} - {}", item.name.as_ref().unwrap().to_owned(), create_artist_string(&item.artists.as_ref().unwrap())))
+                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), create_artist_string(&item.artists.to_owned().unwrap())))
                 .collect(),
             None => vec![],
         };
         let playlists = match &app.search_results.playlists {
             Some(r) => r
                 .iter()
-                .map(|item| format!("{} - {}", item.name.as_ref().unwrap().to_owned(), item.creator.as_ref().unwrap().nickname.as_ref().unwrap().to_owned()))
+                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), item.creator.to_owned().unwrap().nickname.unwrap()))
                 .collect(),
             None => vec![],
         };
@@ -567,7 +567,7 @@ where
         let albums = match &app.search_results.albums {
             Some(r) => r
                 .iter()
-                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), create_artist_string(&[item.artist.to_owned().unwrap()])))
                 .collect(),
             None => vec![],
         };
@@ -735,6 +735,7 @@ struct AlbumUI {
     title: String,
 }
 
+// dtaw album table
 pub fn draw_album_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
@@ -748,19 +749,15 @@ where
 
     let header = [
         TableHeader {
-            text: "ID",
+            text: "",
             width: get_percentage_width(layout_chunk.width, 0.05),
         },
         TableHeader {
+            text: "#",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
             text: "Title",
-            width: get_percentage_width(layout_chunk.width, 0.3),
-        },
-        TableHeader {
-            text: "Artist",
-            width: get_percentage_width(layout_chunk.width, 0.3),
-        },
-        TableHeader {
-            text: "Album",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
     ];

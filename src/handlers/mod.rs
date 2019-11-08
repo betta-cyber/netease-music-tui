@@ -7,6 +7,7 @@ mod home;
 mod search;
 mod search_results;
 mod artist;
+mod album_tracks;
 
 use super::app::{App, ActiveBlock, RouteId};
 use termion::event::Key;
@@ -70,6 +71,10 @@ fn handle_block_events(key: Key, app: &mut App) {
         ActiveBlock::Artist => {
             artist::handler(key, app);
         }
+        ActiveBlock::AlbumTracks => {
+            album_tracks::handler(key, app);
+        }
+
         ActiveBlock::SearchResult => {
             search_results::handler(key, app);
         }

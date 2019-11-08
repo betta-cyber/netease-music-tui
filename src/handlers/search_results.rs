@@ -88,6 +88,12 @@ pub fn handler(key: Key, app: &mut App) {
                     let artist_id = selected_artist.id.to_owned();
                     app.get_artist_albums(artist_id.to_string());
                 }
+            } else if app.tabs.index == 2 {
+                if let Some(selected_album) =
+                    &app.search_results.albums.as_ref().unwrap().get(app.search_results.selected_albums_index.to_owned()) {
+                    let album_id = selected_album.id.to_owned().unwrap();
+                    app.get_album_tracks(album_id.to_string());
+                }
             } else if app.tabs.index == 3 {
                 if let Some(selected_playlist) =
                     &app.search_results.playlists.as_ref().unwrap().get(app.search_results.selected_playlists_index.to_owned()) {
