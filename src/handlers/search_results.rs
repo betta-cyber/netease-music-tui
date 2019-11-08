@@ -85,7 +85,7 @@ pub fn handler(key: Key, app: &mut App) {
             } else if app.tabs.index == 1 {
                 if let Some(selected_artist) =
                     &app.search_results.artists.as_ref().unwrap().get(app.search_results.selected_artists_index.to_owned()) {
-                    let artist_id = selected_artist.id.to_owned().unwrap();
+                    let artist_id = selected_artist.id.to_owned();
                     app.get_artist_albums(artist_id.to_string());
                 }
             } else if app.tabs.index == 3 {

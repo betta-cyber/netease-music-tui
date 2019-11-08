@@ -1,5 +1,5 @@
 use tui::style::{Color, Style};
-use super::super::model::playlist::Artist;
+use super::super::model::artist::Artist;
 
 pub fn get_color((is_active, is_hovered): (bool, bool)) -> Style {
     match (is_active, is_hovered) {

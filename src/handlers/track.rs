@@ -1,7 +1,6 @@
 use super::super::app::App;
 use termion::event::Key;
 use super::common_events;
-use std::collections::HashSet;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {

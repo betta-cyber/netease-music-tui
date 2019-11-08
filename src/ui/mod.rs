@@ -118,6 +118,9 @@ where
         RouteId::Artist => {
             draw_artist_albums(f, app, chunks[1]);
         }
+        RouteId::AlbumTracks => {
+            draw_album_table(f, app, chunks[1]);
+        }
         _ => {
             draw_track_table(f, &app, chunks[1]);
         }
@@ -354,7 +357,7 @@ where
                     num.to_string(),
                     item.name.as_ref().unwrap().to_string(),
                     create_artist_string(&item.artists.to_owned().unwrap()),
-                    item.album.as_ref().unwrap().name.to_owned(),
+                    item.album.to_owned().unwrap().name.unwrap(),
                 ],
             }
         })
@@ -557,7 +560,7 @@ where
         let artists = match &app.search_results.artists {
             Some(r) => r
                 .iter()
-                .map(|item| item.name.as_ref().unwrap().to_owned())
+                .map(|item| item.to_owned().name)
                 .collect(),
             None => vec![],
         };
@@ -722,6 +725,78 @@ where
             &items,
             highlight_state,
             Some(artist_albums.selected_index),
+        );
+    };
+}
+
+struct AlbumUI {
+    selected_index: usize,
+    items: Vec<TableItem>,
+    title: String,
+}
+
+pub fn draw_album_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::AlbumTracks,
+        current_route.hovered_block == ActiveBlock::AlbumTracks,
+    );
+
+    let header = [
+        TableHeader {
+            text: "ID",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Title",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Artist",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Album",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let album_ui = match &app.selected_album {
+        Some(selected_album) => Some(AlbumUI {
+            items: selected_album.tracks
+                .iter()
+                .map(|item| TableItem {
+                    id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                    format: vec![
+                        "".to_string(),
+                        item.id.unwrap().to_string(),
+                        item.to_owned().name.unwrap().to_string(),
+                    ],
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "{} by {}",
+                selected_album.to_owned().album.name.unwrap(),
+                create_artist_string(&[selected_album.to_owned().album.artist.unwrap()])
+            ),
+            selected_index: selected_album.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(album_ui) = album_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&album_ui.title, &header),
+            &album_ui.items,
+            album_ui.selected_index,
+            highlight_state,
         );
     };
 }

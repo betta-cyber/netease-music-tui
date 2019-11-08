@@ -72,7 +72,13 @@ pub struct ArtistAlbums {
     pub selected_index: usize,
 }
 
-// #[derive(Default)]
+#[derive(Clone)]
+pub struct SelectedAlbum {
+    pub tracks: Vec<Track>,
+    pub selected_index: usize,
+    pub album: Album,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct TrackTable {
     pub tracks: Vec<Track>,
@@ -143,6 +149,7 @@ pub struct App {
     pub playing_circle: Circle,
     pub circle_flag: bool,
     pub artist_albums: Option<ArtistAlbums>,
+    pub selected_album: Option<SelectedAlbum>,
 }
 
 impl App {
@@ -190,6 +197,7 @@ impl App {
             playing_circle: Circle::default(),
             circle_flag: true,
             artist_albums: None,
+            selected_album: None,
         }
     }
 
@@ -379,6 +387,24 @@ impl App {
                     })
                 }
                 self.push_navigation_stack(RouteId::Artist, ActiveBlock::Artist);
+            }
+            None => {
+                panic!("get artist albums error");
+            }
+        }
+    }
+
+    pub fn get_album_tracks(&mut self, album_id: String) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(album_track) = api.album_track(&album_id) {
+                    self.selected_album = Some(SelectedAlbum {
+                        tracks: album_track.songs,
+                        album: album_track.album,
+                        selected_index: 0
+                    })
+                }
+                self.push_navigation_stack(RouteId::AlbumTracks, ActiveBlock::AlbumTracks);
             }
             None => {
                 panic!("get artist albums error");

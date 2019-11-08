@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use super::artist::Artist;
+use super::playlist::Track;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Album {
@@ -15,5 +16,13 @@ pub struct Album {
 pub struct ArtistAlbums {
     pub artist: Option<Artist>,
     pub hotAlbums: Option<Vec<Album>>,
+    pub code: i32,
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct AlbumTrack {
+    pub songs: Vec<Track>,
+    pub album: Album,
     pub code: i32,
 }

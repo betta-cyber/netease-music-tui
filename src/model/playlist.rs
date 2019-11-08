@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize};
-use serde_json::Value;
-
-use std::collections::HashMap;
+use super::album::Album;
+use super::artist::Artist;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlaylistRes {
@@ -44,7 +43,7 @@ pub struct PlaylistDetail {
     pub tracks: Vec<PlaylistTrack>,
 }
 
-#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Track {
     pub name: Option<String>,
     pub id: Option<i64>,
@@ -52,7 +51,7 @@ pub struct Track {
     pub album: Option<Album>,
 }
 
-#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlaylistTrack {
     pub name: Option<String>,
     pub id: Option<i64>,
@@ -67,18 +66,6 @@ impl PartialEq for Track {
 }
 
 impl Eq for Track {}
-
-#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
-pub struct Artist {
-    pub name: String,
-    pub id: i64,
-}
-
-#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
-pub struct Album {
-    pub name: String,
-    pub id: i64,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PersonalFmRes {
