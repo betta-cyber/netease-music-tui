@@ -21,6 +21,7 @@ use super::model::song::{Song, Songs};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
+use super::model::lyric::{LyricRes, Lyric};
 
 use super::util::Encrypt;
 use openssl::hash::{hash, MessageDigest};
@@ -312,6 +313,30 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<AlbumTrack>(&result).unwrap();
         Ok(res)
+    }
+
+    // lyric
+    pub fn lyric(&self, track_id: &str) -> Result<Vec<Lyric>, failure::Error> {
+        let url = format!("/weapi/song/lyric");
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), track_id.to_string());
+        params.insert("os".to_owned(), "osx".to_owned());
+        params.insert("lv".to_owned(), "-1".to_owned());
+        params.insert("kv".to_owned(), "-1".to_owned());
+        params.insert("tv".to_owned(), "-1".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<LyricRes>(&result).unwrap();
+        let lyric: Vec<Lyric> = res.lrc.lyric
+                    .lines()
+                    .map(|s| Lyric {
+                        value: s.to_string(),
+                        timestamp: s.to_string(),
+                    })
+                    .collect();
+
+        // println!("{:#?}", lyric);
+        Ok(lyric)
     }
 
     // search api

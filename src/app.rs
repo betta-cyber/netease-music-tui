@@ -41,7 +41,6 @@ pub enum RouteId {
     MyPlaylists,
     Artists,
     PersonalFm,
-    Help,
     Playing,
 }
 

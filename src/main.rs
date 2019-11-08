@@ -105,6 +105,7 @@ fn main() -> Result<(), failure::Error> {
                     cloud_music.phone_login(&username, &password)?
                 }
             };
+            cloud_music.lyric("558754137");
 
             let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());
             match playlists {
