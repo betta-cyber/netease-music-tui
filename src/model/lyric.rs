@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-
+use std::time::Duration;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LyricRes {
@@ -15,5 +15,5 @@ pub struct Lrc {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Lyric {
     pub value: String,
-    pub timestamp: String,
+    pub timeline: Duration,
 }

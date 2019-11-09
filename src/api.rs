@@ -329,13 +329,16 @@ impl CloudMusic {
         let res = self.convert_result::<LyricRes>(&result).unwrap();
         let lyric: Vec<Lyric> = res.lrc.lyric
                     .lines()
-                    .map(|s| Lyric {
-                        value: s.to_string(),
-                        timestamp: s.to_string(),
+                    .map(|s| {
+                        let r = s.split("]").collect::<Vec<&str>>();
+                        Lyric {
+                            value: r[1].to_string(),
+                            timeline: r[0].to_string(),
+                        }
                     })
                     .collect();
 
-        // println!("{:#?}", lyric);
+        println!("{:#?}", lyric);
         Ok(lyric)
     }
 
