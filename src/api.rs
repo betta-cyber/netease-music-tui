@@ -326,20 +326,44 @@ impl CloudMusic {
         params.insert("tv".to_owned(), "-1".to_owned());
 
         let result = self.post(&url, &mut params)?;
-        let res = self.convert_result::<LyricRes>(&result).unwrap();
-        let lyric: Vec<Lyric> = res.lrc.lyric
+        match self.convert_result::<LyricRes>(&result) {
+            Ok(res) => {
+                let lyric: Vec<Lyric> = res.lrc.lyric
                     .lines()
                     .map(|s| {
-                        let r = s.split("]").collect::<Vec<&str>>();
-                        Lyric {
-                            value: r[1].to_string(),
-                            timeline: r[0].to_string(),
+                        let re = regex::Regex::new(
+                            r#"\[(\w+):(\w+).(\w+)\](.*?)$"#,
+                        ).unwrap();
+                        if let Some(cap) = re.captures(&s) {
+                            let minite = cap[1].parse::<u64>().unwrap_or(0);
+                            let second = cap[2].parse::<u64>().unwrap_or(0);
+                            let nano = cap[3][..1].parse::<u32>().unwrap_or(0) * 10000000;
+                            let lyric_value = cap[4].to_string();
+                            let duration_min = minite * 60 + second;
+                            Lyric {
+                                value: lyric_value,
+                                timeline: Duration::new(duration_min, nano),
+                            }
+                        } else {
+                            Lyric {
+                                value: String::new(),
+                                timeline: Duration::new(0, 0),
+                            }
                         }
                     })
                     .collect();
-
-        println!("{:#?}", lyric);
-        Ok(lyric)
+                Ok(lyric)
+            }
+            Err(_) => {
+                let lyric = vec![
+                    Lyric {
+                        value: "no lyric".to_string(),
+                        timeline: Duration::new(0, 0),
+                    }
+                ];
+                Ok(lyric)
+            }
+        }
     }
 
     // search api

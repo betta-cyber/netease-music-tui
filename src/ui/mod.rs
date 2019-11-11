@@ -685,8 +685,8 @@ where
         .y_bounds([-90.0, 90.0])
         .render(f, chunks[0]);
 
-    let playlist_items = match &app.playlists {
-        Some(p) => p.iter().map(|item| item.name.as_ref().unwrap().to_owned()).collect(),
+    let lyric_items = match &app.lyric {
+        Some(l) => l.iter().map(|item| item.value.to_owned()).collect(),
         None => vec![],
     };
     let selected_index = Some(0);
@@ -696,7 +696,7 @@ where
         .block(
             Block::default()
         )
-        .items(&playlist_items)
+        .items(&lyric_items)
         .style(Style::default().fg(Color::White))
         .select(selected_index)
         .render(f, chunks[1]);

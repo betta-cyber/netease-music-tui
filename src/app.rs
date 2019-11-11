@@ -5,6 +5,7 @@ use tui::style::Color;
 use super::model::playlist::{Playlist, Track};
 use super::model::artist::Artist;
 use super::model::album::Album;
+use super::model::lyric::Lyric;
 use super::api::CloudMusic;
 use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
 use rand::Rng;
@@ -149,6 +150,7 @@ pub struct App {
     pub circle_flag: bool,
     pub artist_albums: Option<ArtistAlbums>,
     pub selected_album: Option<SelectedAlbum>,
+    pub lyric: Option<Vec<Lyric>>
 }
 
 impl App {
@@ -197,6 +199,7 @@ impl App {
             circle_flag: true,
             artist_albums: None,
             selected_album: None,
+            lyric: None,
         }
     }
 
@@ -423,6 +426,7 @@ impl App {
                 let md = Media::new_location(&self.vlc_instance, &url).unwrap();
                 self.player.set_media(&md);
                 self.player.play().unwrap();
+                self.lyric = Some(api.lyric(&id).unwrap());
 
                 let mut flag = false;
                 while !flag {
