@@ -39,6 +39,15 @@ pub fn handle_app(key: Key, app: &mut App) {
         Key::Char('f') => {
             app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
         }
+        Key::Char('a') => {
+            let album_id = match &app.current_playing {
+                Some(track) => {
+                    track.album.to_owned().unwrap().id
+                }
+                None => None
+            };
+            app.get_album_tracks(album_id.unwrap().to_string());
+        }
         _ => handle_block_events(key, app),
     }
 }
