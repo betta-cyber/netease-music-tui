@@ -8,7 +8,7 @@ use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use tui::backend::Backend;
 use circle::Circle;
-use util::{get_color, get_percentage_width, display_track_progress, create_artist_string};
+use util::{get_color, get_percentage_width, display_track_progress, create_artist_string, create_tag_string};
 
 // table item for render
 #[derive(Clone, Debug)]
@@ -818,26 +818,40 @@ where
             width: get_percentage_width(layout_chunk.width, 0.05),
         },
         TableHeader {
-            text: "#",
+            text: "Title",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
         TableHeader {
-            text: "Title",
+            text: "Count",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Creator",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Tags",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
     ];
 
+    let mut num = 0;
     let playlist_ui = match &app.playlist_list {
         Some(playlist) => Some(AlbumUI {
             items: playlist.playlists
                 .iter()
-                .map(|item| TableItem {
-                    id: item.id.clone().unwrap_or_else(|| 0).to_string(),
-                    format: vec![
-                        "".to_string(),
-                        item.id.unwrap().to_string(),
-                        item.to_owned().name.unwrap().to_string(),
-                    ],
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().name.unwrap().to_string(),
+                            item.trackCount.unwrap().to_string(),
+                            item.creator.to_owned().unwrap().nickname.unwrap().to_string(),
+                            create_tag_string(&item.tags),
+                        ],
+                    }
                 })
                 .collect::<Vec<TableItem>>(),
             title: format!(

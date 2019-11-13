@@ -48,3 +48,11 @@ pub fn create_artist_string(artists: &[Artist]) -> String {
         .collect::<Vec<String>>()
         .join("/ ")
 }
+
+pub fn create_tag_string(tags: &[String]) -> String {
+    tags
+        .iter()
+        .map(|tag| tag.to_string())
+        .collect::<Vec<String>>()
+        .join("|")
+}
