@@ -152,6 +152,7 @@ where
             RepeatState::Track => "Track",
             RepeatState::All => "All",
             RepeatState::Shuffle => "Shuffle",
+            RepeatState::FM => "FM",
         };
 
         let title = format!("{} | Repeat: {}", state_title, repeat_text);
@@ -519,7 +520,7 @@ fn draw_personal_fm<B>(
         .title_style(get_color(highlight_state))
         .border_style(get_color(highlight_state));
 
-    let text = vec![Text::raw("Not implemented yet!")];
+    let text = vec![Text::raw("Your Personal FM")];
 
     Paragraph::new(text.iter())
         .style(Style::default().fg(Color::White))

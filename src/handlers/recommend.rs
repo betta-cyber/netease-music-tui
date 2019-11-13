@@ -32,7 +32,7 @@ pub fn handler(key: Key, app: &mut App) {
                     app.get_top_playlist()
                 }
                 2 => {
-                    app.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm)
+                    app.set_fm_mode()
                 }
                 _ => {}
             }

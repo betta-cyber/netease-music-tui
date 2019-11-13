@@ -17,6 +17,7 @@ use std::borrow::Cow;
 use std::time::Duration;
 
 use super::model::user::{User, Profile, Login};
+use super::model::artist::{TopArtistRes, Artist};
 use super::model::song::{Song, Songs};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
@@ -408,12 +409,12 @@ impl CloudMusic {
     }
 
     // get user personal fm
-    pub fn personal_fm(&self, keyword: &str, limit: i32, offset: i32) -> Result<Vec<Track>, failure::Error> {
-        let url = format!("/personal_fm");
+    pub fn personal_fm(&self) -> Result<Vec<Track>, failure::Error> {
+        let url = format!("/weapi/v1/radio/get");
         let mut params = HashMap::new();
 
         // send request
-        let result = self.get(&url, &mut params)?;
+        let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<PersonalFmRes>(&result).unwrap();
         Ok(res.data)
     }
@@ -431,6 +432,19 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<TopPlaylistRes>(&result).unwrap();
         Ok(res.playlists)
+    }
+
+    // top artist
+    pub fn top_artists(&self) -> Result<Vec<Artist>, failure::Error> {
+        let url = format!("/weapi/artist/top");
+        let mut params = HashMap::new();
+        params.insert("limit".to_owned(), 50.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
+        params.insert("total".to_owned(), true.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<TopArtistRes>(&result).unwrap();
+        Ok(res.artists)
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {

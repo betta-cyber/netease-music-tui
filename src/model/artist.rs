@@ -8,3 +8,9 @@ pub struct Artist {
     pub name: String,
     pub alias: Option<Vec<String>>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TopArtistRes {
+    pub artists: Vec<Artist>,
+    pub code: Option<i32>,
+}

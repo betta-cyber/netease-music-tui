@@ -20,8 +20,8 @@ pub const RECOMMEND_OPTIONS: [&str; 5] = [
     "My Playlist",
     "Discover",
     "Personal FM",
-    "Albums",
-    "Artists",
+    "Hot Albums",
+    "Hot Artists",
 ];
 
 pub struct Route {
@@ -122,6 +122,7 @@ pub enum RepeatState {
     Track,
     All,
     Shuffle,
+    FM,
 }
 
 pub struct TabsState {
@@ -272,6 +273,20 @@ impl App {
                     self.start_playback(track_playing.id.unwrap().to_string());
                     self.current_playing = Some(track_playing);
                 }
+                RepeatState::FM => {
+                    println!("ddddddd");
+                    // use my playlist for play personal fm
+                    let list = &mut self.my_playlist;
+                    let next_index = App::next_index(
+                        &list.tracks,
+                        Some(list.selected_index),
+                    );
+                    list.selected_index = next_index;
+
+                    let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                    self.start_playback(track_playing.id.unwrap().to_string());
+                    self.current_playing = Some(track_playing);
+                }
                 _ => {}
             }
         }
@@ -359,6 +374,7 @@ impl App {
             RepeatState::Off => RepeatState::Track,
             RepeatState::Track => RepeatState::Shuffle,
             RepeatState::Shuffle => RepeatState::All,
+            RepeatState::FM => RepeatState::FM,
         };
         self.repeat_state = next_repeat_state;
     }
@@ -465,6 +481,31 @@ impl App {
                 }
             }
             None => {}
+        }
+    }
+
+    pub fn set_fm_mode(&mut self) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(tracks) = api.personal_fm() {
+                    self.my_playlist = TrackTable {
+                        tracks: tracks,
+                        selected_index: 0,
+                        name: "personal fm".to_string()
+                    }
+                }
+
+                let track_playing = self.my_playlist.tracks.get(0).unwrap().to_owned();
+
+                self.start_playback(track_playing.id.unwrap().to_string());
+                self.current_playing = Some(track_playing);
+
+                self.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm);
+                self.repeat_state = RepeatState::FM;
+            }
+            None => {
+                panic!("error");
+            }
         }
     }
 }
