@@ -34,6 +34,7 @@ pub struct Route {
 pub enum RouteId {
     AlbumTracks,
     AlbumList,
+    Playlist,
     Artist,
     Error,
     Home,
@@ -50,6 +51,7 @@ pub enum ActiveBlock {
     AlbumTracks,
     AlbumList,
     Artist,
+    Playlist,
     Empty,
     Error,
     Help,
@@ -77,6 +79,13 @@ pub struct SelectedAlbum {
     pub tracks: Vec<Track>,
     pub selected_index: usize,
     pub album: Album,
+}
+
+// playlist list
+#[derive(Clone)]
+pub struct PlaylistTable {
+    pub playlists: Vec<Playlist>,
+    pub selected_index: usize,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -150,6 +159,7 @@ pub struct App {
     pub circle_flag: bool,
     pub artist_albums: Option<ArtistAlbums>,
     pub selected_album: Option<SelectedAlbum>,
+    pub playlist_list: Option<PlaylistTable>,
     pub lyric: Option<Vec<Lyric>>
 }
 
@@ -199,6 +209,7 @@ impl App {
             circle_flag: true,
             artist_albums: None,
             selected_album: None,
+            playlist_list: None,
             lyric: None,
         }
     }
@@ -407,6 +418,23 @@ impl App {
                     })
                 }
                 self.push_navigation_stack(RouteId::AlbumTracks, ActiveBlock::AlbumTracks);
+            }
+            None => {
+                panic!("get artist albums error");
+            }
+        }
+    }
+
+    pub fn get_top_playlist(&mut self) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(playlists) = api.top_playlists() {
+                    self.playlist_list = Some(PlaylistTable {
+                        playlists: playlists,
+                        selected_index: 0
+                    })
+                }
+                self.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist);
             }
             None => {
                 panic!("get artist albums error");

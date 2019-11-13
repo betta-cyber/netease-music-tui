@@ -1,4 +1,5 @@
 mod common_events;
+mod my_playlist;
 mod playlist;
 mod track;
 mod recommend;
@@ -60,7 +61,7 @@ fn handle_block_events(key: Key, app: &mut App) {
 
     match current_route.active_block {
         ActiveBlock::MyPlaylists => {
-            playlist::handler(key, app);
+            my_playlist::handler(key, app);
         }
         ActiveBlock::TrackTable => {
             track::handler(key, app);
@@ -83,7 +84,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         ActiveBlock::AlbumTracks => {
             album_tracks::handler(key, app);
         }
-
+        ActiveBlock::Playlist => {
+            playlist::handler(key, app);
+        }
         ActiveBlock::SearchResult => {
             search_results::handler(key, app);
         }

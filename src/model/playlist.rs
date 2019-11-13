@@ -72,3 +72,9 @@ pub struct PersonalFmRes {
     pub data: Vec<Track>,
     pub code: Option<i32>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TopPlaylistRes {
+    pub playlists: Vec<Playlist>,
+    pub code: Option<i32>,
+}

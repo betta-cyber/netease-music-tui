@@ -121,6 +121,9 @@ where
         RouteId::AlbumTracks => {
             draw_album_table(f, app, chunks[1]);
         }
+        RouteId::Playlist => {
+            draw_playlist_table(f, app, chunks[1]);
+        }
         _ => {
             draw_home(f, app, chunks[1]);
         }
@@ -793,6 +796,66 @@ where
             (&album_ui.title, &header),
             &album_ui.items,
             album_ui.selected_index,
+            highlight_state,
+        );
+    };
+}
+
+pub fn draw_playlist_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::Playlist,
+        current_route.hovered_block == ActiveBlock::Playlist,
+    );
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "#",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Title",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let playlist_ui = match &app.playlist_list {
+        Some(playlist) => Some(AlbumUI {
+            items: playlist.playlists
+                .iter()
+                .map(|item| TableItem {
+                    id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                    format: vec![
+                        "".to_string(),
+                        item.id.unwrap().to_string(),
+                        item.to_owned().name.unwrap().to_string(),
+                    ],
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "Discover Playlists",
+            ),
+            selected_index: playlist.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(playlist_ui) = playlist_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&playlist_ui.title, &header),
+            &playlist_ui.items,
+            playlist_ui.selected_index,
             highlight_state,
         );
     };

@@ -28,6 +28,9 @@ pub fn handler(key: Key, app: &mut App) {
                 0 => {
                     app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists)
                 }
+                1 => {
+                    app.get_top_playlist()
+                }
                 2 => {
                     app.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm)
                 }

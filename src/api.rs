@@ -20,7 +20,7 @@ use super::model::user::{User, Profile, Login};
 use super::model::song::{Song, Songs};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
-use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes};
+use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
 use super::model::lyric::{LyricRes, Lyric};
 
 use super::util::Encrypt;
@@ -416,6 +416,21 @@ impl CloudMusic {
         let result = self.get(&url, &mut params)?;
         let res = self.convert_result::<PersonalFmRes>(&result).unwrap();
         Ok(res.data)
+    }
+
+    // top songlist
+    pub fn top_playlists(&self) -> Result<Vec<Playlist>, failure::Error> {
+        let url = format!("/weapi/playlist/list");
+        let mut params = HashMap::new();
+        params.insert("cat".to_owned(), "全部".to_string());
+        params.insert("order".to_owned(), "hot".to_string());
+        params.insert("limit".to_owned(), 50.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
+        params.insert("total".to_owned(), true.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<TopPlaylistRes>(&result).unwrap();
+        Ok(res.playlists)
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
