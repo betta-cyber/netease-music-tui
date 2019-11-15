@@ -8,6 +8,7 @@ mod home;
 mod search;
 mod search_results;
 mod artist;
+mod albumlist;
 mod album_tracks;
 
 use super::app::{App, ActiveBlock, RouteId};
@@ -86,6 +87,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::Playlist => {
             playlist::handler(key, app);
+        }
+        ActiveBlock::AlbumList => {
+            albumlist::handler(key, app);
         }
         ActiveBlock::SearchResult => {
             search_results::handler(key, app);

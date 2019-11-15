@@ -119,7 +119,12 @@ where
             draw_artist_albums(f, app, chunks[1]);
         }
         RouteId::AlbumTracks => {
+            // artist's album list
             draw_album_table(f, app, chunks[1]);
+        }
+        RouteId::AlbumList => {
+            // album list 
+            draw_album_list(f, app, chunks[1]);
         }
         RouteId::Playlist => {
             draw_playlist_table(f, app, chunks[1]);
@@ -733,7 +738,7 @@ where
     };
 }
 
-struct AlbumUI {
+struct ListUI {
     selected_index: usize,
     items: Vec<TableItem>,
     title: String,
@@ -766,17 +771,21 @@ where
         },
     ];
 
+    let mut num = 0;
     let album_ui = match &app.selected_album {
-        Some(selected_album) => Some(AlbumUI {
+        Some(selected_album) => Some(ListUI {
             items: selected_album.tracks
                 .iter()
-                .map(|item| TableItem {
-                    id: item.id.clone().unwrap_or_else(|| 0).to_string(),
-                    format: vec![
-                        "".to_string(),
-                        item.id.unwrap().to_string(),
-                        item.to_owned().name.unwrap().to_string(),
-                    ],
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                        format: vec![
+                            "".to_string(),
+                            num.to_string(),
+                            item.to_owned().name.unwrap().to_string(),
+                        ],
+                    }
                 })
                 .collect::<Vec<TableItem>>(),
             title: format!(
@@ -838,7 +847,7 @@ where
 
     let mut num = 0;
     let playlist_ui = match &app.playlist_list {
-        Some(playlist) => Some(AlbumUI {
+        Some(playlist) => Some(ListUI {
             items: playlist.playlists
                 .iter()
                 .map(|item| {
@@ -871,6 +880,70 @@ where
             (&playlist_ui.title, &header),
             &playlist_ui.items,
             playlist_ui.selected_index,
+            highlight_state,
+        );
+    };
+}
+
+pub fn draw_album_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::AlbumList,
+        current_route.hovered_block == ActiveBlock::AlbumList,
+    );
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Album Name",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Artist",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let mut num = 0;
+    let album_ui = match &app.album_list {
+        Some(album_list) => Some(ListUI {
+            items: album_list.albums
+                .iter()
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().name.unwrap().to_string(),
+                            item.artist.to_owned().unwrap().name.to_string(),
+                        ],
+                    }
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "Discover Albums",
+            ),
+            selected_index: album_list.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(album_ui) = album_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&album_ui.title, &header),
+            &album_ui.items,
+            album_ui.selected_index,
             highlight_state,
         );
     };

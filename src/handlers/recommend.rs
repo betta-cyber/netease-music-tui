@@ -34,6 +34,9 @@ pub fn handler(key: Key, app: &mut App) {
                 2 => {
                     app.set_fm_mode()
                 }
+                3 => {
+                    app.get_top_albums()
+                }
                 _ => {}
             }
         }

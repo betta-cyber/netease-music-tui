@@ -26,3 +26,9 @@ pub struct AlbumTrack {
     pub album: Album,
     pub code: i32,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TopAlbumRes {
+    pub albums: Vec<Album>,
+    pub code: Option<i32>,
+}

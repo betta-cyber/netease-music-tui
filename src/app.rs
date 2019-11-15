@@ -88,6 +88,13 @@ pub struct PlaylistTable {
     pub selected_index: usize,
 }
 
+// album list
+#[derive(Clone)]
+pub struct AlbumsTable {
+    pub albums: Vec<Album>,
+    pub selected_index: usize,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct TrackTable {
     pub tracks: Vec<Track>,
@@ -161,6 +168,7 @@ pub struct App {
     pub artist_albums: Option<ArtistAlbums>,
     pub selected_album: Option<SelectedAlbum>,
     pub playlist_list: Option<PlaylistTable>,
+    pub album_list: Option<AlbumsTable>,
     pub lyric: Option<Vec<Lyric>>
 }
 
@@ -211,6 +219,7 @@ impl App {
             artist_albums: None,
             selected_album: None,
             playlist_list: None,
+            album_list: None,
             lyric: None,
         }
     }
@@ -282,6 +291,7 @@ impl App {
                         Some(list.selected_index),
                     );
                     list.selected_index = next_index;
+                    println!("{:#?}", next_index);
 
                     let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                     self.start_playback(track_playing.id.unwrap().to_string());
@@ -451,6 +461,24 @@ impl App {
                     })
                 }
                 self.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist);
+            }
+            None => {
+                panic!("get artist albums error");
+            }
+        }
+    }
+
+
+    pub fn get_top_albums(&mut self) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(albums) = api.top_albums() {
+                    self.album_list = Some(AlbumsTable {
+                        albums: albums,
+                        selected_index: 0,
+                    })
+                }
+                self.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
             }
             None => {
                 panic!("get artist albums error");
