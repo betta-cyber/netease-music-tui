@@ -14,6 +14,12 @@ mod album_tracks;
 use super::app::{App, ActiveBlock, RouteId};
 use termion::event::Key;
 
+#[derive(Clone, PartialEq, Debug)]
+pub enum TrackState {
+    Forword,
+    Backword,
+}
+
 pub fn handle_app(key: Key, app: &mut App) {
     match key {
         // Key::Char('a') => {
@@ -28,6 +34,12 @@ pub fn handle_app(key: Key, app: &mut App) {
         }
         Key::Char('+') => {
             app.increase_volume();
+        }
+        Key::Char('n') => {
+            app.change_track(TrackState::Forword);
+        }
+        Key::Char('p') => {
+            app.change_track(TrackState::Backword);
         }
         Key::Char('/') => {
             app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));

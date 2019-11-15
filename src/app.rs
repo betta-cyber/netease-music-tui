@@ -8,6 +8,7 @@ use super::model::album::Album;
 use super::model::lyric::Lyric;
 use super::api::CloudMusic;
 use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
+use super::handlers::TrackState;
 use rand::Rng;
 
 const DEFAULT_ROUTE: Route = Route {
@@ -263,6 +264,7 @@ impl App {
                     let next_index = App::next_index(
                         &list.tracks,
                         Some(list.selected_index),
+                        TrackState::Forword,
                     );
                     list.selected_index = next_index;
                     // println!("{:#?}", next_index);
@@ -289,6 +291,7 @@ impl App {
                     let next_index = App::next_index(
                         &list.tracks,
                         Some(list.selected_index),
+                        TrackState::Forword,
                     );
                     list.selected_index = next_index;
                     println!("{:#?}", next_index);
@@ -302,20 +305,89 @@ impl App {
         }
     }
 
-    pub fn next_index<T>(selection_data: &[T], selection_index: Option<usize>) -> usize {
+    pub fn next_index<T>(selection_data: &[T], selection_index: Option<usize>, state: TrackState) -> usize {
         match selection_index {
             Some(selection_index) => {
                 if !selection_data.is_empty() {
-                    let next_index = selection_index + 1;
-                    if next_index > selection_data.len() - 1 {
-                        return 0;
-                    } else {
-                        return next_index;
+                    match state {
+                        TrackState::Forword => {
+                            let next_index = selection_index + 1;
+                            if next_index > selection_data.len() - 1 {
+                                return 0;
+                            } else {
+                                return next_index;
+                            }
+                        }
+                        TrackState::Backword => {
+                            let next_index = selection_index - 1;
+                            if next_index < 0 {
+                                return 0;
+                            } else {
+                                return next_index;
+                            }
+                        }
                     }
                 }
                 0
             }
             None => 0,
+        }
+    }
+
+    pub fn change_track(&mut self, state: TrackState) {
+        match self.repeat_state {
+            RepeatState::Track => {
+                // loop current song
+                match &self.current_playing {
+                    Some(track) => {
+                        self.start_playback(track.id.unwrap().to_string());
+                    }
+                    None => {
+                        panic!("error");
+                    }
+                };
+            }
+            RepeatState::All => {
+                // loop current my playlist
+                let list = &mut self.my_playlist;
+                let next_index = App::next_index(
+                    &list.tracks,
+                    Some(list.selected_index),
+                    state,
+                );
+                list.selected_index = next_index;
+
+                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                self.start_playback(track_playing.id.unwrap().to_string());
+                self.current_playing = Some(track_playing);
+
+            }
+            RepeatState::Shuffle => {
+                let list = &mut self.my_playlist;
+                let mut rng = rand::thread_rng();
+                let next_index = rng.gen_range(0, list.tracks.len());
+                list.selected_index = next_index;
+
+                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                self.start_playback(track_playing.id.unwrap().to_string());
+                self.current_playing = Some(track_playing);
+            }
+            RepeatState::FM => {
+                // use my playlist for play personal fm
+                let list = &mut self.my_playlist;
+                let next_index = App::next_index(
+                    &list.tracks,
+                    Some(list.selected_index),
+                    state,
+                );
+                list.selected_index = next_index;
+                println!("{:#?}", next_index);
+
+                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                self.start_playback(track_playing.id.unwrap().to_string());
+                self.current_playing = Some(track_playing);
+            }
+            _ => {}
         }
     }
 
