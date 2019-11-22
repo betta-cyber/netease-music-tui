@@ -2,3 +2,4 @@
 **/*.rs.bk
 Settings.toml
 cookie
+test.log

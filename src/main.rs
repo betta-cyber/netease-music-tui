@@ -7,6 +7,9 @@ extern crate serde_json;
 extern crate config;
 #[macro_use]
 extern crate log;
+extern crate gstreamer as gst;
+extern crate gstreamer_player as gst_player;
+use gst::prelude::*;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -33,6 +36,8 @@ fn main() -> Result<(), failure::Error> {
     simple_logging::log_to_file("test.log", LevelFilter::Info);
 
     info!("start netease cloud music rust client");
+
+    gst::init()?;
 
     // init application
     let mut settings = config::Config::default();
@@ -78,10 +83,10 @@ fn main() -> Result<(), failure::Error> {
                 }
                 // means space
                 Key::Char(' ') => {
-                    if app.player.is_playing() {
+                    if app.is_playing() {
                         app.player.pause();
                     } else {
-                        app.player.play().unwrap();
+                        app.player.play();
                     }
                 }
                 Key::Esc => {

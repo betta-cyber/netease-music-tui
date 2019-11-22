@@ -146,7 +146,7 @@ where
         .margin(1)
         .split(layout_chunk);
 
-        let state_title = if app.player.is_playing() {
+        let state_title = if app.is_playing() {
             "Playing"
         } else {
             "Pause"
