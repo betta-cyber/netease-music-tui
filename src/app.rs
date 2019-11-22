@@ -285,16 +285,16 @@ impl App {
                     self.current_playing = Some(track_playing);
                 }
                 RepeatState::FM => {
-                    println!("ddddddd");
                     // use my playlist for play personal fm
                     let list = &mut self.my_playlist;
+                    info!("{:#?}", list);
                     let next_index = App::next_index(
                         &list.tracks,
                         Some(list.selected_index),
                         TrackState::Forword,
                     );
                     list.selected_index = next_index;
-                    println!("{:#?}", next_index);
+                    info!("{:#?}", next_index);
 
                     let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                     self.start_playback(track_playing.id.unwrap().to_string());
@@ -380,8 +380,14 @@ impl App {
                     Some(list.selected_index),
                     state,
                 );
+                if next_index == 0 {
+                    if let Ok(tracks) = self.cloud_music.as_ref().unwrap().personal_fm() {
+                        list.tracks = tracks.to_owned();
+                    }
+                }
                 list.selected_index = next_index;
-                println!("{:#?}", next_index);
+                // info!("{:#?}", list);
+                // info!("{:#?}", next_index);
 
                 let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                 self.start_playback(track_playing.id.unwrap().to_string());
@@ -604,7 +610,7 @@ impl App {
                 self.repeat_state = RepeatState::FM;
             }
             None => {
-                panic!("error");
+                error!("set fm mode error");
             }
         }
     }

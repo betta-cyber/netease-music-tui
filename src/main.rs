@@ -5,7 +5,8 @@ extern crate failure;
 extern crate serde;
 extern crate serde_json;
 extern crate config;
-
+#[macro_use]
+extern crate log;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -16,6 +17,7 @@ use tui::layout::{Layout, Constraint, Direction, Rect};
 use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use util::event::{Event, Events};
+use log::LevelFilter;
 
 mod util;
 mod model;
@@ -27,6 +29,10 @@ mod ui;
 use app::{App, ActiveBlock};
 
 fn main() -> Result<(), failure::Error> {
+
+    simple_logging::log_to_file("test.log", LevelFilter::Info);
+
+    info!("start netease cloud music rust client");
 
     // init application
     let mut settings = config::Config::default();
