@@ -68,9 +68,9 @@ fn main() -> Result<(), failure::Error> {
             ActiveBlock::Help => {
                 ui::draw_help_menu(&mut f);
             }
-            ActiveBlock::Playing => {
-                ui::draw_playing_detail(&mut f, &app);
-            }
+            // ActiveBlock::Playing => {
+                // ui::draw_playing_detail(&mut f, &app);
+            // }
             _ => {
                 ui::draw_main_layout(&mut f, &app);
             }

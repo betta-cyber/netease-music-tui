@@ -123,11 +123,14 @@ where
             draw_album_table(f, app, chunks[1]);
         }
         RouteId::AlbumList => {
-            // album list 
+            // album list
             draw_album_list(f, app, chunks[1]);
         }
         RouteId::Playlist => {
             draw_playlist_table(f, app, chunks[1]);
+        }
+        RouteId::Playing => {
+            draw_playing_detail(f, app, chunks[1]);
         }
         _ => {
             draw_home(f, app, chunks[1]);
@@ -671,22 +674,37 @@ where
         .render(f, chunks[0]);
 }
 
-pub fn draw_playing_detail<B>(f: &mut Frame<B>, app: &App)
+
+pub fn draw_playing_detail<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::SearchResult,
+        current_route.hovered_block == ActiveBlock::SearchResult,
+    );
+
+    // let chunks = Layout::default()
+        // .direction(Direction::Vertical)
+        // .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+        // .split(layout_chunk);
+
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .margin(2)
-        .split(f.size());
+        // .margin(2)
+        .split(layout_chunk);
 
     Canvas::default()
-        // .block(
-            // Block::default()
-            // // .borders(Borders::ALL)
-            // // .title("Playing")
-        // )
+        .block(
+            Block::default()
+            .borders(Borders::ALL)
+            .title("Playing")
+            .title_style(get_color(highlight_state))
+            .border_style(get_color(highlight_state)),
+        )
         .paint(|ctx| {
             ctx.draw(&app.playing_circle);
         })
@@ -704,6 +722,10 @@ where
     SelectableList::default()
         .block(
             Block::default()
+            .borders(Borders::ALL)
+            .title("Playing")
+            .title_style(get_color(highlight_state))
+            .border_style(get_color(highlight_state)),
         )
         .items(&lyric_items)
         .style(Style::default().fg(Color::White))

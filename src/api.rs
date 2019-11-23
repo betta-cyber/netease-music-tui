@@ -461,6 +461,20 @@ impl CloudMusic {
         Ok(res.albums)
     }
 
+    // like track
+    pub fn like(&self, track_id: &str, like: bool) -> Result<Vec<Album>, failure::Error> {
+        let url = format!("/weapi/radio/like");
+        let mut params = HashMap::new();
+        params.insert("alg".to_owned(), "itembased".to_owned());
+        params.insert("trackId".to_owned(), track_id.to_string());
+        params.insert("like".to_owned(), like.to_string());
+        params.insert("time".to_owned(), "25".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        let res = self.convert_result::<TopAlbumRes>(&result).unwrap();
+        Ok(res.albums)
+    }
+
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
