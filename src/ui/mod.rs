@@ -700,7 +700,7 @@ where
     Canvas::default()
         .block(
             Block::default()
-            .borders(Borders::ALL)
+            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM)
             .title("Playing")
             .title_style(get_color(highlight_state))
             .border_style(get_color(highlight_state)),
@@ -722,8 +722,7 @@ where
     SelectableList::default()
         .block(
             Block::default()
-            .borders(Borders::ALL)
-            .title("Playing")
+            .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
             .title_style(get_color(highlight_state))
             .border_style(get_color(highlight_state)),
         )

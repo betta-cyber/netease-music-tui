@@ -252,59 +252,11 @@ impl App {
                 self.circle_flag = !self.circle_flag;
             }
 
+            // check progress duration
             match self.duration_ms {
                 Some(duration_ms) => {
                     if self.song_progress_ms >= duration_ms {
-                        match self.repeat_state {
-                            RepeatState::Track => {
-                                // loop current song
-                                match &self.current_playing {
-                                    Some(track) => {
-                                        self.start_playback(track.id.unwrap().to_string());
-                                    }
-                                    None => {
-                                        panic!("error");
-                                    }
-                                };
-                            }
-                            RepeatState::All => {
-                                // loop current my playlist
-                                let list = &mut self.my_playlist;
-                                let next_index = App::next_index(
-                                    &list.tracks,
-                                    Some(list.selected_index),
-                                    TrackState::Forword,
-                                );
-                                list.selected_index = next_index;
-                                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                                self.start_playback(track_playing.id.unwrap().to_string());
-                                self.current_playing = Some(track_playing);
-                            }
-                            RepeatState::Shuffle => {
-                                let list = &mut self.my_playlist;
-                                let mut rng = rand::thread_rng();
-                                let next_index = rng.gen_range(0, list.tracks.len());
-                                list.selected_index = next_index;
-                                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                                self.start_playback(track_playing.id.unwrap().to_string());
-                                self.current_playing = Some(track_playing);
-                            }
-                            RepeatState::FM => {
-                                // use my playlist for play personal fm
-                                let list = &mut self.my_playlist;
-                                info!("{:#?}", list);
-                                let next_index = App::next_index(
-                                    &list.tracks,
-                                    Some(list.selected_index),
-                                    TrackState::Forword,
-                                );
-                                list.selected_index = next_index;
-                                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                                self.start_playback(track_playing.id.unwrap().to_string());
-                                self.current_playing = Some(track_playing);
-                            }
-                            _ => {}
-                        }
+                        self.change_track(TrackState::Forword)
                     }
                 }
                 None => {}
@@ -392,8 +344,6 @@ impl App {
                     }
                 }
                 list.selected_index = next_index;
-                // info!("{:#?}", list);
-                // info!("{:#?}", next_index);
 
                 let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                 self.start_playback(track_playing.id.unwrap().to_string());
@@ -589,6 +539,11 @@ impl App {
                         self.duration_ms = self.player.get_duration().mseconds();
                         flag = true;
                     }
+                }
+
+                // exit fm mode
+                if self.get_current_route().active_block != ActiveBlock::PersonalFm {
+                    self.repeat_state = RepeatState::All;
                 }
             }
             None => {}
