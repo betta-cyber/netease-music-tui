@@ -18,7 +18,7 @@ pub struct Playlist {
     pub trackCount: Option<i32>,
     pub description: Option<String>,
     pub privacy: Option<i32>,
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

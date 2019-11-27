@@ -37,6 +37,9 @@ pub fn handler(key: Key, app: &mut App) {
                 3 => {
                     app.get_top_albums()
                 }
+                4 => {
+                    app.get_top_artists()
+                }
                 _ => {}
             }
         }

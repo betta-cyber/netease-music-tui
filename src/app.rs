@@ -39,6 +39,7 @@ pub enum RouteId {
     AlbumList,
     Playlist,
     Artist,
+    ArtistList,
     Error,
     Home,
     Search,
@@ -54,6 +55,7 @@ pub enum ActiveBlock {
     AlbumTracks,
     AlbumList,
     Artist,
+    ArtistList,
     Playlist,
     Empty,
     Error,
@@ -95,6 +97,13 @@ pub struct PlaylistTable {
 #[derive(Clone)]
 pub struct AlbumsTable {
     pub albums: Vec<Album>,
+    pub selected_index: usize,
+}
+
+// album list
+#[derive(Clone)]
+pub struct ArtistsTable {
+    pub artists: Vec<Artist>,
     pub selected_index: usize,
 }
 
@@ -171,7 +180,9 @@ pub struct App {
     pub selected_album: Option<SelectedAlbum>,
     pub playlist_list: Option<PlaylistTable>,
     pub album_list: Option<AlbumsTable>,
-    pub lyric: Option<Vec<Lyric>>
+    pub artist_list: Option<ArtistsTable>,
+    pub lyric: Option<Vec<Lyric>>,
+    pub error_msg: String,
 }
 
 impl App {
@@ -224,7 +235,9 @@ impl App {
             selected_album: None,
             playlist_list: None,
             album_list: None,
+            artist_list: None,
             lyric: None,
+            error_msg: String::new(),
         }
     }
 
@@ -423,6 +436,12 @@ impl App {
         self.repeat_state = next_repeat_state;
     }
 
+    // handle error
+    pub fn handle_error(&mut self, e: failure::Error) {
+        self.push_navigation_stack(RouteId::Error, ActiveBlock::Error);
+        self.error_msg = e.to_string();
+    }
+
     pub fn get_playlist_tracks(&mut self, playlist_id: String) {
         match &self.cloud_music {
             Some(api) => {
@@ -461,9 +480,7 @@ impl App {
                 }
                 self.push_navigation_stack(RouteId::Artist, ActiveBlock::Artist);
             }
-            None => {
-                panic!("get artist albums error");
-            }
+            None => {}
         }
     }
 
@@ -479,9 +496,7 @@ impl App {
                 }
                 self.push_navigation_stack(RouteId::AlbumTracks, ActiveBlock::AlbumTracks);
             }
-            None => {
-                panic!("get artist albums error");
-            }
+            None => {}
         }
     }
 
@@ -496,9 +511,7 @@ impl App {
                 }
                 self.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist);
             }
-            None => {
-                panic!("get artist albums error");
-            }
+            None => {}
         }
     }
 
@@ -514,9 +527,23 @@ impl App {
                 }
                 self.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
             }
-            None => {
-                panic!("get artist albums error");
+            None => {}
+        }
+    }
+
+    // top artist
+    pub fn get_top_artists(&mut self) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(artists) = api.top_artists() {
+                    self.artist_list = Some(ArtistsTable {
+                        artists: artists,
+                        selected_index: 0,
+                    })
+                }
+                self.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
             }
+            None => {}
         }
     }
 
@@ -533,7 +560,7 @@ impl App {
                 self.duration_ms = None;
                 self.song_progress_ms = 0;
                 self.player.set_uri(&url);
-                self.lyric = Some(api.lyric(&id).unwrap());
+                // self.lyric = Some(api.lyric(&id).unwrap());
                 self.player.play();
 
                 let mut flag = false;
@@ -572,9 +599,7 @@ impl App {
                 self.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm);
                 self.repeat_state = RepeatState::FM;
             }
-            None => {
-                error!("set fm mode error");
-            }
+            None => {}
         }
     }
 

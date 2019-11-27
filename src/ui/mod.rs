@@ -126,6 +126,10 @@ where
             // album list
             draw_album_list(f, app, chunks[1]);
         }
+        RouteId::ArtistList => {
+            // album list
+            draw_artist_list(f, app, chunks[1]);
+        }
         RouteId::Playlist => {
             draw_playlist_table(f, app, chunks[1]);
         }
@@ -654,6 +658,11 @@ where
 
     let help_docs = vec![
         vec!["General", "a", "Jump to currently playing album"],
+        vec!["General", "f", "fullsize play block"],
+        vec!["Forword Track", "n", "play next track"],
+        vec!["Backword Track", "p", "play last track"],
+        vec!["Back", "Esc", "just back"],
+        vec!["Quit", "q", "quit netease cloud music"],
     ];
 
     let rows = help_docs
@@ -880,7 +889,7 @@ where
                             item.to_owned().name.unwrap().to_string(),
                             item.trackCount.unwrap().to_string(),
                             item.creator.to_owned().unwrap().nickname.unwrap().to_string(),
-                            create_tag_string(&item.tags),
+                            create_tag_string(&item.tags.to_owned().unwrap()),
                         ],
                     }
                 })
@@ -965,6 +974,65 @@ where
             (&album_ui.title, &header),
             &album_ui.items,
             album_ui.selected_index,
+            highlight_state,
+        );
+    };
+}
+
+pub fn draw_artist_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::ArtistList,
+        current_route.hovered_block == ActiveBlock::ArtistList,
+    );
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Artist",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let mut num = 0;
+    let artist_ui = match &app.artist_list {
+        Some(artist_list) => Some(ListUI {
+            items: artist_list.artists
+                .iter()
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().name,
+                        ],
+                    }
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "Discover Artists",
+            ),
+            selected_index: artist_list.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(artist_ui) = artist_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&artist_ui.title, &header),
+            &artist_ui.items,
+            artist_ui.selected_index,
             highlight_state,
         );
     };
