@@ -529,6 +529,9 @@ impl App {
                 let song = api.get_song_url(&id).unwrap();
                 let url = song.url.unwrap().to_string();
 
+                // init play state
+                self.duration_ms = None;
+                self.song_progress_ms = 0;
                 self.player.set_uri(&url);
                 self.lyric = Some(api.lyric(&id).unwrap());
                 self.player.play();

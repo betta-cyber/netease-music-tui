@@ -9,6 +9,8 @@ extern crate config;
 extern crate log;
 extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
+// log panics to find unknown error
+// extern crate log_panics;
 use gst::prelude::*;
 
 use std::io;
@@ -33,7 +35,7 @@ use app::{App, ActiveBlock};
 
 fn main() -> Result<(), failure::Error> {
 
-    simple_logging::log_to_file("test.log", LevelFilter::Info);
+    simple_logging::log_to_file("test.log", LevelFilter::Trace);
 
     info!("start netease cloud music rust client");
 
