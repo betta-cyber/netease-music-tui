@@ -22,7 +22,7 @@ pub struct TableHeader<'a> {
     width: u16,
 }
 
-pub fn draw_main_layout<B>(f: &mut Frame<B>, app: &App)
+pub fn draw_main_layout<B>(f: &mut Frame<B>, app: &mut App)
 where
     B: Backend,
 {
@@ -47,7 +47,10 @@ where
 
     // Currently playing
     draw_playing_block(f, app, parent_layout[2]);
+
+    app.block_height = parent_layout[1].height as usize
 }
+
 
 pub fn draw_input_and_help_box<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where

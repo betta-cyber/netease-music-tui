@@ -183,6 +183,7 @@ pub struct App {
     pub artist_list: Option<ArtistsTable>,
     pub lyric: Option<Vec<Lyric>>,
     pub error_msg: String,
+    pub block_height: usize,
 }
 
 impl App {
@@ -238,12 +239,13 @@ impl App {
             artist_list: None,
             lyric: None,
             error_msg: String::new(),
+            block_height: 0,
         }
     }
 
     // update app every tick
     pub fn update_on_tick(&mut self) {
-        info!("{:#?}", self.get_state());
+        debug!("{:#?}", self.get_state());
         if self.is_playing() {
             self.song_progress_ms = match self.player.get_position().mseconds() {
                 Some(ms) => ms,
@@ -547,6 +549,27 @@ impl App {
         }
     }
 
+    pub fn follow_current(&self) {
+        let track_id = &self.current_playing.clone().unwrap().id.unwrap().to_string();
+        match &self.cloud_music {
+            Some(api) => {
+                api.like(&track_id, true);
+            }
+            None => {}
+        }
+    }
+
+    // unfollow
+    pub fn unfollow_current(&self) {
+        let track_id = &self.current_playing.clone().unwrap().id.unwrap().to_string();
+        match &self.cloud_music {
+            Some(api) => {
+                api.like(&track_id, false);
+            }
+            None => {}
+        }
+    }
+
     pub fn start_playback(
         &mut self,
         id: String,
@@ -560,7 +583,7 @@ impl App {
                 self.duration_ms = None;
                 self.song_progress_ms = 0;
                 self.player.set_uri(&url);
-                // self.lyric = Some(api.lyric(&id).unwrap());
+                self.lyric = Some(api.lyric(&id).unwrap());
                 self.player.play();
 
                 let mut flag = false;

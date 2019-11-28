@@ -66,16 +66,15 @@ fn main() -> Result<(), failure::Error> {
 
 
     loop {
-        let current_route = app.get_current_route();
-        terminal.draw(|mut f| match current_route.active_block {
-            ActiveBlock::Help => {
-                ui::draw_help_menu(&mut f);
-            }
-            // ActiveBlock::Playing => {
-                // ui::draw_playing_detail(&mut f, &app);
-            // }
-            _ => {
-                ui::draw_main_layout(&mut f, &app);
+        terminal.draw(|mut f| {
+            let current_route = app.get_current_route();
+            match current_route.active_block {
+                ActiveBlock::Help => {
+                    ui::draw_help_menu(&mut f);
+                }
+                _ => {
+                    ui::draw_main_layout(&mut f, &mut app);
+                }
             }
         })?;
 

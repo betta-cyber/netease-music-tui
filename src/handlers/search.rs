@@ -55,57 +55,61 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            // search tracks
-            match app.cloud_music.as_ref().unwrap().search_track(
-                &app.input,
-                50,
-                0
-            ) {
-                Ok(result) => {
-                    app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+            let limit = (app.block_height - 5) as i32;
+            // no input no search
+            if app.input.len() > 0 {
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_track(
+                    &app.input,
+                    limit,
+                    0
+                ) {
+                    Ok(result) => {
+                        app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
                 }
-                Err(e) => {
-                    panic!("api error {}", e);
+                match app.cloud_music.as_ref().unwrap().search_playlist(
+                    &app.input,
+                    limit,
+                    0
+                ) {
+                    Ok(result) => {
+                        app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
                 }
+                match app.cloud_music.as_ref().unwrap().search_artist(
+                    &app.input,
+                    limit,
+                    0
+                ) {
+                    Ok(result) => {
+                        app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                match app.cloud_music.as_ref().unwrap().search_album(
+                    &app.input,
+                    limit,
+                    0
+                ) {
+                    Ok(result) => {
+                        app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.selected_playlist_index = None;
+                app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResult);
             }
-            match app.cloud_music.as_ref().unwrap().search_playlist(
-                &app.input,
-                50,
-                0
-            ) {
-                Ok(result) => {
-                    app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
-                }
-                Err(e) => {
-                    panic!("api error {}", e);
-                }
-            }
-            match app.cloud_music.as_ref().unwrap().search_artist(
-                &app.input,
-                50,
-                0
-            ) {
-                Ok(result) => {
-                    app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
-                }
-                Err(e) => {
-                    panic!("api error {}", e);
-                }
-            }
-            match app.cloud_music.as_ref().unwrap().search_album(
-                &app.input,
-                50,
-                0
-            ) {
-                Ok(result) => {
-                    app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
-                }
-                Err(e) => {
-                    panic!("api error {}", e);
-                }
-            }
-            app.selected_playlist_index = None;
-            app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResult);
         }
         // search input
         Key::Char(c) => {

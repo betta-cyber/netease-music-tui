@@ -22,48 +22,53 @@ pub enum TrackState {
 }
 
 pub fn handle_app(key: Key, app: &mut App) {
-    match key {
-        // Key::Char('a') => {
-            // if let Some(current_playback_context) = &app.current_playback_context {
-                // if let Some(full_track) = &current_playback_context.item.clone() {
-                    // app.get_album_tracks(full_track.album.clone());
-                // }
-            // };
-        // }
-        Key::Char('-') => {
-            app.decrease_volume();
-        }
-        Key::Char('+') => {
-            app.increase_volume();
-        }
-        Key::Char('n') => {
-            app.change_track(TrackState::Forword);
-        }
-        Key::Char('p') => {
-            app.change_track(TrackState::Backword);
-        }
-        Key::Char('/') => {
-            app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
-        }
-        Key::Char('r') => {
-            app.repeat();
-        }
-        Key::Char('?') => {
-            app.set_current_route_state(Some(ActiveBlock::Help), None);
-        }
-        Key::Char('f') => {
-            app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
-        }
-        Key::Char('a') => {
-            let album_id = match &app.current_playing {
-                Some(track) => {
-                    track.album.to_owned().unwrap().id
+    // get current route
+    let current_route = app.get_current_route();
+    match current_route.active_block {
+        ActiveBlock::Search => {
+            search::handler(key, app);
+        },
+        _ => {
+            match key {
+                Key::Char('-') => {
+                    app.decrease_volume();
                 }
-                None => None
-            };
-            app.get_album_tracks(album_id.unwrap().to_string());
+                Key::Char('+') => {
+                    app.increase_volume();
+                }
+                Key::Char('n') => {
+                    app.change_track(TrackState::Forword);
+                }
+                Key::Char('p') => {
+                    app.change_track(TrackState::Backword);
+                }
+                Key::Char('/') => {
+                    app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
+                }
+                Key::Char('r') => {
+                    app.repeat();
+                }
+                Key::Char('?') => {
+                    app.set_current_route_state(Some(ActiveBlock::Help), None);
+                }
+                Key::Char('f') => {
+                    app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
+                }
+                Key::Ctrl('h') => {
+                    app.follow_current();
+                }
+                Key::Char('a') => {
+                    let album_id = match &app.current_playing {
+                        Some(track) => {
+                            track.album.to_owned().unwrap().id
+                        }
+                        None => None
+                    };
+                    app.get_album_tracks(album_id.unwrap().to_string());
+                }
+                _ => handle_block_events(key, app),
+            }
         }
-        _ => handle_block_events(key, app),
     }
 }
 

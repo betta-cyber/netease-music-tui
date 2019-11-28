@@ -333,7 +333,7 @@ impl CloudMusic {
                     .lines()
                     .map(|s| {
                         let re = regex::Regex::new(
-                            r#"\[(\w+):(\w+).(\w+)\](.*?)$"#,
+                            r#"\[(\w+):(\w+)\.(\w+)\](.*?)$"#,
                         ).unwrap();
                         if let Some(cap) = re.captures(&s) {
                             let minite = cap[1].parse::<u64>().unwrap_or(0);
@@ -462,7 +462,7 @@ impl CloudMusic {
     }
 
     // like track
-    pub fn like(&self, track_id: &str, like: bool) -> Result<Vec<Album>, failure::Error> {
+    pub fn like(&self, track_id: &str, like: bool) -> Result<String, failure::Error> {
         let url = format!("/weapi/radio/like");
         let mut params = HashMap::new();
         params.insert("alg".to_owned(), "itembased".to_owned());
@@ -471,8 +471,7 @@ impl CloudMusic {
         params.insert("time".to_owned(), "25".to_owned());
 
         let result = self.post(&url, &mut params)?;
-        let res = self.convert_result::<TopAlbumRes>(&result).unwrap();
-        Ok(res.albums)
+        Ok("ok".to_string())
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
