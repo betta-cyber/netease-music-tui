@@ -26,7 +26,14 @@ pub fn handle_app(key: Key, app: &mut App) {
     let current_route = app.get_current_route();
     match current_route.active_block {
         ActiveBlock::Search => {
-            search::handler(key, app);
+            match key {
+                Key::Ctrl('h') => {
+                    app.hover_mode();
+                }
+                _ => {
+                    search::handler(key, app);
+                }
+            }
         },
         _ => {
             match key {
@@ -54,8 +61,11 @@ pub fn handle_app(key: Key, app: &mut App) {
                 Key::Char('f') => {
                     app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
                 }
-                Key::Ctrl('h') => {
+                Key::Ctrl('f') => {
                     app.follow_current();
+                }
+                Key::Esc => {
+                    app.hover_mode();
                 }
                 Key::Char('a') => {
                     let album_id = match &app.current_playing {

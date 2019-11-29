@@ -15,6 +15,8 @@ pub fn handler(key: Key, app: &mut App) {
             | ActiveBlock::Artists
             | ActiveBlock::Home
             | ActiveBlock::SearchResult
+            | ActiveBlock::Playlist
+            | ActiveBlock::AlbumList
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }
@@ -24,10 +26,21 @@ pub fn handler(key: Key, app: &mut App) {
             ActiveBlock::MyPlaylists => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }
-            ActiveBlock::PlayBar => {
-                app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
-            }
+            // ActiveBlock::PlayBar => {
+                // app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
+            // }
             ActiveBlock::Recommend => {
+                app.set_current_route_state(None, Some(ActiveBlock::Search));
+            }
+            ActiveBlock::Artist
+            | ActiveBlock::AlbumList
+            | ActiveBlock::AlbumTracks
+            | ActiveBlock::Artists
+            | ActiveBlock::Home
+            | ActiveBlock::SearchResult
+            | ActiveBlock::Playlist
+            | ActiveBlock::AlbumList
+            | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Search));
             }
             _ => {}
@@ -38,16 +51,6 @@ pub fn handler(key: Key, app: &mut App) {
             }
             ActiveBlock::Search => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
-            }
-            ActiveBlock::Artist
-            | ActiveBlock::AlbumList
-            | ActiveBlock::AlbumTracks
-            | ActiveBlock::Artists
-            | ActiveBlock::Home
-            | ActiveBlock::MyPlaylists
-            | ActiveBlock::SearchResult
-            | ActiveBlock::TrackTable => {
-                app.set_current_route_state(None, Some(ActiveBlock::PlayBar));
             }
             _ => {}
         },

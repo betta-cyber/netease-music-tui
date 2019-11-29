@@ -80,7 +80,7 @@ fn main() -> Result<(), failure::Error> {
 
         match events.next()? {
             Event::Input(input) => match input {
-                Key::Char('q') => {
+                Key::Ctrl('c') => {
                     break;
                 }
                 // means space
@@ -91,7 +91,7 @@ fn main() -> Result<(), failure::Error> {
                         app.player.play();
                     }
                 }
-                Key::Esc => {
+                Key::Char('q') => {
                     if app.get_current_route().active_block != ActiveBlock::Search {
                         // Go back through navigation stack when not in search input mode and exit the app if there are no more places to back to
                         let pop_result = app.pop_navigation_stack();

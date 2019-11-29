@@ -463,9 +463,7 @@ impl App {
                     self.track_table.name = playlist_tracks.name.unwrap();
                 }
             }
-            None => {
-                panic!("get playlist track error");
-            }
+            None => {}
         }
         self.push_navigation_stack(RouteId::TrackTable, ActiveBlock::TrackTable)
     }
@@ -625,6 +623,13 @@ impl App {
             None => {}
         }
     }
+
+    // set hover mode
+    pub fn hover_mode(&mut self) {
+        let current_route = &self.get_current_route();
+        self.set_current_route_state(Some(ActiveBlock::Empty), Some(current_route.hovered_block))
+    }
+
 
     pub fn is_playing(&self) -> bool {
         let player = &self.player;

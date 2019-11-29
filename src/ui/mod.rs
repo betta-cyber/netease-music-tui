@@ -657,15 +657,30 @@ where
 
     let white = Style::default().fg(Color::White);
     let gray = Style::default().fg(Color::White);
-    let header = ["Context", "Event", "Description"];
+    let header = ["Description", "Event", "Context"];
 
     let help_docs = vec![
-        vec!["General", "a", "Jump to currently playing album"],
-        vec!["General", "f", "fullsize play block"],
-        vec!["Forword Track", "n", "play next track"],
-        vec!["Backword Track", "p", "play last track"],
-        vec!["Back", "Esc", "just back"],
-        vec!["Quit", "q", "quit netease cloud music"],
+        vec!["Increase volume", "+", "General"],
+        vec!["Decrease volume", "-", "General"],
+        vec!["Skip to next track", "n", "General"],
+        vec!["Skip to previous track", "p", "General"],
+        vec!["Toggle repeat mode", "r", "General"],
+        vec!["Move selection left", "h | <Left Arrow Key> ", "General"],
+        vec!["Move selection down", "j | <Down Arrow Key> ", "General"],
+        vec!["Move selection up", "k | <Up Arrow Key> ", "General"],
+        vec!["Move selection right", "l | <Right Arrow Key> ", "General"],
+        vec!["Jump to currently playing album", "a", "General"],
+        vec!["Enter Search", "/", "General"],
+        vec!["Pause/Resume playback", "<Space>", "General"],
+        vec!["Fullsize playbar", "f", "General"],
+        vec!["Go back or exit when nowhere left to back to", "q", "General"],
+        vec!["Enter hover mode", "<Esc>", "General"],
+        vec!["Enter active mode", "<Enter>", "General"],
+
+        vec!["Delete entire input", "<Ctrl+u>", "Search input"],
+        vec!["Search with input text", "<Enter>", "Search input"],
+        vec!["Jump to start of input", "<Ctrl+a>", "Search input"],
+        vec!["Jump to end of input", "<Ctrl+e>", "Search input"],
     ];
 
     let rows = help_docs
