@@ -107,6 +107,24 @@ pub fn handle_right_event(app: &mut App) {
                         Some(ActiveBlock::ArtistList),
                     );
                 }
+                RouteId::PersonalFm => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Empty),
+                        Some(ActiveBlock::PersonalFm),
+                    );
+                }
+                RouteId::AlbumTracks => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Empty),
+                        Some(ActiveBlock::AlbumTracks),
+                    );
+                }
+                RouteId::Playing => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Empty),
+                        Some(ActiveBlock::Playing),
+                    );
+                }
                 RouteId::Home => {
                     app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
                 }

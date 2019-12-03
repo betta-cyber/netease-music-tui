@@ -673,7 +673,7 @@ where
         vec!["Enter Search", "/", "General"],
         vec!["Pause/Resume playback", "<Space>", "General"],
         vec!["Fullsize playbar", "f", "General"],
-        vec!["Go back or exit when nowhere left to back to", "q", "General"],
+        vec!["Go back or exit when nowhere left to back to", "e", "General"],
         vec!["Enter hover mode", "<Esc>", "General"],
         vec!["Enter active mode", "<Enter>", "General"],
 
@@ -709,8 +709,8 @@ where
 
     let current_route = app.get_current_route();
     let highlight_state = (
-        current_route.active_block == ActiveBlock::SearchResult,
-        current_route.hovered_block == ActiveBlock::SearchResult,
+        current_route.active_block == ActiveBlock::Playing,
+        current_route.hovered_block == ActiveBlock::Playing,
     );
 
     // let chunks = Layout::default()

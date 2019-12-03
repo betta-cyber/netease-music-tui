@@ -46,9 +46,6 @@ fn main() -> Result<(), failure::Error> {
     let mut settings = config::Config::default();
     settings.merge(config::File::with_name("Settings")).unwrap();
 
-    let username = settings.get::<String>("username")?;
-    let password = settings.get::<String>("password")?;
-
     let mut app = App::new();
     let mut is_first_render = true;
 
@@ -79,29 +76,34 @@ fn main() -> Result<(), failure::Error> {
         })?;
 
         match events.next()? {
-            Event::Input(input) => match input {
-                Key::Ctrl('c') => {
-                    break;
-                }
-                // means space
-                Key::Char(' ') => {
-                    if app.is_playing() {
-                        app.player.pause();
-                    } else {
-                        app.player.play();
-                    }
-                }
-                Key::Char('q') => {
-                    if app.get_current_route().active_block != ActiveBlock::Search {
-                        // Go back through navigation stack when not in search input mode and exit the app if there are no more places to back to
-                        let pop_result = app.pop_navigation_stack();
-                        if pop_result.is_none() {
-                            break; // Exit application
+            Event::Input(input) => {
+                info!("{:#?}", input);
+                match input {
+                    Key::Char('e') => {
+                        if app.get_current_route().active_block != ActiveBlock::Search {
+                            let pop_result = app.pop_navigation_stack();
+                            if pop_result.is_none() {
+                                break; // Exit application
+                            }
                         }
                     }
-                }
-                _ => {
-                    handlers::handle_app(input, &mut app);
+                    Key::Char('q') => {
+                        break;
+                    }
+                    Key::Ctrl('c') => {
+                        break;
+                    }
+                    // means space
+                    Key::Char(' ') => {
+                        if app.is_playing() {
+                            app.player.pause();
+                        } else {
+                            app.player.play();
+                        }
+                    }
+                    _ => {
+                        handlers::handle_app(input, &mut app);
+                    }
                 }
             },
             Event::Tick => {
@@ -115,6 +117,8 @@ fn main() -> Result<(), failure::Error> {
                 Some(p) => {p}
                 None => {
                     // need login
+                    let username = settings.get::<String>("username")?;
+                    let password = settings.get::<String>("password")?;
                     cloud_music.phone_login(&username, &password)?
                 }
             };

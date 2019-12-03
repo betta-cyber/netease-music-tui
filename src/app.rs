@@ -15,7 +15,7 @@ use gst::prelude::*;
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
-    active_block: ActiveBlock::Empty,
+    active_block: ActiveBlock::Recommend,
     hovered_block: ActiveBlock::Recommend,
 };
 
@@ -27,6 +27,8 @@ pub const RECOMMEND_OPTIONS: [&str; 5] = [
     "Hot Artists",
 ];
 
+
+#[derive(Clone, PartialEq, Debug)]
 pub struct Route {
     pub id: RouteId,
     pub active_block: ActiveBlock,
@@ -245,7 +247,7 @@ impl App {
 
     // update app every tick
     pub fn update_on_tick(&mut self) {
-        debug!("{:#?}", self.get_state());
+        // debug!("{:#?}", self.get_state());
         if self.is_playing() {
             self.song_progress_ms = match self.player.get_position().mseconds() {
                 Some(ms) => ms,

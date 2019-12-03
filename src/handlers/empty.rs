@@ -17,6 +17,8 @@ pub fn handler(key: Key, app: &mut App) {
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
             | ActiveBlock::AlbumList
+            | ActiveBlock::PersonalFm
+            | ActiveBlock::Playing
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }
@@ -40,6 +42,7 @@ pub fn handler(key: Key, app: &mut App) {
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
             | ActiveBlock::AlbumList
+            | ActiveBlock::PersonalFm
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Search));
             }
