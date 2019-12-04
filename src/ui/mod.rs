@@ -725,11 +725,6 @@ where
         current_route.hovered_block == ActiveBlock::Playing,
     );
 
-    // let chunks = Layout::default()
-        // .direction(Direction::Vertical)
-        // .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
-        // .split(layout_chunk);
-
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
@@ -752,23 +747,76 @@ where
         .render(f, chunks[0]);
 
     let lyric_items = match &app.lyric {
-        Some(l) => l.iter().map(|item| item.value.to_owned()).collect(),
+        Some(l) => l.iter().map(|item| vec![item.value.to_owned()]).collect(),
         None => vec![],
     };
-    let selected_index = Some(0);
+    let selected_index = app.lyric_index;
 
 
-    SelectableList::default()
+    let interval = (layout_chunk.height / 2) as usize;
+    let (row_items, margin) = if !lyric_items.is_empty() {
+        let count = (layout_chunk.height - 4) as usize;
+        let total = lyric_items.len();
+        if selected_index >= count - interval && total > count {
+            if selected_index >= total - interval {
+                let margin = total - count;
+                (&lyric_items[margin..], margin)
+            } else {
+                let margin = selected_index + interval - count;
+                (&lyric_items[margin..], margin)
+            }
+        } else {
+            (lyric_items.as_ref(), 0 as usize)
+        }
+    } else {
+        (lyric_items.as_ref(), 0 as usize)
+    };
+
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.5),
+        }
+    ];
+
+    let selected_style = get_color(highlight_state).modifier(Modifier::BOLD);
+    let rows = row_items.iter().enumerate().map(|(i, item)| {
+        let mut style = Style::default().fg(Color::White); // default styling
+        if i == selected_index - margin {
+            style = selected_style;
+        }
+        // Return row styled data
+        Row::StyledData(item.into_iter(), style)
+    });
+
+    let widths = header.iter().map(|h| h.width).collect::<Vec<u16>>();
+
+    Table::new(header.iter().map(|h| h.text), rows)
         .block(
             Block::default()
             .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
+            .style(Style::default().fg(Color::White))
             .title_style(get_color(highlight_state))
             .border_style(get_color(highlight_state)),
         )
-        .items(&lyric_items)
         .style(Style::default().fg(Color::White))
-        .select(selected_index)
+        .widths(&widths)
         .render(f, chunks[1]);
+
+
+    // SelectableList::default()
+        // .block(
+            // Block::default()
+            // .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
+            // .title_style(get_color(highlight_state))
+            // .border_style(get_color(highlight_state)),
+        // )
+        // .items(&row_items)
+        // .style(Style::default().fg(Color::White))
+        // .select(Some(selected_index))
+        // .highlight_style(get_color(highlight_state).modifier(Modifier::BOLD))
+        // .render(f, chunks[1]);
 }
 
 

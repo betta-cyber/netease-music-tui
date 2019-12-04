@@ -44,10 +44,10 @@ pub fn handle_app(key: Key, app: &mut App) {
                     app.increase_volume();
                 }
                 Key::Char('n') => {
-                    app.change_track(TrackState::Forword);
+                    app.skip_track(TrackState::Forword);
                 }
                 Key::Char('p') => {
-                    app.change_track(TrackState::Backword);
+                    app.skip_track(TrackState::Backword);
                 }
                 Key::Char('/') => {
                     app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));

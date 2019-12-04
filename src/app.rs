@@ -191,6 +191,7 @@ pub struct App {
     pub lyric: Option<Vec<Lyric>>,
     pub error_msg: String,
     pub block_height: usize,
+    pub lyric_index: usize,
 }
 
 impl App {
@@ -251,6 +252,7 @@ impl App {
             lyric: None,
             error_msg: String::new(),
             block_height: 0,
+            lyric_index: 0,
         }
     }
 
@@ -276,13 +278,28 @@ impl App {
                     }
                 }
                 self.circle_flag = !self.circle_flag;
+                match &self.lyric {
+                    Some(lyrics) => {
+                        let next_lyric = lyrics.get(self.lyric_index + 1);
+                        // check current ms and lyric timeline
+                        match next_lyric {
+                            Some(next_lyric) => {
+                                if self.song_progress_ms as u128 >= next_lyric.timeline.as_millis() {
+                                    self.lyric_index += 1;
+                                }
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
+                }
             }
 
             // check progress duration
             match self.duration_ms {
                 Some(duration_ms) => {
                     if self.song_progress_ms >= duration_ms {
-                        self.change_track(TrackState::Forword)
+                        self.skip_track(TrackState::Forword)
                     }
                 }
                 None => {}
@@ -318,7 +335,7 @@ impl App {
         }
     }
 
-    pub fn change_track(&mut self, state: TrackState) {
+    pub fn skip_track(&mut self, state: TrackState) {
         match self.repeat_state {
             RepeatState::Track => {
                 // loop current song
@@ -591,6 +608,7 @@ impl App {
                 // init play state
                 self.duration_ms = None;
                 self.song_progress_ms = 0;
+                self.lyric_index = 0;
                 self.player.set_uri(&url);
                 self.lyric = Some(api.lyric(&id).unwrap());
                 self.player.play();
