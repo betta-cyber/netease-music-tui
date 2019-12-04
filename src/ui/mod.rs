@@ -103,6 +103,7 @@ where
     draw_user_block(f, app, chunks[0]);
 
     let current_route = app.get_current_route();
+    info!("{:?}", current_route);
 
     match current_route.id {
         RouteId::Error => {} // This is handled as a "full screen" route in main.rs
@@ -138,6 +139,14 @@ where
         }
         RouteId::Playing => {
             draw_playing_detail(f, app, chunks[1]);
+        }
+        RouteId::MyPlaylists => {
+            // check track length for show
+            if app.track_table.tracks.len() > 0 {
+                draw_track_table(f, &app, chunks[1]);
+            } else {
+                draw_home(f, app, chunks[1]);
+            }
         }
         _ => {
             draw_home(f, app, chunks[1]);
@@ -697,7 +706,7 @@ where
                 .border_style(gray),
         )
         .style(Style::default().fg(Color::White))
-        .widths(&[20, 40, 50])
+        .widths(&[50, 40, 20])
         .render(f, chunks[0]);
 }
 
@@ -759,37 +768,76 @@ where
         .render(f, chunks[1]);
 }
 
-fn draw_artist_albums<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+
+// list ui struct
+struct ListUI {
+    selected_index: usize,
+    items: Vec<TableItem>,
+    title: String,
+}
+
+pub fn draw_artist_albums<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
+
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::Artist,
         current_route.hovered_block == ActiveBlock::Artist,
     );
 
-    if let Some(artist_albums) = &app.artist_albums {
-        let items = &artist_albums.albums
-            .iter()
-            .map(|item| item.name.to_owned().unwrap())
-            .collect::<Vec<String>>();
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Album Name",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+        TableHeader {
+            text: "Artist",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
 
-        draw_selectable_list(
+    let mut num = 0;
+    let album_ui = match &app.artist_albums {
+        Some(album_list) => Some(ListUI {
+            items: album_list.albums
+                .iter()
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.clone().unwrap_or_else(|| 0).to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().name.unwrap().to_string(),
+                            item.artist.to_owned().unwrap().name.to_string(),
+                        ],
+                    }
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "Albums",
+            ),
+            selected_index: album_list.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(album_ui) = album_ui {
+        draw_table(
             f,
+            &app,
             layout_chunk,
-            &artist_albums.artist_name,
-            &items,
+            (&album_ui.title, &header),
+            &album_ui.items,
+            album_ui.selected_index,
             highlight_state,
-            Some(artist_albums.selected_index),
         );
     };
-}
-
-struct ListUI {
-    selected_index: usize,
-    items: Vec<TableItem>,
-    title: String,
 }
 
 // dtaw album table
@@ -810,10 +858,6 @@ where
             width: get_percentage_width(layout_chunk.width, 0.05),
         },
         TableHeader {
-            text: "#",
-            width: get_percentage_width(layout_chunk.width, 0.3),
-        },
-        TableHeader {
             text: "Title",
             width: get_percentage_width(layout_chunk.width, 0.3),
         },
@@ -829,7 +873,6 @@ where
                     TableItem {
                         id: item.id.clone().unwrap_or_else(|| 0).to_string(),
                         format: vec![
-                            "".to_string(),
                             num.to_string(),
                             item.to_owned().name.unwrap().to_string(),
                         ],

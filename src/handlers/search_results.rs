@@ -80,9 +80,7 @@ pub fn handler(key: Key, app: &mut App) {
             if app.tabs.index == 0 {
                 let track_table = &app.search_results.tracks.as_ref().unwrap();
                 let track_playing = track_table.get(app.search_results.selected_tracks_index.to_owned()).unwrap().to_owned();
-                info!("{:#?}", track_playing);
                 app.start_playback(track_playing.id.unwrap().to_string());
-                info!("finish start play");
                 app.current_playing = Some(track_playing);
             } else if app.tabs.index == 1 {
                 if let Some(selected_artist) =
@@ -102,6 +100,156 @@ pub fn handler(key: Key, app: &mut App) {
                     let playlist_id = selected_playlist.id.to_owned().unwrap();
                     app.get_playlist_tracks(playlist_id.to_string());
                 }
+            }
+        }
+        Key::Ctrl('f') => {
+            let limit = (app.block_height - 5) as i32;
+            if app.tabs.index == 0 {
+                let page = app.search_results.selected_tracks_page as i32;
+                let next_page = page + 1;
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_track(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_tracks_page = next_page as usize;
+            }
+            if app.tabs.index == 1 {
+                let page = app.search_results.selected_artists_page as i32;
+                let next_page = page + 1;
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_artist(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_artists_page = next_page as usize;
+            }
+            if app.tabs.index == 2 {
+                let page = app.search_results.selected_albums_page as i32;
+                let next_page = page + 1;
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_album(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_albums_page = next_page as usize;
+            }
+            if app.tabs.index == 3 {
+                let page = app.search_results.selected_playlists_page as i32;
+                let next_page = page + 1;
+                // search playlist
+                match app.cloud_music.as_ref().unwrap().search_playlist(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_playlists_page = next_page as usize;
+            }
+        }
+        Key::Ctrl('b') => {
+            let limit = (app.block_height - 5) as i32;
+            if app.tabs.index == 0 {
+                let page = app.search_results.selected_tracks_page as i32;
+                let next_page = if page < 1 { 0 } else { page - 1 };
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_track(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_tracks_page = next_page as usize;
+            }
+            if app.tabs.index == 1 {
+                let page = app.search_results.selected_artists_page as i32;
+                let next_page = if page < 1 { 0 } else { page - 1 };
+                // search tracks
+                match app.cloud_music.as_ref().unwrap().search_artist(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_artists_page = next_page as usize;
+            }
+            if app.tabs.index == 2 {
+                let page = app.search_results.selected_albums_page as i32;
+                let next_page = if page < 1 { 0 } else { page - 1 };
+                // search album
+                match app.cloud_music.as_ref().unwrap().search_album(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_albums_page = next_page as usize;
+            }
+            if app.tabs.index == 3 {
+                let page = app.search_results.selected_playlists_page as i32;
+                let next_page = if page < 1 { 0 } else { page - 1 };
+                // search playlist
+                match app.cloud_music.as_ref().unwrap().search_playlist(
+                    &app.input,
+                    limit,
+                    next_page*limit,
+                ) {
+                    Ok(result) => {
+                        app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
+                app.search_results.selected_playlists_page = next_page as usize;
             }
         }
         _ => {}

@@ -131,6 +131,11 @@ pub struct SearchResult {
     pub selected_artists_index: usize,
     pub selected_playlists_index: usize,
     pub selected_tracks_index: usize,
+
+    pub selected_albums_page: usize,
+    pub selected_artists_page: usize,
+    pub selected_playlists_page: usize,
+    pub selected_tracks_page: usize,
 }
 
 // 顺序播放
@@ -225,6 +230,10 @@ impl App {
                 selected_artists_index: 0,
                 selected_playlists_index: 0,
                 selected_tracks_index: 0,
+                selected_albums_page: 0,
+                selected_artists_page: 0,
+                selected_playlists_page: 0,
+                selected_tracks_page: 0,
             },
             tabs: TabsState::new(vec![
                 "Songs".to_string(),

@@ -61,7 +61,7 @@ pub fn handle_app(key: Key, app: &mut App) {
                 Key::Char('f') => {
                     app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
                 }
-                Key::Ctrl('f') => {
+                Key::Ctrl('h') => {
                     app.follow_current();
                 }
                 Key::Esc => {
