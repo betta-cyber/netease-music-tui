@@ -312,6 +312,10 @@ impl CloudMusic {
         let mut params = HashMap::new();
 
         let result = self.post(&url, &mut params)?;
+        // replace al to album and ar to aritsts
+        let result = str::replace(&result, "\"al\"", "\"album\"");
+        let result = str::replace(&result, "\"ar\"", "\"artists\"");
+        // format
         let res = self.convert_result::<AlbumTrack>(&result).unwrap();
         Ok(res)
     }

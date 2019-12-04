@@ -690,6 +690,9 @@ where
         vec!["Search with input text", "<Enter>", "Search input"],
         vec!["Jump to start of input", "<Ctrl+a>", "Search input"],
         vec!["Jump to end of input", "<Ctrl+e>", "Search input"],
+
+        vec!["Jump to next page", "<Ctrl+f>", "Search result"],
+        vec!["Jump to previous page", "<Ctrl+b>", "Search result"],
     ];
 
     let rows = help_docs
@@ -859,7 +862,7 @@ where
         },
         TableHeader {
             text: "Title",
-            width: get_percentage_width(layout_chunk.width, 0.3),
+            width: get_percentage_width(layout_chunk.width, 0.8),
         },
     ];
 

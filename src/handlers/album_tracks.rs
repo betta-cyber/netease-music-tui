@@ -1,4 +1,4 @@
-use super::super::app::App;
+use super::super::app::{App, TrackTable};
 use termion::event::Key;
 use super::common_events;
 
@@ -25,10 +25,16 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Char('\n') => {
             if let Some(selected_album) = &mut app.selected_album {
+                app.my_playlist = TrackTable {
+                    tracks: selected_album.tracks.to_owned(),
+                    selected_index: selected_album.selected_index,
+                    name: selected_album.album.name.to_owned().unwrap()
+                };
                 if let Some(selected_track) = selected_album.tracks
                     .get(selected_album.selected_index)
                     .cloned()
                 {
+                    info!("{:#?}", selected_track);
                     app.start_playback(selected_track.id.unwrap().to_string());
                     app.current_playing = Some(selected_track);
                 }

@@ -1,4 +1,4 @@
-use super::super::app::{App, ActiveBlock, RouteId};
+use super::super::app::{App, ActiveBlock, RouteId, TrackTable};
 use super::common_events;
 use termion::event::Key;
 
@@ -81,6 +81,11 @@ pub fn handler(key: Key, app: &mut App) {
                 let track_table = &app.search_results.tracks.as_ref().unwrap();
                 let track_playing = track_table.get(app.search_results.selected_tracks_index.to_owned()).unwrap().to_owned();
                 app.start_playback(track_playing.id.unwrap().to_string());
+                app.my_playlist = TrackTable {
+                    tracks: app.search_results.tracks.to_owned().unwrap(),
+                    selected_index: app.search_results.selected_tracks_index,
+                    name: "search result".to_string()
+                };
                 app.current_playing = Some(track_playing);
             } else if app.tabs.index == 1 {
                 if let Some(selected_artist) =
@@ -114,31 +119,41 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+                        match result.songs {
+                            Some(tracks) => {
+                                app.search_results.tracks = Some(tracks);
+                                app.search_results.selected_tracks_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_tracks_page = next_page as usize;
             }
             if app.tabs.index == 1 {
                 let page = app.search_results.selected_artists_page as i32;
                 let next_page = page + 1;
-                // search tracks
+                // search artist
                 match app.cloud_music.as_ref().unwrap().search_artist(
                     &app.input,
                     limit,
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                        match result.artists {
+                            Some(artists) => {
+                                app.search_results.artists = Some(artists);
+                                app.search_results.selected_artists_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_artists_page = next_page as usize;
             }
             if app.tabs.index == 2 {
                 let page = app.search_results.selected_albums_page as i32;
@@ -150,13 +165,18 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
+                        match result.albums {
+                            Some(albums) => {
+                                app.search_results.albums = Some(albums);
+                                app.search_results.selected_albums_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_albums_page = next_page as usize;
             }
             if app.tabs.index == 3 {
                 let page = app.search_results.selected_playlists_page as i32;
@@ -168,13 +188,18 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                        match result.playlists {
+                            Some(playlists) => {
+                                app.search_results.playlists = Some(playlists);
+                                app.search_results.selected_playlists_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_playlists_page = next_page as usize;
             }
         }
         Key::Ctrl('b') => {
@@ -189,13 +214,18 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
+                        match result.songs {
+                            Some(tracks) => {
+                                app.search_results.tracks = Some(tracks);
+                                app.search_results.selected_tracks_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_tracks_page = next_page as usize;
             }
             if app.tabs.index == 1 {
                 let page = app.search_results.selected_artists_page as i32;
@@ -207,13 +237,18 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
+                        match result.artists {
+                            Some(artists) => {
+                                app.search_results.artists = Some(artists);
+                                app.search_results.selected_artists_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_artists_page = next_page as usize;
             }
             if app.tabs.index == 2 {
                 let page = app.search_results.selected_albums_page as i32;
@@ -243,13 +278,18 @@ pub fn handler(key: Key, app: &mut App) {
                     next_page*limit,
                 ) {
                     Ok(result) => {
-                        app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
+                        match result.playlists {
+                            Some(playlists) => {
+                                app.search_results.playlists = Some(playlists);
+                                app.search_results.selected_playlists_page = next_page as usize;
+                            }
+                            None => {}
+                        }
                     }
                     Err(e) => {
                         app.handle_error(e);
                     }
                 }
-                app.search_results.selected_playlists_page = next_page as usize;
             }
         }
         _ => {}
