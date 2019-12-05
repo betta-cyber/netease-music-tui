@@ -1,5 +1,5 @@
 use serde_json;
-use serde_json::Value;
+use serde_json::{Value, json};
 use serde::{Serialize, Deserialize};
 
 use reqwest::Client;
@@ -318,6 +318,31 @@ impl CloudMusic {
         // format
         let res = self.convert_result::<AlbumTrack>(&result).unwrap();
         Ok(res)
+    }
+
+    // log_track
+    pub fn log_track(&self, track_id: &str) -> Result<String, failure::Error> {
+        let url = format!("/weapi/feedback/weblog");
+        let data = format!(r#"
+            [{{
+                "action": "play",
+                "json": {{
+                    "download": 0,
+                    "end": "playend",
+                    "id": {},
+                    "sourceId": "960363870",
+                    "time": 999,
+                    "type":"song",
+                    "wifi": 0
+                }}
+            }}]
+        "#, track_id);
+        let mut params = HashMap::new();
+        params.insert("logs".to_owned(), data.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
+        Ok("success".to_string())
     }
 
     // lyric

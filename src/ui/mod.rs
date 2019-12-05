@@ -803,20 +803,6 @@ where
         .style(Style::default().fg(Color::White))
         .widths(&widths)
         .render(f, chunks[1]);
-
-
-    // SelectableList::default()
-        // .block(
-            // Block::default()
-            // .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
-            // .title_style(get_color(highlight_state))
-            // .border_style(get_color(highlight_state)),
-        // )
-        // .items(&row_items)
-        // .style(Style::default().fg(Color::White))
-        // .select(Some(selected_index))
-        // .highlight_style(get_color(highlight_state).modifier(Modifier::BOLD))
-        // .render(f, chunks[1]);
 }
 
 

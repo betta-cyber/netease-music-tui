@@ -299,6 +299,8 @@ impl App {
             match self.duration_ms {
                 Some(duration_ms) => {
                     if self.song_progress_ms >= duration_ms {
+                        // log track
+                        self.log_track();
                         self.skip_track(TrackState::Forword)
                     }
                 }
@@ -624,6 +626,20 @@ impl App {
                 // exit fm mode
                 if self.get_current_route().active_block != ActiveBlock::PersonalFm {
                     self.repeat_state = RepeatState::All;
+                }
+            }
+            None => {}
+        }
+    }
+
+    pub fn log_track(&mut self) {
+        match &self.cloud_music {
+            Some(api) => {
+                match &self.current_playing {
+                    Some(track) => {
+                        api.log_track(&track.id.unwrap().to_string());
+                    }
+                    None => {}
                 }
             }
             None => {}
