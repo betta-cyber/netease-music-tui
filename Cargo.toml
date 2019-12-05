@@ -29,6 +29,7 @@ log = "0.4"
 gstreamer = "0.14.5"
 gstreamer-player = "0.14.0"
 log-panics = "2.0.0"
+dirs = "2.0.2"
 
 [[bin]]
 name = "ncmt"

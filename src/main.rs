@@ -23,6 +23,10 @@ use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use util::event::{Event, Events};
 use log::LevelFilter;
+use dirs;
+use std::path::{Path, PathBuf};
+use std::fs;
+use failure::err_msg;
 
 mod util;
 mod model;
@@ -33,10 +37,49 @@ mod ui;
 
 use app::{App, ActiveBlock};
 
+const FILE_NAME: &str = "Settings.toml";
+const CONFIG_DIR: &str = ".config";
+const APP_CONFIG_DIR: &str = "netease-music-tui";
+
+
 fn main() -> Result<(), failure::Error> {
 
-    log_panics::init();
-    simple_logging::log_to_file("test.log", LevelFilter::Trace);
+    let config_file_path = match dirs::home_dir() {
+        Some(home) => {
+            let path = Path::new(&home);
+            let home_config_dir = path.join(CONFIG_DIR);
+            let app_config_dir = home_config_dir.join(APP_CONFIG_DIR);
+
+            if !home_config_dir.exists() {
+                fs::create_dir(&home_config_dir)?;
+            }
+
+            if !app_config_dir.exists() {
+                fs::create_dir(&app_config_dir)?;
+            }
+            let config_file_path = &app_config_dir.join(FILE_NAME);
+            config_file_path.to_path_buf()
+        }
+        None => return Err(err_msg("No $HOME directory found for config"))
+    };
+
+    // init application
+    let mut settings = config::Config::default();
+    let config_string = match fs::read_to_string(&config_file_path) {
+        Ok(data) => {data}
+        Err(e) => return Err(err_msg("Please set your account in config file"))
+    };
+    settings.merge(config::File::from_str(&config_string, config::FileFormat::Toml)).unwrap();
+
+    match settings.get_bool("debug") {
+        Ok(debug) => {
+            if debug {
+                log_panics::init();
+                simple_logging::log_to_file("test.log", LevelFilter::Debug);
+            }
+        }
+        Err(e) => {error!("{}", e)}
+    }
 
     info!("start netease cloud music rust client");
 
