@@ -61,8 +61,11 @@ pub fn handle_app(key: Key, app: &mut App) {
                 Key::Char('f') => {
                     app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
                 }
-                Key::Ctrl('h') => {
-                    app.follow_current();
+                Key::Char('>') => {
+                    app.seek_forwards();
+                }
+                Key::Char('<') => {
+                    app.seek_backwards();
                 }
                 Key::Esc => {
                     app.hover_mode();

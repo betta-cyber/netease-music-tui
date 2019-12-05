@@ -10,6 +10,7 @@ use super::api::CloudMusic;
 use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
 use super::handlers::TrackState;
 use rand::Rng;
+use gst::ClockTime;
 use gst::prelude::*;
 
 
@@ -410,6 +411,20 @@ impl App {
         self.player.set_volume(volume);
     }
 
+    pub fn seek_forwards(&mut self) {
+        let next_duration = self.song_progress_ms + 3000;
+        self.player.seek(ClockTime::from_mseconds(next_duration))
+    }
+
+    pub fn seek_backwards(&mut self) {
+        let next_duration = if self.song_progress_ms < 3000 {
+            0
+        } else {
+            self.song_progress_ms - 3000
+        };
+        self.player.seek(ClockTime::from_mseconds(next_duration))
+    }
+
     pub fn get_current_route(&self) -> &Route {
         match self.navigation_stack.last() {
             Some(route) => route,
@@ -687,5 +702,4 @@ impl App {
         let element = player.get_pipeline();
         element.get_state(gst::CLOCK_TIME_NONE).1
     }
-
 }
