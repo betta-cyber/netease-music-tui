@@ -7,6 +7,7 @@
 This project use `gstreamer` as player. you need to install some dependence which you can find details in [gstreamer-rs](https://github.com/sdroege/gstreamer-rs)
 
 ### Linux
+On Debian/Ubuntu they can be installed with
 ```bash
 $ apt-get install libgstreamer-plugins-bad1.0-dev
 ```
@@ -15,7 +16,7 @@ $ apt-get install libgstreamer-plugins-bad1.0-dev
 
 You can install GStreamer and the plugins via Homebrew or by installing the binaries provided by the GStreamer project.
 
-### Homebrew
+#### Homebrew
 
 ```
 $ brew install gstreamer gst-plugins-base gst-plugins-good \
@@ -24,7 +25,7 @@ $ brew install gstreamer gst-plugins-base gst-plugins-good \
       --with-pango --with-theora --with-libvorbis --with-libvpx \
       --enable-gtk3
 ```
-### GStreamer Binaries
+#### GStreamer Binaries
 
 You need to download the two .pkg files from the GStreamer website and install them, e.g. `gstreamer-1.0-1.12.3-x86_64.pkg` and `gstreamer-1.0-devel-1.12.3-x86_64.pkg`.
 
@@ -60,7 +61,9 @@ A configuration file is located at ${HOME}/.config/netease-music-tui/Settings.to
 
 The following is a sample Settings.toml file:
 ```toml
+# Your account username (email/cellphone).
 username = "xxxxxxxxx"
+# Your account password.
 password = "xxxxxxxxx"
 ```
 Fill your account info to the config file.

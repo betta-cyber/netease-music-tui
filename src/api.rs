@@ -27,6 +27,7 @@ use super::model::lyric::{LyricRes, Lyric};
 use super::util::Encrypt;
 use openssl::hash::{hash, MessageDigest};
 use std::fs;
+use failure::err_msg;
 use chrono::prelude::*;
 
 lazy_static! {
@@ -70,14 +71,16 @@ impl From<&reqwest::Response> for ApiError {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CloudMusic {
-    pub prefix: String
+    pub prefix: String,
+    pub cookie_path: String,
 }
 
 impl CloudMusic {
 
     pub fn default() -> CloudMusic {
         CloudMusic {
-            prefix: "http://10.1.78.190:3000".to_owned(),
+            prefix: "https://music.163.com".to_owned(),
+            cookie_path: "/tmp/ncmt_cookie".to_owned(),
         }
     }
 
@@ -128,13 +131,12 @@ impl CloudMusic {
                 let hextoken = hex::encode(hash(MessageDigest::md5(), &times.to_string().as_bytes()).unwrap());
 
                 // read local save cookie
-                let data = fs::read_to_string("cookie").unwrap_or(String::new());
+                let data = fs::read_to_string(&self.cookie_path).unwrap_or(String::new());
                 let make_cookie = format!("version=0;{}={};JSESSIONID-WYYY=%2FKSy%2B4xG6fYVld42G9E%2BxAj9OyjC0BYXENKxOIRH%5CR72cpy9aBjkohZ24BNkpjnBxlB6lzAG4D%5C%2FMNUZ7VUeRUeVPJKYu%2BKBnZJjEmqgpOx%2BU6VYmypKB%5CXb%2F3W7%2BDjOElCb8KlhDS2cRkxkTb9PBDXro41Oq7aBB6M6OStEK8E%2Flyc8%3A{}; _iuqxldmzr_=32; _ntes_nnid={},{}; _ntes_nuid={}; {}", name, value,times,hextoken,hextoken,times+50, data);
                 headers.insert(COOKIE, make_cookie.parse().unwrap());
-
             }
             Method::GET => {
-                let data = fs::read_to_string("cookie").unwrap_or(String::new());
+                let data = fs::read_to_string(&self.cookie_path).unwrap_or(String::new());
                 let make_cookie = format!("{}", data);
                 headers.insert(COOKIE, make_cookie.parse().unwrap());
             }
@@ -146,7 +148,7 @@ impl CloudMusic {
                 .headers(headers);
 
             // only add body if necessary
-            // spotify rejects GET requests that have a body with a 400 response
+            // rejects GET requests that have a body with a 400 response
             let builder = if let Some(data) = payload {
                 builder.body(data)
             } else {
@@ -182,22 +184,44 @@ impl CloudMusic {
             .collect();
         c.pop();
         if c.len() > 0 {
-            let cookie_path = format!("cookie");
-            fs::write(&cookie_path, &c).expect("Unable to write file");
+            fs::write(&self.cookie_path, &c).expect("Unable to write file");
         }
     }
 
-    pub fn login(&self, email: &str, password: &str) -> Result<Profile, failure::Error> {
-        let url = format!("/login");
-        let mut params = HashMap::new();
-        params.insert("email".to_owned(), email.to_string());
-        params.insert("password".to_owned(), password.to_string());
-
-        let result = self.get(&url, &mut params)?;
-        let login = self.convert_result::<Login>(&result).unwrap();
-        Ok(login.profile.unwrap())
+    pub fn login(&self, username: &str, password: &str) -> Result<Profile, failure::Error> {
+        let email_regex = regex::Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})").unwrap();
+        if email_regex.is_match(username) {
+            self.email_login(username, password)
+        } else {
+            self.phone_login(username, password)
+        }
     }
 
+    // email login
+    pub fn email_login(&self, email: &str, password: &str) -> Result<Profile, failure::Error> {
+        let url = format!("/weapi/login");
+        let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
+        let client_token =
+            "1_jVUMqWEPke0/1/Vu56xCmJpo5vP1grjn_SOVVDzOc78w8OKLVZ2JH7IfkjSXqgfmh";
+        let mut params = HashMap::new();
+        params.insert("clientToken".to_owned(), client_token.to_string());
+        params.insert("username".to_owned(), email.to_string());
+        params.insert("password".to_owned(), hex::encode(password));
+        params.insert("rememberLogin".to_owned(), "true".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        let login = self.convert_result::<Login>(&result)?;
+        match login.profile {
+            Some(profile) => {
+                Ok(profile)
+            }
+            None => {
+                Err(err_msg("login failed"))
+            }
+        }
+    }
+
+    // cellphone login
     pub fn phone_login(&self, phone: &str, password: &str) -> Result<Profile, failure::Error> {
         let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
         let url = format!("/weapi/login/cellphone");
@@ -208,7 +232,14 @@ impl CloudMusic {
 
         let result = self.post(&url, &mut params)?;
         let login = self.convert_result::<Login>(&result).unwrap();
-        Ok(login.profile.unwrap())
+        match login.profile {
+            Some(profile) => {
+                Ok(profile)
+            }
+            None => {
+                Err(err_msg("login failed"))
+            }
+        }
     }
 
     pub fn login_status(&self) -> Result<Option<Profile>, failure::Error> {
@@ -507,22 +538,6 @@ impl CloudMusic {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
         Ok(result)
-    }
-
-    pub fn login_v1(&self, email: &str, password: &str) -> Result<String, failure::Error> {
-        let url = format!("/weapi/login");
-        let client_token =
-            "1_jVUMqWEPke0/1/Vu56xCmJpo5vP1grjn_SOVVDzOc78w8OKLVZ2JH7IfkjSXqgfmh";
-        let mut params = HashMap::new();
-        params.insert("clientToken".to_owned(), client_token.to_string());
-        params.insert("username".to_owned(), email.to_string());
-        params.insert("password".to_owned(), hex::encode(password.to_string()));
-        params.insert("rememberLogin".to_owned(), "true".to_owned());
-
-        let result = self.post(&url, &mut params)?;
-        // let login = self.convert_result::<Login>(&result).unwrap();
-        // Ok(login.profile.unwrap())
-        Ok("ddd".to_string())
     }
 }
 

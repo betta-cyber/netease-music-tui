@@ -17,14 +17,11 @@ use std::io;
 use termion::raw::IntoRawMode;
 use tui::Terminal;
 use tui::backend::TermionBackend;
-use tui::widgets::{Widget, Block, Borders, Tabs, Text, Paragraph, SelectableList};
-use tui::layout::{Layout, Constraint, Direction, Rect};
-use tui::style::{Color, Style, Modifier};
 use termion::event::Key;
 use util::event::{Event, Events};
 use log::LevelFilter;
 use dirs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs;
 use failure::err_msg;
 
@@ -67,7 +64,7 @@ fn main() -> Result<(), failure::Error> {
     let mut settings = config::Config::default();
     let config_string = match fs::read_to_string(&config_file_path) {
         Ok(data) => {data}
-        Err(e) => return Err(err_msg("Please set your account in config file"))
+        Err(_) => return Err(err_msg("Please set your account in config file"))
     };
     settings.merge(config::File::from_str(&config_string, config::FileFormat::Toml)).unwrap();
 
@@ -75,7 +72,7 @@ fn main() -> Result<(), failure::Error> {
         Ok(debug) => {
             if debug {
                 log_panics::init();
-                simple_logging::log_to_file("test.log", LevelFilter::Debug);
+                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug);
             }
         }
         Err(e) => {error!("{}", e)}
@@ -86,11 +83,25 @@ fn main() -> Result<(), failure::Error> {
     gst::init()?;
 
     // init application
-    let mut settings = config::Config::default();
-    settings.merge(config::File::with_name("Settings")).unwrap();
-
     let mut app = App::new();
     let mut is_first_render = true;
+
+    let cloud_music = app.cloud_music.to_owned().unwrap();
+    let profile = match cloud_music.login_status()? {
+        Some(profile) => {profile}
+        None => {
+            // need login
+            let username = settings.get::<String>("username")?;
+            let password = settings.get::<String>("password")?;
+            match cloud_music.login(&username, &password) {
+                Ok(profile) => {profile}
+                Err(_) => {
+                    return Err(err_msg("Account/Password Error"))
+                }
+            }
+        }
+    };
+
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -120,7 +131,6 @@ fn main() -> Result<(), failure::Error> {
 
         match events.next()? {
             Event::Input(input) => {
-                info!("{:#?}", input);
                 match input {
                     Key::Char('e') => {
                         if app.get_current_route().active_block != ActiveBlock::Search {
@@ -156,16 +166,6 @@ fn main() -> Result<(), failure::Error> {
 
         if is_first_render {
             let cloud_music = app.cloud_music.to_owned().unwrap();
-            let profile = match cloud_music.login_status()? {
-                Some(p) => {p}
-                None => {
-                    // need login
-                    let username = settings.get::<String>("username")?;
-                    let password = settings.get::<String>("password")?;
-                    cloud_music.phone_login(&username, &password)?
-                }
-            };
-
             let playlists = cloud_music.user_playlists(&profile.userId.unwrap().to_string());
             match playlists {
                 Ok(p) => {
@@ -173,9 +173,9 @@ fn main() -> Result<(), failure::Error> {
                     app.selected_playlist_index = Some(0);
                 }
                 Err(e) => {
-                    panic!("error {}", e)
+                    app.handle_error(e);
                 }
-            }
+            };
             is_first_render = false;
         }
     }
