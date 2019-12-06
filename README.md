@@ -2,6 +2,8 @@
 
 >A netease cloud music client for the terminal written in Rust.
 
+![Demo](https://i.loli.net/2019/12/06/n6DCTS4cW2Z1dmH.gif)
+
 ## Dependence
 
 This project use `gstreamer` as player. you need to install some dependence which you can find details in [gstreamer-rs](https://github.com/sdroege/gstreamer-rs)
