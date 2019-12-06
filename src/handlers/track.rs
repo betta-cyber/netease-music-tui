@@ -23,12 +23,11 @@ pub fn handler(key: Key, app: &mut App) {
             #[allow(non_snake_case)]
             let TrackTable = &app.track_table;
             let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
-            // println!("{:#?}", track);
-            // let url = &app.get_song_url();
             app.my_playlist = TrackTable.to_owned();
 
             app.start_playback(track_playing.id.unwrap().to_string());
             app.current_playing = Some(track_playing);
+            app.fm_state = false;
         }
         _ => {}
     }

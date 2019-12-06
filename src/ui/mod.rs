@@ -177,12 +177,18 @@ where
             "Pause "
         };
 
-        let repeat_text = match app.repeat_state {
-            RepeatState::Off => "Off",
-            RepeatState::Track => "Track",
-            RepeatState::All => "All",
-            RepeatState::Shuffle => "Shuffle",
-            RepeatState::FM => "FM",
+        let repeat_text = match app.fm_state {
+            true => {
+                "FM"
+            }
+            false => {
+                match app.repeat_state {
+                    RepeatState::Off => "Off",
+                    RepeatState::Track => "Track",
+                    RepeatState::All => "All",
+                    RepeatState::Shuffle => "Shuffle",
+                }
+            }
         };
 
         let title = format!("{} | Repeat: {}", state_title, repeat_text);
@@ -491,7 +497,7 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(25), Constraint::Percentage(75)].as_ref())
+        .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
         .margin(2)
         .split(layout_chunk);
 
@@ -509,7 +515,26 @@ where
         .render(f, layout_chunk);
 
     let top_text = vec![
-        Text::styled("网易云音乐", Style::default().fg(Color::LightCyan)),
+        Text::styled("
+                 __
+  ____    ____ _/  |_   ____  _____     ______  ____
+ /    \\ _/ __ \\\\   __\\_/ __ \\ \\__  \\   /  ___/_/ __ \\ 
+|   |  \\\\  ___/ |  |  \\  ___/  / __ \\_ \\___ \\ \\  ___/
+|___|  / \\___  >|__|   \\___  >(____  //____  > \\___  >
+     \\/      \\/            \\/      \\/      \\/      \\/
+        .__                      .___                        .__
+  ____  |  |    ____   __ __   __| _/   _____   __ __  ______|__|  ____
+_/ ___\\ |  |   /  _ \\ |  |  \\ / __ |   /     \\ |  |  \\/  ___/|  |_/ ___\\ 
+\\  \\___ |  |__(  <_> )|  |  // /_/ |  |  Y Y  \\|  |  /\\___ \\ |  |\\  \\___
+ \\___  >|____/ \\____/ |____/ \\____ |  |__|_|  /|____//____  >|__| \\___  >
+     \\/                           \\/        \\/            \\/          \\/
+                        __              __          .__
+_______  __ __  _______/  |_          _/  |_  __ __ |__|
+\\_  __ \\|  |  \\/  ___/\\   __\\  ______ \\   __\\|  |  \\|  |
+ |  | \\/|  |  /\\___ \\  |  |   /_____/  |  |  |  |  /|  |
+ |__|   |____//____  > |__|            |__|  |____/ |__|
+                   \\/
+            ", Style::default().fg(Color::LightCyan)),
     ];
 
     // Contains the banner

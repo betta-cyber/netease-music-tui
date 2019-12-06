@@ -48,7 +48,6 @@ pub enum RouteId {
     Search,
     TrackTable,
     MyPlaylists,
-    Artists,
     PersonalFm,
     Playing,
 }
@@ -69,7 +68,6 @@ pub enum ActiveBlock {
     MyPlaylists,
     SearchResult,
     TrackTable,
-    Artists,
     PlayBar,
     PersonalFm,
     Playing,
@@ -149,7 +147,6 @@ pub enum RepeatState {
     Track,
     All,
     Shuffle,
-    FM,
 }
 
 pub struct TabsState {
@@ -180,6 +177,7 @@ pub struct App {
     pub duration_ms: Option<u64>,
     pub my_playlist: TrackTable,
     pub repeat_state: RepeatState,
+    pub fm_state: bool,
     pub search_results: SearchResult,
     pub tabs: TabsState,
     pub playing_circle: Circle,
@@ -223,6 +221,7 @@ impl App {
             },
             my_playlist: Default::default(),
             repeat_state: RepeatState::All,
+            fm_state: false,
             search_results: SearchResult {
                 tracks: None,
                 playlists: None,
@@ -339,44 +338,49 @@ impl App {
     }
 
     pub fn skip_track(&mut self, state: TrackState) {
-        match self.repeat_state {
-            RepeatState::Track => {
-                // loop current song
-                match &self.current_playing {
-                    Some(track) => {
-                        self.start_playback(track.id.unwrap().to_string());
+        match self.fm_state {
+            true => {
+                match self.repeat_state {
+                    RepeatState::Track => {
+                        // loop current song
+                        match &self.current_playing {
+                            Some(track) => {
+                                self.start_playback(track.id.unwrap().to_string());
+                            }
+                            None => {
+                                panic!("error");
+                            }
+                        };
                     }
-                    None => {
-                        panic!("error");
+                    RepeatState::All => {
+                        // loop current my playlist
+                        let list = &mut self.my_playlist;
+                        let next_index = App::next_index(
+                            &list.tracks,
+                            Some(list.selected_index),
+                            state,
+                        );
+                        list.selected_index = next_index;
+
+                        let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                        self.start_playback(track_playing.id.unwrap().to_string());
+                        self.current_playing = Some(track_playing);
+
                     }
-                };
-            }
-            RepeatState::All => {
-                // loop current my playlist
-                let list = &mut self.my_playlist;
-                let next_index = App::next_index(
-                    &list.tracks,
-                    Some(list.selected_index),
-                    state,
-                );
-                list.selected_index = next_index;
+                    RepeatState::Shuffle => {
+                        let list = &mut self.my_playlist;
+                        let mut rng = rand::thread_rng();
+                        let next_index = rng.gen_range(0, list.tracks.len());
+                        list.selected_index = next_index;
 
-                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                self.start_playback(track_playing.id.unwrap().to_string());
-                self.current_playing = Some(track_playing);
-
+                        let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                        self.start_playback(track_playing.id.unwrap().to_string());
+                        self.current_playing = Some(track_playing);
+                    }
+                    _ => {}
+                }
             }
-            RepeatState::Shuffle => {
-                let list = &mut self.my_playlist;
-                let mut rng = rand::thread_rng();
-                let next_index = rng.gen_range(0, list.tracks.len());
-                list.selected_index = next_index;
-
-                let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                self.start_playback(track_playing.id.unwrap().to_string());
-                self.current_playing = Some(track_playing);
-            }
-            RepeatState::FM => {
+            false => {
                 // use my playlist for play personal fm
                 let list = &mut self.my_playlist;
                 let next_index = App::next_index(
@@ -395,7 +399,6 @@ impl App {
                 self.start_playback(track_playing.id.unwrap().to_string());
                 self.current_playing = Some(track_playing);
             }
-            _ => {}
         }
     }
 
@@ -478,7 +481,6 @@ impl App {
             RepeatState::Off => RepeatState::Track,
             RepeatState::Track => RepeatState::Shuffle,
             RepeatState::Shuffle => RepeatState::All,
-            RepeatState::FM => RepeatState::FM,
         };
         self.repeat_state = next_repeat_state;
     }
@@ -637,11 +639,6 @@ impl App {
                         flag = true;
                     }
                 }
-
-                // exit fm mode
-                if self.get_current_route().active_block != ActiveBlock::PersonalFm {
-                    self.repeat_state = RepeatState::All;
-                }
             }
             None => {}
         }
@@ -678,7 +675,7 @@ impl App {
                 self.current_playing = Some(track_playing);
 
                 self.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm);
-                self.repeat_state = RepeatState::FM;
+                self.fm_state = true;
             }
             None => {}
         }
@@ -695,11 +692,5 @@ impl App {
         let player = &self.player;
         let element = player.get_pipeline();
         element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
-    }
-
-    pub fn get_state(&self) -> gst::State {
-        let player = &self.player;
-        let element = player.get_pipeline();
-        element.get_state(gst::CLOCK_TIME_NONE).1
     }
 }

@@ -12,7 +12,7 @@ pub fn handler(key: Key, app: &mut App) {
             ActiveBlock::Artist
             | ActiveBlock::AlbumList
             | ActiveBlock::AlbumTracks
-            | ActiveBlock::Artists
+            | ActiveBlock::Artist
             | ActiveBlock::Home
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
@@ -37,7 +37,7 @@ pub fn handler(key: Key, app: &mut App) {
             ActiveBlock::Artist
             | ActiveBlock::AlbumList
             | ActiveBlock::AlbumTracks
-            | ActiveBlock::Artists
+            | ActiveBlock::Artist
             | ActiveBlock::Home
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
