@@ -275,7 +275,7 @@ impl App {
                 } else {
                     self.playing_circle = Circle {
                         circle: &CIRCLE_TICK,
-                        color: Color::Reset,
+                        color: Color::Cyan,
                     }
                 }
                 self.circle_flag = !self.circle_flag;

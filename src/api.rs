@@ -305,8 +305,12 @@ impl CloudMusic {
         params.insert("csrf_token".to_owned(), "".to_string());
 
         let result = self.post(&url, &mut params)?;
-        let res = self.convert_result::<PlaylistRes>(&result).unwrap();
-        Ok(res.playlist.clone())
+        match self.convert_result::<PlaylistRes>(&result) {
+            Ok(res) => {
+                Ok(res.playlist.clone())
+            }
+            Err(_) => Err(err_msg("get user playlists error"))
+        }
     }
 
     // get playlist detail api

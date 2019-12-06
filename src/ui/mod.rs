@@ -106,7 +106,9 @@ where
     info!("{:?}", current_route);
 
     match current_route.id {
-        RouteId::Error => {} // This is handled as a "full screen" route in main.rs
+        RouteId::Error => {
+            draw_error_screen(f, app, chunks[1]);
+        } // This is handled as a "full screen" route in main.rs
         RouteId::TrackTable => {
             draw_track_table(f, &app, chunks[1]);
         }
@@ -114,7 +116,11 @@ where
             draw_search_results(f, app, chunks[1]);
         }
         RouteId::Home => {
-            draw_home(f, app, chunks[1]);
+            if app.track_table.tracks.len() > 0 {
+                draw_track_table(f, &app, chunks[1]);
+            } else {
+                draw_home(f, app, chunks[1]);
+            }
         }
         RouteId::PersonalFm => {
             draw_personal_fm(f, &app, chunks[1]);
@@ -1136,4 +1142,36 @@ where
             highlight_state,
         );
     };
+}
+
+
+pub fn draw_error_screen<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(100)].as_ref())
+        .split(layout_chunk);
+
+    let mut playing_text = vec![
+        Text::raw("Api response: "),
+        Text::styled(&app.error_msg, Style::default().fg(Color::LightRed)),
+        Text::styled(
+            "\nPress `e` to return",
+            Style::default().fg(Color::Gray),
+        ),
+    ];
+
+    Paragraph::new(playing_text.iter())
+        .wrap(true)
+        .style(Style::default().fg(Color::White))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Error Page")
+                .title_style(Style::default().fg(Color::Red))
+                .border_style(Style::default().fg(Color::Red)),
+        )
+        .render(f, chunks[0]);
 }
