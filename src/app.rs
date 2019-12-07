@@ -258,7 +258,6 @@ impl App {
 
     // update app every tick
     pub fn update_on_tick(&mut self) {
-        // debug!("{:#?}", self.get_state());
         if self.is_playing() {
             self.song_progress_ms = match self.player.get_position().mseconds() {
                 Some(ms) => ms,
@@ -339,7 +338,7 @@ impl App {
 
     pub fn skip_track(&mut self, state: TrackState) {
         match self.fm_state {
-            true => {
+            false => {
                 match self.repeat_state {
                     RepeatState::Track => {
                         // loop current song
@@ -380,7 +379,7 @@ impl App {
                     _ => {}
                 }
             }
-            false => {
+            true => {
                 // use my playlist for play personal fm
                 let list = &mut self.my_playlist;
                 let next_index = App::next_index(
