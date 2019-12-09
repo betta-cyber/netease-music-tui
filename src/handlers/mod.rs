@@ -70,6 +70,9 @@ pub fn handle_app(key: Key, app: &mut App) {
                 Key::Esc => {
                     app.hover_mode();
                 }
+                Key::Ctrl('y') => {
+                    app.follow_current();
+                }
                 Key::Char('a') => {
                     let album_id = match &app.current_playing {
                         Some(track) => {

@@ -1200,3 +1200,32 @@ where
         )
         .render(f, chunks[0]);
 }
+
+pub fn draw_msg<B>(f: &mut Frame<B>, app: &mut App)
+where
+    B: Backend,
+{
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(10), Constraint::Percentage(45)].as_ref())
+        .split(f.size());
+    let child_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(45), Constraint::Percentage(10), Constraint::Percentage(45)].as_ref())
+        .split(chunks[1]);
+
+    let mut playing_text = vec![
+        Text::styled(&app.msg, Style::default().fg(Color::LightRed)),
+    ];
+
+    Paragraph::new(playing_text.iter())
+        .wrap(true)
+        .style(Style::default().fg(Color::White))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Red)),
+        )
+        .render(f, child_chunks[1]);
+}
+

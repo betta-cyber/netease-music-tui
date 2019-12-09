@@ -123,6 +123,9 @@ fn main() -> Result<(), failure::Error> {
                 ActiveBlock::Help => {
                     ui::draw_help_menu(&mut f);
                 }
+                ActiveBlock::Msg => {
+                    ui::draw_msg(&mut f, &mut app);
+                }
                 _ => {
                     ui::draw_main_layout(&mut f, &mut app);
                 }

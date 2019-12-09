@@ -98,13 +98,14 @@ This table shows some key binds
 | Fullsize playbar | f| General |
 | Go back or exit when nowhere left to back to | e | General |
 | Enter hover mode | \<Esc>  | General |
+| like current playing track | \<Ctrl+y> | General |
 | Enter active mode | \<Enter> | Hover mode |
 | Delete entire input | \<Ctrl+u> | Search input |
 | Search with input text | \<Enter>| Search input |
 | Jump to start of input | \<Ctrl+a> | Search input |
 | Jump to end of input | \<Ctrl+e> | Search input |
 | Jump to next page | \<Ctrl+f> | Search result|
-| Jump to previous page | \<Ctrl+b>" | Search result |
+| Jump to previous page | \<Ctrl+b> | Search result |
 
 ## License
 MIT

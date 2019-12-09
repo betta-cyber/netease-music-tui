@@ -71,6 +71,7 @@ pub enum ActiveBlock {
     PlayBar,
     PersonalFm,
     Playing,
+    Msg,
 }
 
 #[derive(Clone)]
@@ -189,8 +190,10 @@ pub struct App {
     pub artist_list: Option<ArtistsTable>,
     pub lyric: Option<Vec<Lyric>>,
     pub error_msg: String,
+    pub msg: String,
     pub block_height: usize,
     pub lyric_index: usize,
+    pub msg_control: usize,
 }
 
 impl App {
@@ -251,13 +254,32 @@ impl App {
             artist_list: None,
             lyric: None,
             error_msg: String::new(),
+            msg: String::new(),
             block_height: 0,
             lyric_index: 0,
+            msg_control: 0,
         }
     }
 
     // update app every tick
     pub fn update_on_tick(&mut self) {
+        let current_route = self.get_current_route();
+        if current_route.active_block == ActiveBlock::Msg {
+            if self.msg_control > 2 {
+
+                match current_route.id {
+                    RouteId::Playlist => {
+                        self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
+                    }
+                    _ => {
+                        self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
+                    }
+                }
+                self.msg_control = 0;
+            } else {
+                self.msg_control += 1;
+            }
+        }
         if self.is_playing() {
             self.song_progress_ms = match self.player.get_position().mseconds() {
                 Some(ms) => ms,
@@ -593,11 +615,17 @@ impl App {
         }
     }
 
-    pub fn follow_current(&self) {
+    pub fn follow_current(&mut self) {
         let track_id = &self.current_playing.clone().unwrap().id.unwrap().to_string();
         match &self.cloud_music {
             Some(api) => {
-                api.like(&track_id, true);
+                match api.like(&track_id, true) {
+                    Ok(_) => {
+                        self.msg = "like".to_string();
+                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                    }
+                    Err(e) => self.handle_error(e)
+                }
             }
             None => {}
         }
