@@ -4,10 +4,9 @@ pub mod circle;
 use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
 use tui::{Frame, Terminal};
 use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs, canvas::Canvas};
-use tui::layout::{Layout, Constraint, Direction, Rect};
+use tui::layout::{Layout, Constraint, Direction, Rect, Alignment};
 use tui::style::{Color, Style, Modifier};
 use tui::backend::Backend;
-use circle::Circle;
 use util::{get_color, get_percentage_width, display_track_progress, create_artist_string, create_tag_string};
 
 // table item for render
@@ -103,7 +102,7 @@ where
     draw_user_block(f, app, chunks[0]);
 
     let current_route = app.get_current_route();
-    info!("{:?}", current_route);
+    // info!("{:?}", current_route);
 
     match current_route.id {
         RouteId::Error => {
@@ -497,7 +496,7 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
+        .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
         .margin(2)
         .split(layout_chunk);
 
@@ -1207,11 +1206,11 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(45), Constraint::Percentage(10), Constraint::Percentage(45)].as_ref())
+        .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
         .split(f.size());
     let child_chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(45), Constraint::Percentage(10), Constraint::Percentage(45)].as_ref())
+        .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
         .split(chunks[1]);
 
     let mut playing_text = vec![
@@ -1220,6 +1219,7 @@ where
 
     Paragraph::new(playing_text.iter())
         .wrap(true)
+        .alignment(Alignment::Center)
         .style(Style::default().fg(Color::White))
         .block(
             Block::default()

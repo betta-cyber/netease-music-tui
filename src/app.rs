@@ -424,13 +424,21 @@ impl App {
 
     pub fn increase_volume(&mut self) {
         let current = self.player.get_volume();
-        let volume = current + 0.1_f64;
+        let volume = if current < 9.9 {
+            current + 0.1_f64
+        } else {
+            10.0_f64
+        };
         self.player.set_volume(volume);
     }
 
     pub fn decrease_volume(&mut self) {
         let current = self.player.get_volume();
-        let volume = current - 0.1_f64;
+        let volume = if current > 0.1 {
+            current - 0.1_f64
+        } else {
+            0.0_f64
+        };
         self.player.set_volume(volume);
     }
 
