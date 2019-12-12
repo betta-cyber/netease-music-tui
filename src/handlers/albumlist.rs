@@ -34,6 +34,24 @@ pub fn handler(key: Key, app: &mut App) {
                 }
             };
         }
+        Key::Ctrl('f') => {
+            let limit = (app.block_height - 4) as i32;
+            if let Some(albumlist) = &app.album_list
+            {
+                let page = albumlist.selected_page;
+                let next_page = (page + 1) as i32;
+                app.get_top_albums(limit, next_page)
+            };
+        }
+        Key::Ctrl('b') => {
+            let limit = (app.block_height - 4) as i32;
+            if let Some(albumlist) = &app.album_list
+            {
+                let page = albumlist.selected_page;
+                let next_page = if page < 1 { 0 } else { page - 1 } as i32;
+                app.get_top_albums(limit, next_page)
+            };
+        }
         _ => {}
     }
 }

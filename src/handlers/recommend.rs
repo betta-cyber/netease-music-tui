@@ -24,21 +24,25 @@ pub fn handler(key: Key, app: &mut App) {
         // you can go Personal FM
         // you can go you playlists
         Key::Char('\n') => {
+            let limit = (app.block_height - 4) as i32;
             match app.recommend.selected_index {
                 0 => {
                     app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists)
                 }
                 1 => {
-                    app.get_top_playlist()
+                    app.get_top_playlist(limit, 0);
+                    app.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist)
                 }
                 2 => {
                     app.set_fm_mode()
                 }
                 3 => {
-                    app.get_top_albums()
+                    app.get_top_albums(limit, 0);
+                    app.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
                 }
                 4 => {
-                    app.get_top_artists()
+                    app.get_top_artists(limit, 0);
+                    app.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
                 }
                 _ => {}
             }

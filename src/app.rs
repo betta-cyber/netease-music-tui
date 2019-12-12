@@ -93,6 +93,7 @@ pub struct SelectedAlbum {
 pub struct PlaylistTable {
     pub playlists: Vec<Playlist>,
     pub selected_index: usize,
+    pub selected_page: usize,
 }
 
 // album list
@@ -100,6 +101,7 @@ pub struct PlaylistTable {
 pub struct AlbumsTable {
     pub albums: Vec<Album>,
     pub selected_index: usize,
+    pub selected_page: usize,
 }
 
 // album list
@@ -107,6 +109,7 @@ pub struct AlbumsTable {
 pub struct ArtistsTable {
     pub artists: Vec<Artist>,
     pub selected_index: usize,
+    pub selected_page: usize,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -575,48 +578,48 @@ impl App {
         }
     }
 
-    pub fn get_top_playlist(&mut self) {
+    pub fn get_top_playlist(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(playlists) = api.top_playlists() {
+                if let Ok(playlists) = api.top_playlists(limit, limit*page) {
                     self.playlist_list = Some(PlaylistTable {
                         playlists: playlists,
-                        selected_index: 0
+                        selected_index: 0,
+                        selected_page: page as usize,
                     })
                 }
-                self.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist);
             }
             None => {}
         }
     }
 
 
-    pub fn get_top_albums(&mut self) {
+    pub fn get_top_albums(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(albums) = api.top_albums() {
+                if let Ok(albums) = api.top_albums(limit, limit*page) {
                     self.album_list = Some(AlbumsTable {
                         albums: albums,
                         selected_index: 0,
+                        selected_page: page as usize,
                     })
                 }
-                self.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
             }
             None => {}
         }
     }
 
     // top artist
-    pub fn get_top_artists(&mut self) {
+    pub fn get_top_artists(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(artists) = api.top_artists() {
+                if let Ok(artists) = api.top_artists(limit, limit*page) {
                     self.artist_list = Some(ArtistsTable {
                         artists: artists,
                         selected_index: 0,
+                        selected_page: page as usize,
                     })
                 }
-                self.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
             }
             None => {}
         }

@@ -308,7 +308,7 @@ impl CloudMusic {
         let mut params = HashMap::new();
         params.insert("uid".to_owned(), uid.to_string());
         params.insert("limit".to_owned(), 1000.to_string());
-        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
         params.insert("csrf_token".to_owned(), "".to_string());
 
         let result = self.post(&url, &mut params)?;
@@ -327,7 +327,7 @@ impl CloudMusic {
         params.insert("id".to_owned(), playlist_id.to_string());
         params.insert("total".to_owned(), true.to_string());
         params.insert("limit".to_owned(), 1000.to_string());
-        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
         params.insert("n".to_owned(), 1000.to_string());
 
         let result = self.post(&url, &mut params)?;
@@ -341,7 +341,7 @@ impl CloudMusic {
         let mut params = HashMap::new();
         params.insert("total".to_owned(), true.to_string());
         params.insert("limit".to_owned(), 1000.to_string());
-        params.insert("offest".to_owned(), 0.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
 
         let result = self.post(&url, &mut params)?;
         let res = self.convert_result::<ArtistAlbums>(&result).unwrap();
@@ -491,13 +491,13 @@ impl CloudMusic {
     }
 
     // top songlist
-    pub fn top_playlists(&self) -> Result<Vec<Playlist>, failure::Error> {
+    pub fn top_playlists(&self, limit: i32, offset: i32) -> Result<Vec<Playlist>, failure::Error> {
         let url = format!("/weapi/playlist/list");
         let mut params = HashMap::new();
         params.insert("cat".to_owned(), "全部".to_string());
         params.insert("order".to_owned(), "hot".to_string());
-        params.insert("limit".to_owned(), 50.to_string());
-        params.insert("offset".to_owned(), 0.to_string());
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
         params.insert("total".to_owned(), true.to_string());
 
         let result = self.post(&url, &mut params)?;
@@ -506,11 +506,11 @@ impl CloudMusic {
     }
 
     // top artist
-    pub fn top_artists(&self) -> Result<Vec<Artist>, failure::Error> {
+    pub fn top_artists(&self, limit: i32, offset: i32) -> Result<Vec<Artist>, failure::Error> {
         let url = format!("/weapi/artist/top");
         let mut params = HashMap::new();
-        params.insert("limit".to_owned(), 50.to_string());
-        params.insert("offset".to_owned(), 0.to_string());
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
         params.insert("total".to_owned(), true.to_string());
 
         let result = self.post(&url, &mut params)?;
@@ -519,12 +519,12 @@ impl CloudMusic {
     }
 
     // top album
-    pub fn top_albums(&self) -> Result<Vec<Album>, failure::Error> {
+    pub fn top_albums(&self, limit: i32, offset: i32) -> Result<Vec<Album>, failure::Error> {
         let url = format!("/weapi/album/new");
         let mut params = HashMap::new();
         params.insert("area".to_owned(), "ALL".to_string());
-        params.insert("limit".to_owned(), 50.to_string());
-        params.insert("offset".to_owned(), 0.to_string());
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
         params.insert("total".to_owned(), true.to_string());
 
         let result = self.post(&url, &mut params)?;

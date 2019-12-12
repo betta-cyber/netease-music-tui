@@ -717,14 +717,16 @@ where
         vec!["Go back or exit when nowhere left to back to", "e", "General"],
         vec!["Enter hover mode", "<Esc>", "General"],
         vec!["Enter active mode", "<Enter>", "General"],
+        vec!["Like current playing track", "<Ctrl+y>", "General"],
+        vec!["Dislike current playing track", "<Ctrl+d>", "General"],
 
         vec!["Delete entire input", "<Ctrl+u>", "Search input"],
         vec!["Search with input text", "<Enter>", "Search input"],
         vec!["Jump to start of input", "<Ctrl+a>", "Search input"],
         vec!["Jump to end of input", "<Ctrl+e>", "Search input"],
 
-        vec!["Jump to next page", "<Ctrl+f>", "Search result"],
-        vec!["Jump to previous page", "<Ctrl+b>", "Search result"],
+        vec!["Jump to next page", "<Ctrl+f>", "Search result | top list"],
+        vec!["Jump to previous page", "<Ctrl+b>", "Search result | top list"],
     ];
 
     let rows = help_docs
@@ -1005,7 +1007,12 @@ where
         },
     ];
 
-    let mut num = 0;
+    let mut num = match app.playlist_list.to_owned() {
+        Some(playlist) => {
+            playlist.selected_page * (app.block_height - 4)
+        }
+        None => 0
+    };
     let playlist_ui = match &app.playlist_list {
         Some(playlist) => Some(ListUI {
             items: playlist.playlists
@@ -1071,7 +1078,13 @@ where
         },
     ];
 
-    let mut num = 0;
+    let mut num = match app.album_list.to_owned() {
+        Some(albumlist) => {
+            albumlist.selected_page * (app.block_height - 4)
+        }
+        None => 0
+    };
+
     let album_ui = match &app.album_list {
         Some(album_list) => Some(ListUI {
             items: album_list.albums
@@ -1131,7 +1144,13 @@ where
         },
     ];
 
-    let mut num = 0;
+    let mut num = match app.artist_list.to_owned() {
+        Some(artistlist) => {
+            artistlist.selected_page * (app.block_height - 4)
+        }
+        None => 0
+    };
+
     let artist_ui = match &app.artist_list {
         Some(artist_list) => Some(ListUI {
             items: artist_list.artists
