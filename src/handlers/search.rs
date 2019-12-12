@@ -37,7 +37,7 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Esc => {
-            app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Recommend));
+            app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Search));
         }
         Key::Backspace => {
             if !app.input.is_empty() && app.input_idx > 0 {

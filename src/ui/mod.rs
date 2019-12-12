@@ -1215,7 +1215,7 @@ where
         .split(chunks[1]);
 
     let mut playing_text = vec![
-        Text::styled(&app.msg, Style::default().fg(Color::LightRed)),
+        Text::styled(&app.msg, Style::default().fg(Color::Cyan)),
     ];
 
     Paragraph::new(playing_text.iter())
@@ -1224,7 +1224,7 @@ where
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Red)),
+                .border_style(Style::default().fg(Color::Cyan)),
         )
         .render(f, child_chunks[1]);
 }

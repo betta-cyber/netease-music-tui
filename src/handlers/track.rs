@@ -25,8 +25,7 @@ pub fn handler(key: Key, app: &mut App) {
             let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
             app.my_playlist = TrackTable.to_owned();
 
-            app.start_playback(track_playing.id.unwrap().to_string());
-            app.current_playing = Some(track_playing);
+            app.start_playback(track_playing);
             app.fm_state = false;
         }
         _ => {}

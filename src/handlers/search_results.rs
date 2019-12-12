@@ -80,14 +80,13 @@ pub fn handler(key: Key, app: &mut App) {
             if app.tabs.index == 0 {
                 let track_table = &app.search_results.tracks.as_ref().unwrap();
                 let track_playing = track_table.get(app.search_results.selected_tracks_index.to_owned()).unwrap().to_owned();
-                app.start_playback(track_playing.id.unwrap().to_string());
+                app.start_playback(track_playing);
                 app.fm_state = false;
                 app.my_playlist = TrackTable {
                     tracks: app.search_results.tracks.to_owned().unwrap(),
                     selected_index: app.search_results.selected_tracks_index,
                     name: "search result".to_string()
                 };
-                app.current_playing = Some(track_playing);
             } else if app.tabs.index == 1 {
                 if let Some(selected_artist) =
                     &app.search_results.artists.as_ref().unwrap().get(app.search_results.selected_artists_index.to_owned()) {

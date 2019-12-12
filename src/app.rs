@@ -271,6 +271,9 @@ impl App {
                     RouteId::Playlist => {
                         self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
                     }
+                    RouteId::AlbumTracks => {
+                        self.set_current_route_state(Some(ActiveBlock::AlbumTracks), Some(ActiveBlock::AlbumTracks));
+                    }
                     _ => {
                         self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
                     }
@@ -366,7 +369,7 @@ impl App {
                         // loop current song
                         match &self.current_playing {
                             Some(track) => {
-                                self.start_playback(track.id.unwrap().to_string());
+                                self.start_playback(track.to_owned());
                             }
                             None => {
                                 panic!("error");
@@ -384,9 +387,7 @@ impl App {
                         list.selected_index = next_index;
 
                         let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                        self.start_playback(track_playing.id.unwrap().to_string());
-                        self.current_playing = Some(track_playing);
-
+                        self.start_playback(track_playing);
                     }
                     RepeatState::Shuffle => {
                         let list = &mut self.my_playlist;
@@ -395,8 +396,7 @@ impl App {
                         list.selected_index = next_index;
 
                         let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                        self.start_playback(track_playing.id.unwrap().to_string());
-                        self.current_playing = Some(track_playing);
+                        self.start_playback(track_playing);
                     }
                     _ => {}
                 }
@@ -417,8 +417,7 @@ impl App {
                 list.selected_index = next_index;
 
                 let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
-                self.start_playback(track_playing.id.unwrap().to_string());
-                self.current_playing = Some(track_playing);
+                self.start_playback(track_playing);
             }
         }
     }
@@ -644,28 +643,37 @@ impl App {
 
     pub fn start_playback(
         &mut self,
-        id: String,
+        track: Track,
     ) {
         match &self.cloud_music {
             Some(api) => {
+                let id = track.id.unwrap().to_string();
                 let song = api.get_song_url(&id).unwrap();
-                let url = song.url.unwrap().to_string();
+                match song.url {
+                    Some(url) => {
+                        let url = url.to_string();
+                        // init play state
+                        self.duration_ms = None;
+                        self.song_progress_ms = 0;
+                        self.lyric_index = 0;
+                        self.player.set_uri(&url);
+                        self.lyric = Some(api.lyric(&id).unwrap());
+                        self.player.play();
+                        self.current_playing = Some(track);
 
-                // init play state
-                self.duration_ms = None;
-                self.song_progress_ms = 0;
-                self.lyric_index = 0;
-                self.player.set_uri(&url);
-                self.lyric = Some(api.lyric(&id).unwrap());
-                self.player.play();
-
-                let mut flag = false;
-                while !flag {
-                    if self.is_playing() {
-                        self.duration_ms = self.player.get_duration().mseconds();
-                        flag = true;
+                        let mut flag = false;
+                        while !flag {
+                            if self.is_playing() {
+                                self.duration_ms = self.player.get_duration().mseconds();
+                                flag = true;
+                            }
+                        }
                     }
-                }
+                    None => {
+                        self.msg = "get track url failed".to_string();
+                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                    }
+                };
             }
             None => {}
         }
@@ -697,9 +705,7 @@ impl App {
                 }
 
                 let track_playing = self.my_playlist.tracks.get(0).unwrap().to_owned();
-
-                self.start_playback(track_playing.id.unwrap().to_string());
-                self.current_playing = Some(track_playing);
+                self.start_playback(track_playing);
 
                 self.push_navigation_stack(RouteId::PersonalFm, ActiveBlock::PersonalFm);
                 self.fm_state = true;

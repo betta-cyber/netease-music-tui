@@ -34,8 +34,7 @@ pub fn handler(key: Key, app: &mut App) {
                     .get(selected_album.selected_index)
                     .cloned()
                 {
-                    app.start_playback(selected_track.id.unwrap().to_string());
-                    app.current_playing = Some(selected_track);
+                    app.start_playback(selected_track);
                     app.fm_state = false;
                 }
             };

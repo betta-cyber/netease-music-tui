@@ -49,7 +49,7 @@ pub enum ApiError {
 impl failure::Fail for ApiError {}
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Spotify API reported an error")
+        write!(f, "Netease Cloud Music API reported an error")
     }
 }
 impl From<&reqwest::Response> for ApiError {
@@ -291,8 +291,15 @@ impl CloudMusic {
 
         // send request
         let result = self.post(&url, &mut params)?;
-        let songs = self.convert_result::<Songs>(&result).unwrap();
-        Ok(songs.data[0].clone())
+        let songs = self.convert_result::<Songs>(&result);
+        match songs {
+            Ok(songs) => {
+                Ok(songs.data[0].clone())
+            }
+            Err(_) => {
+                Err(err_msg("get track url failed"))
+            }
+        }
     }
 
     // user playlist api
