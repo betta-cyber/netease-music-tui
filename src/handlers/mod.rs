@@ -73,6 +73,9 @@ pub fn handle_app(key: Key, app: &mut App) {
                 Key::Ctrl('y') => {
                     app.follow_current();
                 }
+                Key::Ctrl('d') => {
+                    app.unfollow_current();
+                }
                 Key::Char('a') => {
                     let album_id = match &app.current_playing {
                         Some(track) => {

@@ -99,6 +99,7 @@ This table shows some key binds
 | Go back or exit when nowhere left to back to | e | General |
 | Enter hover mode | \<Esc>  | General |
 | like current playing track | \<Ctrl+y> | General |
+| unlike current playing track | \<Ctrl+d> | General |
 | Enter active mode | \<Enter> | Hover mode |
 | Delete entire input | \<Ctrl+u> | Search input |
 | Search with input text | \<Enter>| Search input |

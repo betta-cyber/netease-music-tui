@@ -302,21 +302,21 @@ impl App {
                     }
                 }
                 self.circle_flag = !self.circle_flag;
-                match &self.lyric {
-                    Some(lyrics) => {
-                        let next_lyric = lyrics.get(self.lyric_index + 1);
-                        // check current ms and lyric timeline
-                        match next_lyric {
-                            Some(next_lyric) => {
-                                if self.song_progress_ms as u128 >= next_lyric.timeline.as_millis() {
-                                    self.lyric_index += 1;
-                                }
+            }
+            match &self.lyric {
+                Some(lyrics) => {
+                    let next_lyric = lyrics.get(self.lyric_index + 1);
+                    // check current ms and lyric timeline
+                    match next_lyric {
+                        Some(next_lyric) => {
+                            if self.song_progress_ms as u128 >= next_lyric.timeline.as_millis() {
+                                self.lyric_index += 1;
                             }
-                            None => {}
                         }
+                        None => {}
                     }
-                    None => {}
                 }
+                None => {}
             }
 
             // check progress duration
@@ -623,15 +623,19 @@ impl App {
     }
 
     pub fn follow_current(&mut self) {
-        let track_id = &self.current_playing.clone().unwrap().id.unwrap().to_string();
-        match &self.cloud_music {
-            Some(api) => {
-                match api.like(&track_id, true) {
-                    Ok(_) => {
-                        self.msg = "like".to_string();
-                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+        match &self.current_playing {
+            Some(track) => {
+                match &self.cloud_music {
+                    Some(api) => {
+                        match api.like(&track.id.unwrap().to_string(), true) {
+                            Ok(_) => {
+                                self.msg = format!("like {}", track.name.to_owned().unwrap());
+                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                            }
+                            Err(e) => self.handle_error(e)
+                        }
                     }
-                    Err(e) => self.handle_error(e)
+                    None => {}
                 }
             }
             None => {}
@@ -639,11 +643,21 @@ impl App {
     }
 
     // unfollow
-    pub fn unfollow_current(&self) {
-        let track_id = &self.current_playing.clone().unwrap().id.unwrap().to_string();
-        match &self.cloud_music {
-            Some(api) => {
-                api.like(&track_id, false);
+    pub fn unfollow_current(&mut self) {
+        match &self.current_playing {
+            Some(track) => {
+                match &self.cloud_music {
+                    Some(api) => {
+                        match api.like(&track.id.unwrap().to_string(), false) {
+                            Ok(_) => {
+                                self.msg = format!("unlike {}", track.name.to_owned().unwrap());
+                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                            }
+                            Err(e) => self.handle_error(e)
+                        }
+                    }
+                    None => {}
+                }
             }
             None => {}
         }
