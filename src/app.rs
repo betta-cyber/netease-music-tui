@@ -28,6 +28,12 @@ pub const RECOMMEND_OPTIONS: [&str; 5] = [
     "Hot Artists",
 ];
 
+#[derive(Clone, PartialEq, Debug)]
+pub enum Action {
+    Subscribe,
+    Unsubscribe
+}
+
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Route {
@@ -197,6 +203,7 @@ pub struct App {
     pub block_height: usize,
     pub lyric_index: usize,
     pub msg_control: usize,
+    pub user_id: i32,
 }
 
 impl App {
@@ -261,6 +268,7 @@ impl App {
             block_height: 0,
             lyric_index: 0,
             msg_control: 0,
+            user_id: 0,
         }
     }
 
@@ -271,11 +279,11 @@ impl App {
             if self.msg_control > 2 {
 
                 match current_route.id {
-                    RouteId::Playlist => {
-                        self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
-                    }
                     RouteId::AlbumTracks => {
                         self.set_current_route_state(Some(ActiveBlock::AlbumTracks), Some(ActiveBlock::AlbumTracks));
+                    }
+                    RouteId::Playlist => {
+                        self.set_current_route_state(Some(ActiveBlock::Playlist), Some(ActiveBlock::Playlist));
                     }
                     _ => {
                         self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
@@ -660,6 +668,52 @@ impl App {
                         }
                     }
                     None => {}
+                }
+            }
+            None => {}
+        }
+    }
+
+    pub fn subscribe_playlist(&mut self, playlist: Playlist, action: Action) {
+        match &self.cloud_music {
+            Some(api) => {
+                match action {
+                    Action::Subscribe => {
+                        match api.sub_playlist(&playlist.id.unwrap().to_string(), true) {
+                            Ok(_) => {
+                                let playlists = api.user_playlists(&self.user_id.to_string());
+                                match playlists {
+                                    Ok(p) => {
+                                        self.playlists = Some(p);
+                                    }
+                                    Err(e) => {
+                                        self.handle_error(e);
+                                    }
+                                };
+                                self.msg = format!("subscribe playlist {}", playlist.name.to_owned().unwrap());
+                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                            }
+                            Err(e) => self.handle_error(e)
+                        }
+                    }
+                    Action::Unsubscribe => {
+                        match api.sub_playlist(&playlist.id.unwrap().to_string(), false) {
+                            Ok(_) => {
+                                let playlists = api.user_playlists(&self.user_id.to_string());
+                                match playlists {
+                                    Ok(p) => {
+                                        self.playlists = Some(p);
+                                    }
+                                    Err(e) => {
+                                        self.handle_error(e);
+                                    }
+                                };
+                                self.msg = format!("unsubscribe playlist {}", playlist.name.to_owned().unwrap());
+                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                            }
+                            Err(e) => self.handle_error(e)
+                        }
+                    }
                 }
             }
             None => {}

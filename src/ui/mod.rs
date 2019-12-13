@@ -102,7 +102,7 @@ where
     draw_user_block(f, app, chunks[0]);
 
     let current_route = app.get_current_route();
-    // info!("{:?}", current_route);
+    info!("{:?}", current_route);
 
     match current_route.id {
         RouteId::Error => {

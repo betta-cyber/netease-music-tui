@@ -88,7 +88,10 @@ fn main() -> Result<(), failure::Error> {
 
     let cloud_music = app.cloud_music.to_owned().unwrap();
     let profile = match cloud_music.login_status()? {
-        Some(profile) => {profile}
+        Some(profile) => {
+            app.user_id = profile.userId.unwrap();
+            profile
+        }
         None => {
             // need login
             let username = settings.get::<String>("username")?;

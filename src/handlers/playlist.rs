@@ -1,4 +1,4 @@
-use super::super::app::App;
+use super::super::app::{App, Action};
 use termion::event::Key;
 use super::common_events;
 
@@ -51,6 +51,26 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = if page < 1 { 0 } else { page - 1 } as i32;
                 app.get_top_playlist(limit, next_page)
             };
+        }
+        Key::Alt('s') => {
+            match &app.playlist_list.clone() {
+                Some(playlists) => {
+                    if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned()) {
+                        app.subscribe_playlist(playlist.to_owned(), Action::Subscribe);
+                    }
+                }
+                None => {}
+            }
+        }
+        Key::Alt('d') => {
+            match &app.playlist_list.clone() {
+                Some(playlists) => {
+                    if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned()) {
+                        app.subscribe_playlist(playlist.to_owned(), Action::Unsubscribe);
+                    }
+                }
+                None => {}
+            }
         }
         _ => {}
     }

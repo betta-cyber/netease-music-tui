@@ -547,6 +547,21 @@ impl CloudMusic {
         Ok("ok".to_string())
     }
 
+    // follow playlist
+    pub fn sub_playlist(&self, playlist_id: &str, sub: bool) -> Result<String, failure::Error> {
+        let sub = match sub {
+            true => "subscribe",
+            false => "unsubscribe"
+        };
+        let url = format!("/weapi/playlist/{}", sub);
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), playlist_id.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
+        Ok("ok".to_string())
+    }
+
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
         let result = serde_json::from_str::<T>(input)
             .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
