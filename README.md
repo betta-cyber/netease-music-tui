@@ -51,7 +51,7 @@ First, install [Rust](https://www.rust-lang.org/tools/install) (using the recomm
 git clone https://github.com/betta-cyber/netease-music-tui.git
 cd netease-music-tui
 
-// build release 
+// build release
 cargo build --release
 ```
 
@@ -64,9 +64,9 @@ A configuration file is located at ${HOME}/.config/netease-music-tui/Settings.to
 The following is a sample Settings.toml file:
 ```toml
 # Your account username (email/cellphone).
-username = "xxxxxxxxx"
+username = username
 # Your account password.
-password = "xxxxxxxxx"
+password = password
 ```
 Fill your account info to the config file.
 

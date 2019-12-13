@@ -709,7 +709,7 @@ impl App {
             Some(api) => {
                 match &self.current_playing {
                     Some(track) => {
-                        a;pi.log_track(&track.id.unwrap().to_string()).ok();
+                        api.log_track(&track.id.unwrap().to_string()).ok();
                     }
                     None => {}
                 }
