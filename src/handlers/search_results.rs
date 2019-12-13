@@ -1,4 +1,4 @@
-use super::super::app::{App, ActiveBlock, RouteId, TrackTable};
+use super::super::app::{App, ActiveBlock, TrackTable};
 use super::common_events;
 use termion::event::Key;
 

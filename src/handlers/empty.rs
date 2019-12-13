@@ -12,11 +12,9 @@ pub fn handler(key: Key, app: &mut App) {
             ActiveBlock::Artist
             | ActiveBlock::AlbumList
             | ActiveBlock::AlbumTracks
-            | ActiveBlock::Artist
             | ActiveBlock::Home
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
-            | ActiveBlock::AlbumList
             | ActiveBlock::PersonalFm
             | ActiveBlock::Playing
             | ActiveBlock::TrackTable => {
@@ -37,11 +35,9 @@ pub fn handler(key: Key, app: &mut App) {
             ActiveBlock::Artist
             | ActiveBlock::AlbumList
             | ActiveBlock::AlbumTracks
-            | ActiveBlock::Artist
             | ActiveBlock::Home
             | ActiveBlock::SearchResult
             | ActiveBlock::Playlist
-            | ActiveBlock::AlbumList
             | ActiveBlock::PersonalFm
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Search));

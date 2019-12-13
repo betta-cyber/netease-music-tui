@@ -370,7 +370,7 @@ impl App {
                 match self.repeat_state {
                     RepeatState::Track => {
                         // loop current song
-                        match &self.current_playing {
+                        match self.current_playing.to_owned() {
                             Some(track) => {
                                 self.start_playback(track.to_owned());
                             }
@@ -653,7 +653,7 @@ impl App {
                     Some(api) => {
                         match api.like(&track.id.unwrap().to_string(), false) {
                             Ok(_) => {
-                                self.msg = format!("unlike {}", track.name.to_owned().unwrap());
+                                self.msg = format!("dislike {}", track.name.to_owned().unwrap());
                                 self.set_current_route_state(Some(ActiveBlock::Msg), None);
                             }
                             Err(e) => self.handle_error(e)
@@ -709,7 +709,7 @@ impl App {
             Some(api) => {
                 match &self.current_playing {
                     Some(track) => {
-                        api.log_track(&track.id.unwrap().to_string());
+                        a;pi.log_track(&track.id.unwrap().to_string()).ok();
                     }
                     None => {}
                 }
@@ -741,8 +741,8 @@ impl App {
 
     // set hover mode
     pub fn hover_mode(&mut self) {
-        let current_route = &self.get_current_route();
-        self.set_current_route_state(Some(ActiveBlock::Empty), Some(current_route.hovered_block))
+        let current_route = self.get_current_route().clone();
+        self.set_current_route_state(Some(ActiveBlock::Empty), Some(current_route.hovered_block));
     }
 
 

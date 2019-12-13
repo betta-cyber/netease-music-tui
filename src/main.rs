@@ -11,7 +11,7 @@ extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
 // log panics to find unknown error
 extern crate log_panics;
-use gst::prelude::*;
+// use gst::prelude::*;
 
 use std::io;
 use termion::raw::IntoRawMode;
@@ -72,7 +72,7 @@ fn main() -> Result<(), failure::Error> {
         Ok(debug) => {
             if debug {
                 log_panics::init();
-                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug);
+                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug)?;
             }
         }
         Err(e) => {error!("{}", e)}
@@ -135,16 +135,13 @@ fn main() -> Result<(), failure::Error> {
         match events.next()? {
             Event::Input(input) => {
                 match input {
-                    Key::Char('e') => {
+                    Key::Char('q') => {
                         if app.get_current_route().active_block != ActiveBlock::Search {
                             let pop_result = app.pop_navigation_stack();
                             if pop_result.is_none() {
                                 break; // Exit application
                             }
                         }
-                    }
-                    Key::Char('q') => {
-                        break;
                     }
                     Key::Ctrl('c') => {
                         break;

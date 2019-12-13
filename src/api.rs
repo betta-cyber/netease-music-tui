@@ -1,5 +1,5 @@
 use serde_json;
-use serde_json::{Value, json};
+// use serde_json::{Value, json};
 use serde::{Serialize, Deserialize};
 
 use reqwest::Client;
@@ -271,6 +271,7 @@ impl CloudMusic {
         }
     }
 
+    #[allow(dead_code)]
     pub fn user(&self, user_id: &str) -> Result<User, failure::Error> {
         let url = format!("/user/detail");
         // url.push_str(&trid);
@@ -542,6 +543,7 @@ impl CloudMusic {
         params.insert("time".to_owned(), "25".to_owned());
 
         let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
         Ok("ok".to_string())
     }
 

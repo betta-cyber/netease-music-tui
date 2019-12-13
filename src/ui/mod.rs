@@ -2,7 +2,7 @@ mod util;
 pub mod circle;
 
 use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
-use tui::{Frame, Terminal};
+use tui::Frame;
 use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs, canvas::Canvas};
 use tui::layout::{Layout, Constraint, Direction, Rect, Alignment};
 use tui::style::{Color, Style, Modifier};
@@ -152,9 +152,6 @@ where
             } else {
                 draw_home(f, app, chunks[1]);
             }
-        }
-        _ => {
-            draw_home(f, app, chunks[1]);
         }
     };
 }
@@ -714,7 +711,7 @@ where
         vec!["Enter Search", "/", "General"],
         vec!["Pause/Resume playback", "<Space>", "General"],
         vec!["Fullsize playbar", "f", "General"],
-        vec!["Go back or exit when nowhere left to back to", "e", "General"],
+        vec!["Go back or exit when nowhere left to back to", "q", "General"],
         vec!["Enter hover mode", "<Esc>", "General"],
         vec!["Enter active mode", "<Enter>", "General"],
         vec!["Like current playing track", "<Ctrl+y>", "General"],
@@ -743,7 +740,7 @@ where
                 .border_style(gray),
         )
         .style(Style::default().fg(Color::White))
-        .widths(&[50, 40, 20])
+        .widths(&[60, 30, 20])
         .render(f, chunks[0]);
 }
 
@@ -1197,7 +1194,7 @@ where
         .constraints([Constraint::Percentage(100)].as_ref())
         .split(layout_chunk);
 
-    let mut playing_text = vec![
+    let playing_text = vec![
         Text::raw("Api response: "),
         Text::styled(&app.error_msg, Style::default().fg(Color::LightRed)),
         Text::styled(
@@ -1232,11 +1229,11 @@ where
         .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
         .split(chunks[1]);
 
-    let mut playing_text = vec![
+    let msg = vec![
         Text::styled(&app.msg, Style::default().fg(Color::Cyan)),
     ];
 
-    Paragraph::new(playing_text.iter())
+    Paragraph::new(msg.iter())
         .wrap(true)
         .alignment(Alignment::Center)
         .style(Style::default().fg(Color::White))

@@ -96,7 +96,7 @@ This table shows some key binds
 | Enter Search | / | General |
 | Pause/Resume playback | \<Space> | General |
 | Fullsize playbar | f | General |
-| Go back or exit when nowhere left to back to | e | General |
+| Go back or exit when nowhere left to back to | q | General |
 | Enter hover mode | \<Esc>  | General |
 | like current playing track | \<Ctrl+y> | General |
 | dislike current playing track | \<Ctrl+d> | General |
