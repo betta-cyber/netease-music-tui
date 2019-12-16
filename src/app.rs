@@ -633,17 +633,31 @@ impl App {
         }
     }
 
-    pub fn follow_current(&mut self) {
+    pub fn like_current(&mut self, action: Action) {
         match &self.current_playing {
             Some(track) => {
                 match &self.cloud_music {
                     Some(api) => {
-                        match api.like(&track.id.unwrap().to_string(), true) {
-                            Ok(_) => {
-                                self.msg = format!("like {}", track.name.to_owned().unwrap());
-                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                        match action {
+                            Action::Subscribe => {
+                                match api.like(&track.id.unwrap().to_string(), true) {
+                                    Ok(_) => {
+                                        self.msg = format!("like {}", track.name.to_owned().unwrap());
+                                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                                    }
+                                    Err(e) => self.handle_error(e)
+                                }
                             }
-                            Err(e) => self.handle_error(e)
+                            Action::Unsubscribe => {
+                                match api.like(&track.id.unwrap().to_string(), false) {
+                                    Ok(_) => {
+                                        self.msg = format!("dislike {}", track.name.to_owned().unwrap());
+                                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                                    }
+                                    Err(e) => self.handle_error(e)
+                                }
+
+                            }
                         }
                     }
                     None => {}
@@ -653,16 +667,17 @@ impl App {
         }
     }
 
-    // unfollow
-    pub fn unfollow_current(&mut self) {
+    // fm move to trash
+    pub fn fm_trash(&mut self) {
         match &self.current_playing {
             Some(track) => {
                 match &self.cloud_music {
                     Some(api) => {
-                        match api.like(&track.id.unwrap().to_string(), false) {
+                        match api.fm_trash(&track.id.unwrap().to_string()) {
                             Ok(_) => {
-                                self.msg = format!("dislike {}", track.name.to_owned().unwrap());
+                                self.msg = format!("move {} to trash", track.name.to_owned().unwrap());
                                 self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                                self.skip_track(TrackState::Forword)
                             }
                             Err(e) => self.handle_error(e)
                         }

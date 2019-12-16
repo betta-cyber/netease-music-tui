@@ -64,9 +64,9 @@ A configuration file is located at ${HOME}/.config/netease-music-tui/Settings.to
 The following is a sample Settings.toml file:
 ```toml
 # Your account username (email/cellphone).
-username = username
+username = "username"
 # Your account password.
-password = password
+password = "password"
 ```
 Fill your account info to the config file.
 
@@ -100,11 +100,14 @@ This table shows some key binds
 | Enter hover mode | \<Esc>  | General |
 | like current playing track | \<Ctrl+y> | General |
 | dislike current playing track | \<Ctrl+d> | General |
+| move track to trash | \<Ctrl+t> | Fm block |
 | Enter active mode | \<Enter> | Hover mode |
 | Delete entire input | \<Ctrl+u> | Search input |
 | Search with input text | \<Enter>| Search input |
 | Jump to start of input | \<Ctrl+a> | Search input |
 | Jump to end of input | \<Ctrl+e> | Search input |
+| Subscribe current hover playlist | \<Alt+s> | Playlist block |,
+| Unsubscribe current hover playlist | \<Alt+d> | Playlist block |,
 | Jump to next page | \<Ctrl+f> | Search result \| top list |
 | Jump to previous page | \<Ctrl+b> | Search result \| top list |
 

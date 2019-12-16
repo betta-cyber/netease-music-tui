@@ -547,6 +547,19 @@ impl CloudMusic {
         Ok("ok".to_string())
     }
 
+    // like track
+    pub fn fm_trash(&self, track_id: &str) -> Result<String, failure::Error> {
+        let url = format!("/weapi/radio/trash/add");
+        let mut params = HashMap::new();
+        params.insert("alg".to_owned(), "RT".to_owned());
+        params.insert("songId".to_owned(), track_id.to_string());
+        params.insert("time".to_owned(), "25".to_owned());
+
+        let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
+        Ok("ok".to_string())
+    }
+
     // follow playlist
     pub fn sub_playlist(&self, playlist_id: &str, sub: bool) -> Result<String, failure::Error> {
         let sub = match sub {

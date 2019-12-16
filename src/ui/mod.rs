@@ -716,11 +716,15 @@ where
         vec!["Enter active mode", "<Enter>", "General"],
         vec!["Like current playing track", "<Ctrl+y>", "General"],
         vec!["Dislike current playing track", "<Ctrl+d>", "General"],
+        vec!["move track to trash", "<Ctrl+t>", "FM block"],
 
         vec!["Delete entire input", "<Ctrl+u>", "Search input"],
         vec!["Search with input text", "<Enter>", "Search input"],
         vec!["Jump to start of input", "<Ctrl+a>", "Search input"],
         vec!["Jump to end of input", "<Ctrl+e>", "Search input"],
+
+        vec!["Subscribe current hover playlist", "<Alt+s>", "Playlist block"],
+        vec!["Unsubscribe current hover playlist", "<Alt+d>", "Playlist block"],
 
         vec!["Jump to next page", "<Ctrl+f>", "Search result | top list"],
         vec!["Jump to previous page", "<Ctrl+b>", "Search result | top list"],

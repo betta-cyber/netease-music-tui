@@ -11,8 +11,9 @@ mod artist;
 mod albumlist;
 mod album_tracks;
 mod artistlist;
+mod fm;
 
-use super::app::{App, ActiveBlock, RouteId};
+use super::app::{App, ActiveBlock, RouteId, Action};
 use termion::event::Key;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -71,10 +72,10 @@ pub fn handle_app(key: Key, app: &mut App) {
                     app.hover_mode();
                 }
                 Key::Ctrl('y') => {
-                    app.follow_current();
+                    app.like_current(Action::Subscribe);
                 }
                 Key::Ctrl('d') => {
-                    app.unfollow_current();
+                    app.like_current(Action::Unsubscribe);
                 }
                 Key::Char('a') => {
                     let album_id = match &app.current_playing {
@@ -133,6 +134,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::SearchResult => {
             search_results::handler(key, app);
+        }
+        ActiveBlock::PersonalFm => {
+            fm::handler(key, app);
         }
         _ => {}
     }
