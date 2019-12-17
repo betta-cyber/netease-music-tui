@@ -5,3 +5,4 @@ pub mod artist;
 pub mod album;
 pub mod search;
 pub mod lyric;
+pub mod dj;

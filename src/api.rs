@@ -19,6 +19,7 @@ use std::time::Duration;
 use super::model::user::{User, Profile, Login};
 use super::model::artist::{TopArtistRes, Artist};
 use super::model::song::{Song, Songs};
+use super::model::dj::{ProgramsRes, ProgramDetailRes, Program};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack, TopAlbumRes};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
@@ -573,6 +574,45 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         info!("{:#?}", result);
         Ok("ok".to_string())
+    }
+
+    // get dj program list api
+    #[allow(dead_code)]
+    pub fn dj_program(&self, radio_id: &str, limit: i32, offset: i32, asc: bool) -> Result<Vec<Program>, failure::Error> {
+        let url = format!("/weapi/dj/program/byradio");
+        let mut params = HashMap::new();
+        params.insert("radioId".to_owned(), radio_id.to_string());
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
+        params.insert("asc".to_owned(), asc.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        match self.convert_result::<ProgramsRes>(&result) {
+            Ok(res) => {
+                Ok(res.programs)
+            }
+            Err(_) => {
+                Err(err_msg("get dj program failed"))
+            }
+        }
+    }
+
+    // dj_detail
+    #[allow(dead_code)]
+    pub fn dj_detail(&self, dj_id: &str) -> Result<Program, failure::Error> {
+        let url = format!("/weapi/dj/program/detail");
+        let mut params = HashMap::new();
+        params.insert("id".to_owned(), dj_id.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        match self.convert_result::<ProgramDetailRes>(&result) {
+            Ok(res) => {
+                Ok(res.program)
+            }
+            Err(_) => {
+                Err(err_msg("get dj program failed"))
+            }
+        }
     }
 
     pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
