@@ -143,6 +143,12 @@ where
         RouteId::Playlist => {
             draw_playlist_table(f, app, chunks[1]);
         }
+        RouteId::DjRadio => {
+            draw_djradio_list(f, app, chunks[1]);
+        }
+        RouteId::DjProgram => {
+            draw_dj_program_list(f, app, chunks[1]);
+        }
         RouteId::Playing => {
             draw_playing_detail(f, app, chunks[1]);
         }
@@ -1184,6 +1190,129 @@ where
             (&artist_ui.title, &header),
             &artist_ui.items,
             artist_ui.selected_index,
+            highlight_state,
+        );
+    };
+}
+
+pub fn draw_djradio_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::DjRadio,
+        current_route.hovered_block == ActiveBlock::DjRadio,
+    );
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "DjRadio Name",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let mut num = match app.djradio_list.to_owned() {
+        Some(djradio_list) => {
+            djradio_list.selected_page * (app.block_height - 4)
+        }
+        None => 0
+    };
+
+    let djradio_ui = match &app.djradio_list {
+        Some(djradio_list) => Some(ListUI {
+            items: djradio_list.djradios
+                .iter()
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().name,
+                        ],
+                    }
+                })
+                .collect::<Vec<TableItem>>(),
+            title: format!(
+                "My Subscribe DjRadio",
+            ),
+            selected_index: djradio_list.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(artist_ui) = djradio_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&artist_ui.title, &header),
+            &artist_ui.items,
+            artist_ui.selected_index,
+            highlight_state,
+        );
+    };
+}
+
+pub fn draw_dj_program_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
+    B: Backend,
+{
+
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::DjProgram,
+        current_route.hovered_block == ActiveBlock::DjProgram,
+    );
+
+    let header = [
+        TableHeader {
+            text: "",
+            width: get_percentage_width(layout_chunk.width, 0.05),
+        },
+        TableHeader {
+            text: "Dj Program Name",
+            width: get_percentage_width(layout_chunk.width, 0.3),
+        },
+    ];
+
+    let mut num = 0;
+
+    let program_ui = match &app.program_list {
+        Some(program_list) => Some(ListUI {
+            items: program_list.dj_programs
+                .iter()
+                .map(|item| {
+                    num += 1;
+                    TableItem {
+                        id: item.id.to_string(),
+                        format: vec![
+                            num.to_string(),
+                            item.to_owned().mainSong.name,
+                        ],
+                    }
+                })
+                .collect::<Vec<TableItem>>(),
+            title: program_list.to_owned().name,
+            selected_index: program_list.selected_index,
+        }),
+        None => None,
+    };
+
+    if let Some(program_ui) = program_ui {
+        draw_table(
+            f,
+            &app,
+            layout_chunk,
+            (&program_ui.title, &header),
+            &program_ui.items,
+            program_ui.selected_index,
             highlight_state,
         );
     };

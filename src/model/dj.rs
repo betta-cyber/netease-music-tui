@@ -2,23 +2,15 @@
 use serde::{Serialize, Deserialize};
 
 
-#[allow(non_snake_case)]
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct DjProgram {
-    pub mainSong: i32,
-    pub Songs: String,
-    pub dj: Option<Vec<String>>,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProgramsRes {
-    pub programs: Vec<Program>,
+    pub programs: Vec<DjProgram>,
     pub code: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ProgramDetailRes {
-    pub program: Program,
+    pub program: DjProgram,
     pub code: i32,
 }
 
@@ -29,13 +21,17 @@ pub struct SubDjRadioRes {
     pub code: i32,
 }
 
+// dj program which can listen
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Program {
+pub struct DjProgram {
     pub mainSong: MainSong,
     pub radio: DjRadio,
+    pub id: usize,
 }
 
+// dj radio means dj's radio list
+// not listen Program
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DjRadio {

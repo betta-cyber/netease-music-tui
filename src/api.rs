@@ -19,7 +19,7 @@ use std::time::Duration;
 use super::model::user::{User, Profile, Login};
 use super::model::artist::{TopArtistRes, Artist};
 use super::model::song::{Song, Songs};
-use super::model::dj::{ProgramsRes, ProgramDetailRes, Program, SubDjRadioRes, DjRadio};
+use super::model::dj::{ProgramsRes, ProgramDetailRes, DjProgram, SubDjRadioRes, DjRadio};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack, TopAlbumRes};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
@@ -599,17 +599,19 @@ impl CloudMusic {
 
     // get dj program list api
     #[allow(dead_code)]
-    pub fn dj_program(&self, radio_id: &str, limit: i32, offset: i32, asc: bool) -> Result<Vec<Program>, failure::Error> {
+    pub fn dj_program(&self, radio_id: &str, limit: i32, offset: i32) -> Result<Vec<DjProgram>, failure::Error> {
         let url = format!("/weapi/dj/program/byradio");
         let mut params = HashMap::new();
         params.insert("radioId".to_owned(), radio_id.to_string());
         params.insert("limit".to_owned(), limit.to_string());
         params.insert("offset".to_owned(), offset.to_string());
-        params.insert("asc".to_owned(), asc.to_string());
+        params.insert("asc".to_owned(), false.to_string());
 
         let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
         match self.convert_result::<ProgramsRes>(&result) {
             Ok(res) => {
+                info!("{:#?}", res.programs);
                 Ok(res.programs)
             }
             Err(_) => {
@@ -620,7 +622,7 @@ impl CloudMusic {
 
     // dj_detail
     #[allow(dead_code)]
-    pub fn dj_detail(&self, dj_id: &str) -> Result<Program, failure::Error> {
+    pub fn dj_detail(&self, dj_id: &str) -> Result<DjProgram, failure::Error> {
         let url = format!("/weapi/dj/program/detail");
         let mut params = HashMap::new();
         params.insert("id".to_owned(), dj_id.to_string());

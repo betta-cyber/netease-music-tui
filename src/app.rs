@@ -6,6 +6,7 @@ use super::model::playlist::{Playlist, Track};
 use super::model::artist::Artist;
 use super::model::album::Album;
 use super::model::lyric::Lyric;
+use super::model::dj::{DjRadio, DjProgram};
 use super::api::CloudMusic;
 use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
 use super::handlers::TrackState;
@@ -20,12 +21,13 @@ const DEFAULT_ROUTE: Route = Route {
     hovered_block: ActiveBlock::Recommend,
 };
 
-pub const RECOMMEND_OPTIONS: [&str; 5] = [
+pub const RECOMMEND_OPTIONS: [&str; 6] = [
     "My Playlist",
     "Discover",
     "Personal FM",
     "Hot Albums",
     "Hot Artists",
+    "Subed DjRadios"
 ];
 
 #[derive(Clone, PartialEq, Debug)]
@@ -56,6 +58,8 @@ pub enum RouteId {
     MyPlaylists,
     PersonalFm,
     Playing,
+    DjRadio,
+    DjProgram,
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -78,6 +82,8 @@ pub enum ActiveBlock {
     PersonalFm,
     Playing,
     Msg,
+    DjRadio,
+    DjProgram,
 }
 
 #[derive(Clone)]
@@ -121,6 +127,20 @@ pub struct ArtistsTable {
 #[derive(Clone, Debug, Default)]
 pub struct TrackTable {
     pub tracks: Vec<Track>,
+    pub selected_index: usize,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct DjRadioTable {
+    pub djradios: Vec<DjRadio>,
+    pub selected_index: usize,
+    pub selected_page: usize,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct ProgramTable {
+    pub dj_programs: Vec<DjProgram>,
     pub selected_index: usize,
     pub name: String,
 }
@@ -197,6 +217,8 @@ pub struct App {
     pub playlist_list: Option<PlaylistTable>,
     pub album_list: Option<AlbumsTable>,
     pub artist_list: Option<ArtistsTable>,
+    pub djradio_list: Option<DjRadioTable>,
+    pub program_list: Option<ProgramTable>,
     pub lyric: Option<Vec<Lyric>>,
     pub error_msg: String,
     pub msg: String,
@@ -260,8 +282,10 @@ impl App {
             artist_albums: None,
             selected_album: None,
             playlist_list: None,
+            djradio_list: None,
             album_list: None,
             artist_list: None,
+            program_list: None,
             lyric: None,
             error_msg: String::new(),
             msg: String::new(),
@@ -626,6 +650,38 @@ impl App {
                         artists: artists,
                         selected_index: 0,
                         selected_page: page as usize,
+                    })
+                }
+            }
+            None => {}
+        }
+    }
+
+    // get user subscribe djradio
+    pub fn get_sub_dj_radio(&mut self, limit: i32, page: i32) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(djradios) = api.dj_sublist(limit, limit*page) {
+                    self.djradio_list = Some(DjRadioTable {
+                        djradios: djradios,
+                        selected_index: 0,
+                        selected_page: page as usize,
+                    })
+                }
+            }
+            None => {}
+        }
+    }
+
+    // get program list
+    pub fn get_djradio_programs(&mut self, djradio: DjRadio, limit: i32, page: i32) {
+        match &self.cloud_music {
+            Some(api) => {
+                if let Ok(dj_programs) = api.dj_program(&djradio.id.to_string(), limit, limit*page) {
+                    self.program_list = Some(ProgramTable {
+                        dj_programs: dj_programs,
+                        selected_index: 0,
+                        name: djradio.name,
                     })
                 }
             }

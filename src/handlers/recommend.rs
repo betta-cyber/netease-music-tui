@@ -44,6 +44,10 @@ pub fn handler(key: Key, app: &mut App) {
                     app.get_top_artists(limit, 0);
                     app.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
                 }
+                5 => {
+                    app.get_sub_dj_radio(limit, 0);
+                    app.push_navigation_stack(RouteId::DjRadio, ActiveBlock::DjRadio);
+                }
                 _ => {}
             }
         }
