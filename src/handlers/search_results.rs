@@ -109,12 +109,13 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('f') => {
             let limit = (app.block_height - 5) as i32;
+            let input: String = app.input.iter().collect();
             if app.tabs.index == 0 {
                 let page = app.search_results.selected_tracks_page as i32;
                 let next_page = page + 1;
                 // search tracks
                 match app.cloud_music.as_ref().unwrap().search_track(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -137,7 +138,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = page + 1;
                 // search artist
                 match app.cloud_music.as_ref().unwrap().search_artist(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -160,7 +161,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = page + 1;
                 // search tracks
                 match app.cloud_music.as_ref().unwrap().search_album(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -183,7 +184,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = page + 1;
                 // search playlist
                 match app.cloud_music.as_ref().unwrap().search_playlist(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -204,12 +205,13 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('b') => {
             let limit = (app.block_height - 5) as i32;
+            let input: String = app.input.iter().collect();
             if app.tabs.index == 0 {
                 let page = app.search_results.selected_tracks_page as i32;
                 let next_page = if page < 1 { 0 } else { page - 1 };
                 // search tracks
                 match app.cloud_music.as_ref().unwrap().search_track(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -232,7 +234,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = if page < 1 { 0 } else { page - 1 };
                 // search tracks
                 match app.cloud_music.as_ref().unwrap().search_artist(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -255,7 +257,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = if page < 1 { 0 } else { page - 1 };
                 // search album
                 match app.cloud_music.as_ref().unwrap().search_album(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {
@@ -273,7 +275,7 @@ pub fn handler(key: Key, app: &mut App) {
                 let next_page = if page < 1 { 0 } else { page - 1 };
                 // search playlist
                 match app.cloud_music.as_ref().unwrap().search_playlist(
-                    &app.input,
+                    &input,
                     limit,
                     next_page*limit,
                 ) {

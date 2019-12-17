@@ -67,7 +67,8 @@ where
         current_route.hovered_block == ActiveBlock::Search,
     );
 
-    Paragraph::new([Text::raw(&app.input)].iter())
+    let input: String = app.input.iter().collect();
+    Paragraph::new([Text::raw(&input)].iter())
         .style(Style::default().fg(Color::Yellow))
         .block(
             Block::default()

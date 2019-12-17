@@ -24,14 +24,21 @@ pub struct ProgramDetailRes {
 
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Program {
-    pub mainSong: MainSong,
-    pub radio: Radio,
+pub struct SubDjRadioRes {
+    pub djRadios: Vec<DjRadio>,
+    pub code: i32,
 }
 
 #[allow(non_snake_case)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Radio {
+pub struct Program {
+    pub mainSong: MainSong,
+    pub radio: DjRadio,
+}
+
+#[allow(non_snake_case)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DjRadio {
     pub category: String,
     pub subCount: usize,
     pub programCount: usize,

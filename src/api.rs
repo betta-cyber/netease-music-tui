@@ -19,7 +19,7 @@ use std::time::Duration;
 use super::model::user::{User, Profile, Login};
 use super::model::artist::{TopArtistRes, Artist};
 use super::model::song::{Song, Songs};
-use super::model::dj::{ProgramsRes, ProgramDetailRes, Program};
+use super::model::dj::{ProgramsRes, ProgramDetailRes, Program, SubDjRadioRes, DjRadio};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack, TopAlbumRes};
 use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
@@ -575,6 +575,27 @@ impl CloudMusic {
         info!("{:#?}", result);
         Ok("ok".to_string())
     }
+
+    // dj sublist
+    #[allow(dead_code)]
+    pub fn dj_sublist(&self, limit: i32, offset: i32) -> Result<Vec<DjRadio>, failure::Error> {
+        let url = format!("/weapi/djradio/get/subed");
+        let mut params = HashMap::new();
+        params.insert("limit".to_owned(), limit.to_string());
+        params.insert("offset".to_owned(), offset.to_string());
+        params.insert("total".to_owned(), true.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        match self.convert_result::<SubDjRadioRes>(&result) {
+            Ok(res) => {
+                Ok(res.djRadios)
+            }
+            Err(_) => {
+                Err(err_msg("get sub dj radio failed"))
+            }
+        }
+    }
+
 
     // get dj program list api
     #[allow(dead_code)]
