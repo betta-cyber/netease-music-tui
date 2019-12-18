@@ -28,6 +28,10 @@ pub struct DjProgram {
     pub mainSong: MainSong,
     pub radio: DjRadio,
     pub id: usize,
+    // pub description: String,
+    pub serialNum: usize,
+    pub listenerCount: usize,
+    pub createTime: u64,
 }
 
 // dj radio means dj's radio list

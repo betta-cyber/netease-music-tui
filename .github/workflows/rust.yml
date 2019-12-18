@@ -1,6 +1,6 @@
-name: Rust
+name: Continuous Integration
 
-on: 
+on:
   push:
     branches:
       - master
@@ -15,4 +15,5 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get -y install libgstreamer-plugins-bad1.0-dev
+        cargo test --verbose
         cargo build --verbose

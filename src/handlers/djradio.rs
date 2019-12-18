@@ -26,12 +26,11 @@ pub fn handler(key: Key, app: &mut App) {
         Key::Char('\n') => {
             if let Some(djradio_list) = &app.djradio_list.clone()
             {
-                let limit = (app.block_height - 4) as i32;
                 if let Some(djradio) =
                     djradio_list.djradios.get(djradio_list.selected_index.to_owned())
                 {
-
-                    app.get_djradio_programs(djradio.to_owned(), limit, 0);
+                    // get newest 500 raidos
+                    app.get_djradio_programs(djradio.to_owned(), 500, 0);
                     app.push_navigation_stack(RouteId::DjProgram, ActiveBlock::DjProgram);
                 }
             };

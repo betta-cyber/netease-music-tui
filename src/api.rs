@@ -608,10 +608,8 @@ impl CloudMusic {
         params.insert("asc".to_owned(), false.to_string());
 
         let result = self.post(&url, &mut params)?;
-        info!("{:#?}", result);
         match self.convert_result::<ProgramsRes>(&result) {
             Ok(res) => {
-                info!("{:#?}", res.programs);
                 Ok(res.programs)
             }
             Err(_) => {

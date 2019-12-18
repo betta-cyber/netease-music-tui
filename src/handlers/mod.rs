@@ -13,6 +13,7 @@ mod album_tracks;
 mod artistlist;
 mod fm;
 mod djradio;
+mod djprogram;
 
 use super::app::{App, ActiveBlock, RouteId, Action};
 use termion::event::Key;
@@ -141,6 +142,9 @@ fn handle_block_events(key: Key, app: &mut App) {
         }
         ActiveBlock::DjRadio => {
             djradio::handler(key, app);
+        }
+        ActiveBlock::DjProgram => {
+            djprogram::handler(key, app);
         }
         _ => {}
     }

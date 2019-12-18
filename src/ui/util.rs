@@ -1,3 +1,7 @@
+extern crate chrono;
+use chrono::prelude::DateTime;
+use chrono::Utc;
+use std::time::{UNIX_EPOCH, Duration};
 use tui::style::{Color, Style};
 use super::super::model::artist::Artist;
 
@@ -55,4 +59,20 @@ pub fn create_tag_string(tags: &[String]) -> String {
         .map(|tag| tag.to_string())
         .collect::<Vec<String>>()
         .join("|")
+}
+
+pub fn create_datetime_string(timestamp: u64) -> String {
+    let d = UNIX_EPOCH + Duration::from_millis(timestamp);
+    let datetime = DateTime::<Utc>::from(d);
+    datetime.format("%Y-%m-%d").to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_datatime_string() {
+        assert_eq!(create_datetime_string(1576472814620), "2019-12-16");
+    }
 }

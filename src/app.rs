@@ -309,6 +309,9 @@ impl App {
                     RouteId::Playlist => {
                         self.set_current_route_state(Some(ActiveBlock::Playlist), Some(ActiveBlock::Playlist));
                     }
+                    RouteId::DjProgram => {
+                        self.set_current_route_state(Some(ActiveBlock::DjProgram), Some(ActiveBlock::DjProgram));
+                    }
                     _ => {
                         self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
                     }

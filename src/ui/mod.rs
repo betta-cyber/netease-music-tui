@@ -7,7 +7,7 @@ use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gau
 use tui::layout::{Layout, Constraint, Direction, Rect, Alignment};
 use tui::style::{Color, Style, Modifier};
 use tui::backend::Backend;
-use util::{get_color, get_percentage_width, display_track_progress, create_artist_string, create_tag_string};
+use util::{get_color, get_percentage_width, display_track_progress, create_artist_string, create_tag_string, create_datetime_string};
 
 // table item for render
 #[derive(Clone, Debug)]
@@ -1278,23 +1278,42 @@ where
         },
         TableHeader {
             text: "Dj Program Name",
-            width: get_percentage_width(layout_chunk.width, 0.3),
+            width: get_percentage_width(layout_chunk.width, 0.5),
+        },
+        TableHeader {
+            text: "listener Count",
+            width: get_percentage_width(layout_chunk.width, 0.2),
+        },
+        TableHeader {
+            text: "Date",
+            width: get_percentage_width(layout_chunk.width, 0.2),
         },
     ];
-
-    let mut num = 0;
 
     let program_ui = match &app.program_list {
         Some(program_list) => Some(ListUI {
             items: program_list.dj_programs
                 .iter()
                 .map(|item| {
-                    num += 1;
+                    let num_string = match &app.current_playing {
+                        Some(track) => {
+                            if item.mainSong.id.to_string() == track.id.unwrap().to_string() {
+                                format!("|> {}", item.serialNum.to_string())
+                            } else {
+                                item.serialNum.to_string()
+                            }
+                        }
+                        None => {
+                            item.serialNum.to_string()
+                        }
+                    };
                     TableItem {
                         id: item.id.to_string(),
                         format: vec![
-                            num.to_string(),
-                            item.to_owned().mainSong.name,
+                            num_string,
+                            item.mainSong.name.to_string(),
+                            item.listenerCount.to_string(),
+                            create_datetime_string(item.createTime),
                         ],
                     }
                 })
