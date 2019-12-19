@@ -110,6 +110,18 @@ pub fn handler(key: Key, app: &mut App) {
                         app.handle_error(e);
                     }
                 }
+                match app.cloud_music.as_ref().unwrap().search_djradio(
+                    &input,
+                    limit,
+                    0
+                ) {
+                    Ok(result) => {
+                        app.search_results.djradios = Some(result.djRadios.unwrap_or(vec![]));
+                    }
+                    Err(e) => {
+                        app.handle_error(e);
+                    }
+                }
                 app.selected_playlist_index = None;
                 app.push_navigation_stack(RouteId::Search, ActiveBlock::SearchResult);
             }

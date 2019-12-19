@@ -125,6 +125,18 @@ pub fn handle_right_event(app: &mut App) {
                         Some(ActiveBlock::Playing),
                     );
                 }
+                RouteId::DjRadio => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Empty),
+                        Some(ActiveBlock::DjRadio),
+                    );
+                }
+                RouteId::DjProgram => {
+                    app.set_current_route_state(
+                        Some(ActiveBlock::Empty),
+                        Some(ActiveBlock::DjProgram),
+                    );
+                }
                 RouteId::Home => {
                     app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
                 }

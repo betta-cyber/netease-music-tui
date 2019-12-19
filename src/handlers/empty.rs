@@ -17,6 +17,8 @@ pub fn handler(key: Key, app: &mut App) {
             | ActiveBlock::Playlist
             | ActiveBlock::PersonalFm
             | ActiveBlock::Playing
+            | ActiveBlock::DjRadio
+            | ActiveBlock::DjProgram
             | ActiveBlock::TrackTable => {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }

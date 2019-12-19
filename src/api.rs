@@ -21,7 +21,7 @@ use super::model::artist::{TopArtistRes, Artist};
 use super::model::song::{Song, Songs};
 use super::model::dj::{ProgramsRes, ProgramDetailRes, DjProgram, SubDjRadioRes, DjRadio};
 use super::model::album::{ArtistAlbums, Album, AlbumTrack, TopAlbumRes};
-use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums};
+use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums, SearchDjradioResult, SearchDjRadios};
 use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
 use super::model::lyric::{LyricRes, Lyric};
 
@@ -481,6 +481,13 @@ impl CloudMusic {
         Ok(res.result)
     }
 
+    // search for album
+    pub fn search_djradio(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchDjRadios, failure::Error> {
+        let result = self.search(keyword, "1009", limit, offset)?;
+        let res = self.convert_result::<SearchDjradioResult>(&result)?;
+        Ok(res.result)
+    }
+
     // get user personal fm
     pub fn personal_fm(&self) -> Result<Vec<Track>, failure::Error> {
         let url = format!("/weapi/v1/radio/get");
@@ -577,7 +584,6 @@ impl CloudMusic {
     }
 
     // dj sublist
-    #[allow(dead_code)]
     pub fn dj_sublist(&self, limit: i32, offset: i32) -> Result<Vec<DjRadio>, failure::Error> {
         let url = format!("/weapi/djradio/get/subed");
         let mut params = HashMap::new();
@@ -598,7 +604,6 @@ impl CloudMusic {
 
 
     // get dj program list api
-    #[allow(dead_code)]
     pub fn dj_program(&self, radio_id: &str, limit: i32, offset: i32) -> Result<Vec<DjProgram>, failure::Error> {
         let url = format!("/weapi/dj/program/byradio");
         let mut params = HashMap::new();

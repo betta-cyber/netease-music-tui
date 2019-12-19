@@ -2,6 +2,7 @@
 use super::playlist::{Track, Playlist};
 use super::artist::Artist;
 use super::album::Album;
+use super::dj::DjRadio;
 use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -29,6 +30,12 @@ pub struct SearchAlbumResult {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SearchDjradioResult {
+    pub result: SearchDjRadios,
+    pub code: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchTracks {
     pub songs: Option<Vec<Track>>,
 }
@@ -46,4 +53,10 @@ pub struct SearchArtists {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchAlbums {
     pub albums: Option<Vec<Album>>,
+}
+
+#[allow(non_snake_case)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SearchDjRadios {
+    pub djRadios: Option<Vec<DjRadio>>,
 }

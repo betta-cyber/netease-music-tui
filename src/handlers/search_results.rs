@@ -1,4 +1,4 @@
-use super::super::app::{App, ActiveBlock, TrackTable};
+use super::super::app::{App, ActiveBlock, TrackTable, RouteId};
 use super::common_events;
 use termion::event::Key;
 
@@ -6,7 +6,6 @@ pub fn handler(key: Key, app: &mut App) {
     match key {
         Key::Esc => {
             app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::SearchResult));
-            // app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Recommend));
         }
         k if common_events::down_event(k) => {
             // track tab
@@ -34,6 +33,13 @@ pub fn handler(key: Key, app: &mut App) {
                     Some(app.search_results.selected_playlists_index),
                 );
                 app.search_results.selected_playlists_index = next_index;
+            } else if app.tabs.index == 4 {
+                let next_index = common_events::on_down_press_handler(
+                    &app.search_results.djradios.as_ref().unwrap(),
+                    Some(app.search_results.selected_djradio_index),
+                );
+                app.search_results.selected_djradio_index = next_index;
+
             }
         }
         k if common_events::up_event(k) => {
@@ -62,6 +68,12 @@ pub fn handler(key: Key, app: &mut App) {
                     Some(app.search_results.selected_playlists_index),
                 );
                 app.search_results.selected_playlists_index = next_index;
+            } else if app.tabs.index == 4 {
+                let next_index = common_events::on_up_press_handler(
+                    &app.search_results.djradios.as_ref().unwrap(),
+                    Some(app.search_results.selected_djradio_index),
+                );
+                app.search_results.selected_djradio_index = next_index;
             }
         }
         k if common_events::right_event(k) => {
@@ -104,6 +116,19 @@ pub fn handler(key: Key, app: &mut App) {
                     &app.search_results.playlists.as_ref().unwrap().get(app.search_results.selected_playlists_index.to_owned()) {
                     let playlist_id = selected_playlist.id.to_owned().unwrap();
                     app.get_playlist_tracks(playlist_id.to_string());
+                }
+            } else if app.tabs.index == 4 {
+                match &app.search_results.djradios.clone() {
+                    Some(djradios) => {
+                        match djradios.get(app.search_results.selected_djradio_index.to_owned()) {
+                            Some(djradio) => {
+                                app.get_djradio_programs(djradio.to_owned(), 500, 0);
+                                app.push_navigation_stack(RouteId::DjProgram, ActiveBlock::DjProgram);
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
                 }
             }
         }

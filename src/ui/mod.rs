@@ -633,6 +633,14 @@ where
                 .collect(),
             None => vec![],
         };
+        let djradios = match &app.search_results.djradios {
+            Some(r) => r
+                .iter()
+                .map(|item| format!("{}", item.name.to_owned()))
+                .collect(),
+            None => vec![],
+        };
+
 
 
         Tabs::default()
@@ -682,6 +690,15 @@ where
                 highlight_state,
                 Some(app.search_results.selected_playlists_index),
             ),
+            4 => draw_selectable_list(
+                f,
+                chunks[1],
+                "djradio",
+                &djradios,
+                highlight_state,
+                Some(app.search_results.selected_djradio_index),
+            ),
+
             _ => {}
         }
     }
