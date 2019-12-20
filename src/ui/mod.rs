@@ -247,12 +247,10 @@ where
         .render(f, chunks[0]);
 
         let (perc, label) = match app.duration_ms {
-            Some(duration_ms) => {
-                (
-                    (app.song_progress_ms as f64 / duration_ms as f64) * 100_f64,
-                    display_track_progress(app.song_progress_ms, duration_ms)
-                )
-            }
+            Some(duration_ms) => {(
+                (app.song_progress_ms as f64 / duration_ms as f64) * 100_f64,
+                display_track_progress(app.song_progress_ms, duration_ms)
+            )}
             None => {
                 (0.0_f64, " ".to_string())
             }

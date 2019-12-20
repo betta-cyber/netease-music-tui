@@ -11,31 +11,31 @@ pub fn handler(key: Key, app: &mut App) {
             // track tab
             if app.tabs.index == 0 {
                 let next_index = common_events::on_down_press_handler(
-                    &app.search_results.tracks.as_ref().unwrap(),
+                    &app.search_results.tracks.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_tracks_index),
                 );
                 app.search_results.selected_tracks_index = next_index;
             } else if app.tabs.index == 1 {
                 let next_index = common_events::on_down_press_handler(
-                    &app.search_results.artists.as_ref().unwrap(),
+                    &app.search_results.artists.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_artists_index),
                 );
                 app.search_results.selected_artists_index = next_index;
             } else if app.tabs.index == 2 {
                 let next_index = common_events::on_down_press_handler(
-                    &app.search_results.albums.as_ref().unwrap(),
+                    &app.search_results.albums.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_albums_index),
                 );
                 app.search_results.selected_albums_index = next_index;
             } else if app.tabs.index == 3 {
                 let next_index = common_events::on_down_press_handler(
-                    &app.search_results.playlists.as_ref().unwrap(),
+                    &app.search_results.playlists.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_playlists_index),
                 );
                 app.search_results.selected_playlists_index = next_index;
             } else if app.tabs.index == 4 {
                 let next_index = common_events::on_down_press_handler(
-                    &app.search_results.djradios.as_ref().unwrap(),
+                    &app.search_results.djradios.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_djradio_index),
                 );
                 app.search_results.selected_djradio_index = next_index;
@@ -46,31 +46,31 @@ pub fn handler(key: Key, app: &mut App) {
             // track tab
             if app.tabs.index == 0 {
                 let next_index = common_events::on_up_press_handler(
-                    &app.search_results.tracks.as_ref().unwrap(),
+                    &app.search_results.tracks.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_tracks_index),
                 );
                 app.search_results.selected_tracks_index = next_index;
             } else if app.tabs.index == 1 {
                 let next_index = common_events::on_up_press_handler(
-                    &app.search_results.artists.as_ref().unwrap(),
+                    &app.search_results.artists.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_artists_index),
                 );
                 app.search_results.selected_artists_index = next_index;
             } else if app.tabs.index == 2 {
                 let next_index = common_events::on_up_press_handler(
-                    &app.search_results.albums.as_ref().unwrap(),
+                    &app.search_results.albums.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_albums_index),
                 );
                 app.search_results.selected_albums_index = next_index;
             } else if app.tabs.index == 3 {
                 let next_index = common_events::on_up_press_handler(
-                    &app.search_results.playlists.as_ref().unwrap(),
+                    &app.search_results.playlists.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_playlists_index),
                 );
                 app.search_results.selected_playlists_index = next_index;
             } else if app.tabs.index == 4 {
                 let next_index = common_events::on_up_press_handler(
-                    &app.search_results.djradios.as_ref().unwrap(),
+                    &app.search_results.djradios.as_ref().unwrap_or(&vec![]),
                     Some(app.search_results.selected_djradio_index),
                 );
                 app.search_results.selected_djradio_index = next_index;
@@ -90,32 +90,61 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Char('\n') => {
             if app.tabs.index == 0 {
-                let track_table = &app.search_results.tracks.as_ref().unwrap();
-                let track_playing = track_table.get(app.search_results.selected_tracks_index.to_owned()).unwrap().to_owned();
-                app.start_playback(track_playing);
-                app.fm_state = false;
-                app.my_playlist = TrackTable {
-                    tracks: app.search_results.tracks.to_owned().unwrap(),
-                    selected_index: app.search_results.selected_tracks_index,
-                    name: "search result".to_string()
-                };
+                match &app.search_results.tracks.clone() {
+                    Some(tracks) => {
+                        match tracks.get(app.search_results.selected_tracks_index.to_owned()) {
+                            Some(track_playing) => {
+                                app.start_playback(track_playing.to_owned());
+                                app.fm_state = false;
+                                app.my_playlist = TrackTable {
+                                    tracks: app.search_results.tracks.to_owned().unwrap(),
+                                    selected_index: app.search_results.selected_tracks_index,
+                                    name: "search result".to_string()
+                                };
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
+                }
             } else if app.tabs.index == 1 {
-                if let Some(selected_artist) =
-                    &app.search_results.artists.as_ref().unwrap().get(app.search_results.selected_artists_index.to_owned()) {
-                    let artist_id = selected_artist.id.to_owned();
-                    app.get_artist_albums(artist_id.to_string());
+                match &app.search_results.artists.clone() {
+                    Some(artists) => {
+                        match artists.get(app.search_results.selected_artists_index.to_owned()) {
+                            Some(artist) => {
+                                let artist_id = artist.id.to_owned();
+                                app.get_artist_albums(artist_id.to_string());
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
                 }
             } else if app.tabs.index == 2 {
-                if let Some(selected_album) =
-                    &app.search_results.albums.as_ref().unwrap().get(app.search_results.selected_albums_index.to_owned()) {
-                    let album_id = selected_album.id.to_owned().unwrap();
-                    app.get_album_tracks(album_id.to_string());
+                match &app.search_results.albums.clone() {
+                    Some(albums) => {
+                        match albums.get(app.search_results.selected_albums_index.to_owned()) {
+                            Some(album) => {
+                                let album_id = album.id.to_owned().unwrap();
+                                app.get_album_tracks(album_id.to_string());
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
                 }
             } else if app.tabs.index == 3 {
-                if let Some(selected_playlist) =
-                    &app.search_results.playlists.as_ref().unwrap().get(app.search_results.selected_playlists_index.to_owned()) {
-                    let playlist_id = selected_playlist.id.to_owned().unwrap();
-                    app.get_playlist_tracks(playlist_id.to_string());
+                match &app.search_results.playlists.clone() {
+                    Some(playlists) => {
+                        match playlists.get(app.search_results.selected_playlists_index.to_owned()) {
+                            Some(playlist) => {
+                                let playlist_id = playlist.id.to_owned().unwrap();
+                                app.get_playlist_tracks(playlist_id.to_string());
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
                 }
             } else if app.tabs.index == 4 {
                 match &app.search_results.djradios.clone() {
