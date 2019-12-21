@@ -1,6 +1,6 @@
 use super::super::app::App;
-use termion::event::Key;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -24,11 +24,8 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            if let Some(artistlist) = &app.artist_list
-            {
-                if let Some(artist) =
-                    artistlist.artists.get(artistlist.selected_index.to_owned())
-                {
+            if let Some(artistlist) = &app.artist_list {
+                if let Some(artist) = artistlist.artists.get(artistlist.selected_index.to_owned()) {
                     let artist_id = artist.id;
                     app.get_artist_albums(artist_id.to_string());
                 }
@@ -36,8 +33,7 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('f') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(artistlist) = &app.artist_list
-            {
+            if let Some(artistlist) = &app.artist_list {
                 let page = artistlist.selected_page;
                 let next_page = (page + 1) as i32;
                 app.get_top_artists(limit, next_page)
@@ -45,8 +41,7 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('b') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(artistlist) = &app.artist_list
-            {
+            if let Some(artistlist) = &app.artist_list {
                 let page = artistlist.selected_page;
                 let next_page = if page < 1 { 0 } else { page - 1 } as i32;
                 app.get_top_artists(limit, next_page)

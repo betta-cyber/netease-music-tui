@@ -1,6 +1,5 @@
 #[allow(non_snake_case)]
-use serde::{Serialize, Deserialize};
-
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Artist {

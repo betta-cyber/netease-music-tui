@@ -1,6 +1,6 @@
 use super::super::app::App;
-use termion::event::Key;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -22,7 +22,11 @@ pub fn handler(key: Key, app: &mut App) {
         Key::Char('\n') => {
             #[allow(non_snake_case)]
             let TrackTable = &app.track_table;
-            let track_playing = TrackTable.tracks.get(TrackTable.selected_index.to_owned()).unwrap().to_owned();
+            let track_playing = TrackTable
+                .tracks
+                .get(TrackTable.selected_index.to_owned())
+                .unwrap()
+                .to_owned();
             app.my_playlist = TrackTable.to_owned();
 
             app.start_playback(track_playing);

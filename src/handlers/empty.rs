@@ -1,6 +1,6 @@
-use super::super::app::{App, ActiveBlock};
-use termion::event::Key;
+use super::super::app::{ActiveBlock, App};
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -29,7 +29,7 @@ pub fn handler(key: Key, app: &mut App) {
                 app.set_current_route_state(None, Some(ActiveBlock::Recommend));
             }
             // ActiveBlock::PlayBar => {
-                // app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
+            // app.set_current_route_state(None, Some(ActiveBlock::MyPlaylists));
             // }
             ActiveBlock::Recommend => {
                 app.set_current_route_state(None, Some(ActiveBlock::Search));

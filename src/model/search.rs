@@ -1,9 +1,9 @@
 //! All object related to search
-use super::playlist::{Track, Playlist};
-use super::artist::Artist;
 use super::album::Album;
+use super::artist::Artist;
 use super::dj::DjRadio;
-use serde::{Serialize, Deserialize};
+use super::playlist::{Playlist, Track};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchTrackResult {

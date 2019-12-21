@@ -1,9 +1,9 @@
 extern crate unicode_width;
 
-use super::super::app::{App, ActiveBlock, RouteId};
+use super::super::app::{ActiveBlock, App, RouteId};
+use std::convert::TryInto;
 use termion::event::Key;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
-use std::convert::TryInto;
 
 // Handle events when the search input block is active
 pub fn handler(key: Key, app: &mut App) {
@@ -62,11 +62,12 @@ pub fn handler(key: Key, app: &mut App) {
             if app.input.len() > 0 {
                 // search tracks
                 let input: String = app.input.iter().collect();
-                match app.cloud_music.as_ref().unwrap().search_track(
-                    &input,
-                    limit,
-                    0
-                ) {
+                match app
+                    .cloud_music
+                    .as_ref()
+                    .unwrap()
+                    .search_track(&input, limit, 0)
+                {
                     Ok(result) => {
                         app.search_results.tracks = Some(result.songs.unwrap_or(vec![]));
                     }
@@ -74,11 +75,12 @@ pub fn handler(key: Key, app: &mut App) {
                         app.handle_error(e);
                     }
                 }
-                match app.cloud_music.as_ref().unwrap().search_playlist(
-                    &input,
-                    limit,
-                    0
-                ) {
+                match app
+                    .cloud_music
+                    .as_ref()
+                    .unwrap()
+                    .search_playlist(&input, limit, 0)
+                {
                     Ok(result) => {
                         app.search_results.playlists = Some(result.playlists.unwrap_or(vec![]));
                     }
@@ -86,11 +88,12 @@ pub fn handler(key: Key, app: &mut App) {
                         app.handle_error(e);
                     }
                 }
-                match app.cloud_music.as_ref().unwrap().search_artist(
-                    &input,
-                    limit,
-                    0
-                ) {
+                match app
+                    .cloud_music
+                    .as_ref()
+                    .unwrap()
+                    .search_artist(&input, limit, 0)
+                {
                     Ok(result) => {
                         app.search_results.artists = Some(result.artists.unwrap_or(vec![]));
                     }
@@ -98,11 +101,12 @@ pub fn handler(key: Key, app: &mut App) {
                         app.handle_error(e);
                     }
                 }
-                match app.cloud_music.as_ref().unwrap().search_album(
-                    &input,
-                    limit,
-                    0
-                ) {
+                match app
+                    .cloud_music
+                    .as_ref()
+                    .unwrap()
+                    .search_album(&input, limit, 0)
+                {
                     Ok(result) => {
                         app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
                     }
@@ -110,11 +114,12 @@ pub fn handler(key: Key, app: &mut App) {
                         app.handle_error(e);
                     }
                 }
-                match app.cloud_music.as_ref().unwrap().search_djradio(
-                    &input,
-                    limit,
-                    0
-                ) {
+                match app
+                    .cloud_music
+                    .as_ref()
+                    .unwrap()
+                    .search_djradio(&input, limit, 0)
+                {
                     Ok(result) => {
                         app.search_results.djradios = Some(result.djRadios.unwrap_or(vec![]));
                     }

@@ -1,6 +1,6 @@
-use serde::{Serialize, Deserialize};
 use super::album::Album;
 use super::artist::Artist;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlaylistRes {

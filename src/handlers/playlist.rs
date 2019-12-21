@@ -1,6 +1,6 @@
-use super::super::app::{App, Action};
-use termion::event::Key;
+use super::super::app::{Action, App};
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -24,10 +24,8 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            if let Some(playlists) = &app.playlist_list
-            {
-                if let Some(playlist) =
-                    playlists.playlists.get(playlists.selected_index.to_owned())
+            if let Some(playlists) = &app.playlist_list {
+                if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned())
                 {
                     let playlist_id = playlist.id.to_owned().unwrap();
                     app.get_playlist_tracks(playlist_id.to_string());
@@ -36,8 +34,7 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('f') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(playlists) = &app.playlist_list
-            {
+            if let Some(playlists) = &app.playlist_list {
                 let page = playlists.selected_page;
                 let next_page = (page + 1) as i32;
                 app.get_top_playlist(limit, next_page)
@@ -45,33 +42,30 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('b') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(playlists) = &app.playlist_list
-            {
+            if let Some(playlists) = &app.playlist_list {
                 let page = playlists.selected_page;
                 let next_page = if page < 1 { 0 } else { page - 1 } as i32;
                 app.get_top_playlist(limit, next_page)
             };
         }
-        Key::Alt('s') => {
-            match &app.playlist_list.clone() {
-                Some(playlists) => {
-                    if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned()) {
-                        app.subscribe_playlist(playlist.to_owned(), Action::Subscribe);
-                    }
+        Key::Alt('s') => match &app.playlist_list.clone() {
+            Some(playlists) => {
+                if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned())
+                {
+                    app.subscribe_playlist(playlist.to_owned(), Action::Subscribe);
                 }
-                None => {}
             }
-        }
-        Key::Alt('d') => {
-            match &app.playlist_list.clone() {
-                Some(playlists) => {
-                    if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned()) {
-                        app.subscribe_playlist(playlist.to_owned(), Action::Unsubscribe);
-                    }
+            None => {}
+        },
+        Key::Alt('d') => match &app.playlist_list.clone() {
+            Some(playlists) => {
+                if let Some(playlist) = playlists.playlists.get(playlists.selected_index.to_owned())
+                {
+                    app.subscribe_playlist(playlist.to_owned(), Action::Unsubscribe);
                 }
-                None => {}
             }
-        }
+            None => {}
+        },
         _ => {}
     }
 }

@@ -1,6 +1,6 @@
 use super::super::app::App;
-use termion::event::Key;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -24,11 +24,8 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            if let Some(albumlist) = &app.album_list
-            {
-                if let Some(album) =
-                    albumlist.albums.get(albumlist.selected_index.to_owned())
-                {
+            if let Some(albumlist) = &app.album_list {
+                if let Some(album) = albumlist.albums.get(albumlist.selected_index.to_owned()) {
                     let album_id = album.id.to_owned().unwrap();
                     app.get_album_tracks(album_id.to_string());
                 }
@@ -36,8 +33,7 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('f') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(albumlist) = &app.album_list
-            {
+            if let Some(albumlist) = &app.album_list {
                 let page = albumlist.selected_page;
                 let next_page = (page + 1) as i32;
                 app.get_top_albums(limit, next_page)
@@ -45,8 +41,7 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Ctrl('b') => {
             let limit = (app.block_height - 4) as i32;
-            if let Some(albumlist) = &app.album_list
-            {
+            if let Some(albumlist) = &app.album_list {
                 let page = albumlist.selected_page;
                 let next_page = if page < 1 { 0 } else { page - 1 } as i32;
                 app.get_top_albums(limit, next_page)

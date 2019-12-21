@@ -1,6 +1,6 @@
-use super::super::app::{App, RECOMMEND_OPTIONS, RouteId, ActiveBlock};
-use termion::event::Key;
+use super::super::app::{ActiveBlock, App, RouteId, RECOMMEND_OPTIONS};
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -26,25 +26,22 @@ pub fn handler(key: Key, app: &mut App) {
         Key::Char('\n') => {
             let limit = (app.block_height - 4) as i32;
             match app.recommend.selected_index {
-                0 => {
-                    app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists)
-                }
-                1 => {
+                0 => {}
+                1 => app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists),
+                2 => {
                     app.get_top_playlist(limit, 0);
                     app.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist)
                 }
-                2 => {
-                    app.set_fm_mode()
-                }
-                3 => {
+                3 => app.set_fm_mode(),
+                4 => {
                     app.get_top_albums(limit, 0);
                     app.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
                 }
-                4 => {
+                5 => {
                     app.get_top_artists(limit, 0);
                     app.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
                 }
-                5 => {
+                6 => {
                     app.get_sub_dj_radio(limit, 0);
                     app.push_navigation_stack(RouteId::DjRadio, ActiveBlock::DjRadio);
                 }

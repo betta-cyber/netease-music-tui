@@ -1,6 +1,6 @@
 use super::super::app::App;
-use termion::event::Key;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -25,7 +25,8 @@ pub fn handler(key: Key, app: &mut App) {
         }
         Key::Char('\n') => {
             if let Some(artist_albums) = &mut app.artist_albums {
-                if let Some(selected_album) = artist_albums.albums
+                if let Some(selected_album) = artist_albums
+                    .albums
                     .get(artist_albums.selected_index)
                     .cloned()
                 {
