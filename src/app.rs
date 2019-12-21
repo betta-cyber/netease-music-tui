@@ -21,8 +21,7 @@ const DEFAULT_ROUTE: Route = Route {
     hovered_block: ActiveBlock::Recommend,
 };
 
-pub const RECOMMEND_OPTIONS: [&str; 7] = [
-    "Rec Daily",
+pub const RECOMMEND_OPTIONS: [&str; 6] = [
     "My Playlist",
     "Discover",
     "Personal FM",

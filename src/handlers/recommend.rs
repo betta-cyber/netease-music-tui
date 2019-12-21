@@ -26,22 +26,21 @@ pub fn handler(key: Key, app: &mut App) {
         Key::Char('\n') => {
             let limit = (app.block_height - 4) as i32;
             match app.recommend.selected_index {
-                0 => {}
-                1 => app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists),
-                2 => {
+                0 => app.push_navigation_stack(RouteId::MyPlaylists, ActiveBlock::MyPlaylists),
+                1 => {
                     app.get_top_playlist(limit, 0);
                     app.push_navigation_stack(RouteId::Playlist, ActiveBlock::Playlist)
                 }
-                3 => app.set_fm_mode(),
-                4 => {
+                2 => app.set_fm_mode(),
+                3 => {
                     app.get_top_albums(limit, 0);
                     app.push_navigation_stack(RouteId::AlbumList, ActiveBlock::AlbumList);
                 }
-                5 => {
+                4 => {
                     app.get_top_artists(limit, 0);
                     app.push_navigation_stack(RouteId::ArtistList, ActiveBlock::ArtistList);
                 }
-                6 => {
+                5 => {
                     app.get_sub_dj_radio(limit, 0);
                     app.push_navigation_stack(RouteId::DjRadio, ActiveBlock::DjRadio);
                 }
