@@ -70,9 +70,7 @@ impl Events {
                 }
             })
         };
-        Events {
-            rx,
-        }
+        Events { rx }
     }
 
     pub fn next(&self) -> Result<Event<Key>, mpsc::RecvError> {

@@ -1,35 +1,42 @@
 use serde_json;
 // use serde_json::{Value, json};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
+use reqwest::header::{
+    HeaderMap, ACCEPT, ACCEPT_ENCODING, CONTENT_TYPE, COOKIE, HOST, REFERER, USER_AGENT,
+};
 use reqwest::Client;
 use reqwest::Method;
-use reqwest::header::{ACCEPT, CONTENT_TYPE, HeaderMap, REFERER, USER_AGENT, HOST, ACCEPT_ENCODING, COOKIE};
 use reqwest::StatusCode;
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
-use std::io::Read;
-use std::string::{String, ToString};
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::borrow::Cow;
+use std::io::Read;
+use std::string::{String, ToString};
 use std::time::Duration;
 
-use super::model::user::{User, Profile, Login};
-use super::model::artist::{TopArtistRes, Artist};
+use super::model::album::{Album, AlbumTrack, ArtistAlbums, TopAlbumRes};
+use super::model::artist::{Artist, TopArtistRes};
+use super::model::dj::{DjProgram, DjRadio, ProgramDetailRes, ProgramsRes, SubDjRadioRes};
+use super::model::lyric::{Lyric, LyricRes};
+use super::model::playlist::{
+    PersonalFmRes, Playlist, PlaylistDetail, PlaylistDetailRes, PlaylistRes, TopPlaylistRes, Track,
+};
+use super::model::search::{
+    SearchAlbumResult, SearchAlbums, SearchArtistResult, SearchArtists, SearchDjRadios,
+    SearchDjradioResult, SearchPlaylistResult, SearchPlaylists, SearchTrackResult, SearchTracks,
+};
 use super::model::song::{Song, Songs};
-use super::model::dj::{ProgramsRes, ProgramDetailRes, DjProgram, SubDjRadioRes, DjRadio};
-use super::model::album::{ArtistAlbums, Album, AlbumTrack, TopAlbumRes};
-use super::model::search::{SearchTrackResult, SearchPlaylistResult, SearchPlaylists, SearchTracks, SearchArtistResult, SearchArtists, SearchAlbumResult, SearchAlbums, SearchDjradioResult, SearchDjRadios};
-use super::model::playlist::{PlaylistRes, Playlist, Track, PlaylistDetailRes, PlaylistDetail, PersonalFmRes, TopPlaylistRes};
-use super::model::lyric::{LyricRes, Lyric};
+use super::model::user::{Login, Profile, User};
 
 use super::util::Encrypt;
+use chrono::prelude::*;
+use failure::err_msg;
 use openssl::hash::{hash, MessageDigest};
 use std::fs;
-use failure::err_msg;
-use chrono::prelude::*;
 
 lazy_static! {
     /// HTTP Client
@@ -45,14 +52,17 @@ lazy_static! {
 pub enum ApiError {
     Unauthorized,
     RateLimited(Option<usize>),
-    Other(u16)
+    Other(u16),
 }
+
 impl failure::Fail for ApiError {}
+
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Netease Cloud Music API reported an error")
     }
 }
+
 impl From<&reqwest::Response> for ApiError {
     fn from(response: &reqwest::Response) -> Self {
         match response.status() {
@@ -60,12 +70,11 @@ impl From<&reqwest::Response> for ApiError {
             StatusCode::TOO_MANY_REQUESTS => {
                 if let Ok(duration) = response.headers()[reqwest::header::RETRY_AFTER].to_str() {
                     ApiError::RateLimited(duration.parse::<usize>().ok())
-                }
-                else {
+                } else {
                     ApiError::RateLimited(None)
                 }
-            },
-            status => ApiError::Other(status.as_u16())
+            }
+            status => ApiError::Other(status.as_u16()),
         }
     }
 }
@@ -77,7 +86,6 @@ pub struct CloudMusic {
 }
 
 impl CloudMusic {
-
     pub fn default() -> CloudMusic {
         CloudMusic {
             prefix: "https://music.163.com".to_owned(),
@@ -86,7 +94,11 @@ impl CloudMusic {
     }
 
     ///send get request
-    fn get(&self, url: &str, params: &mut HashMap<String, String>) -> Result<String, failure::Error> {
+    fn get(
+        &self,
+        url: &str,
+        params: &mut HashMap<String, String>,
+    ) -> Result<String, failure::Error> {
         if !params.is_empty() {
             let param: String = convert_map_to_string(params);
             let mut url_with_params = url.to_owned();
@@ -100,7 +112,11 @@ impl CloudMusic {
 
     // send post request
     #[allow(unused)]
-    fn post(&self, url: &str, params: &mut HashMap<String, String>) -> Result<String, failure::Error> {
+    fn post(
+        &self,
+        url: &str,
+        params: &mut HashMap<String, String>,
+    ) -> Result<String, failure::Error> {
         let mut csrf_token = String::new();
         params.insert("csrf_token".to_owned(), csrf_token);
         let params = Encrypt::encrypt_login(params);
@@ -109,17 +125,30 @@ impl CloudMusic {
         Ok(a.unwrap())
     }
 
-    fn internal_call(&self, method: Method, url: &str, payload: Option<String>) -> Result<String, failure::Error> {
+    fn internal_call(
+        &self,
+        method: Method,
+        url: &str,
+        payload: Option<String>,
+    ) -> Result<String, failure::Error> {
         let mut url: Cow<str> = url.into();
         if !url.starts_with("http") {
             url = ["https://music.163.com", &url].concat().into();
         }
 
         let mut headers = HeaderMap::new();
-        headers.insert(CONTENT_TYPE, "application/x-www-form-urlencoded".parse().unwrap());
+        headers.insert(
+            CONTENT_TYPE,
+            "application/x-www-form-urlencoded".parse().unwrap(),
+        );
         headers.insert(ACCEPT, "*/*".parse().unwrap());
         headers.insert(REFERER, "https://music.163.com".parse().unwrap());
-        headers.insert(USER_AGENT, "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0".parse().unwrap());
+        headers.insert(
+            USER_AGENT,
+            "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0"
+                .parse()
+                .unwrap(),
+        );
         headers.insert(HOST, "music.163.com".parse().unwrap());
         headers.insert(ACCEPT_ENCODING, "gzip,deflate,br".parse().unwrap());
 
@@ -129,11 +158,12 @@ impl CloudMusic {
                 let value = "pc";
                 let local: DateTime<Local> = Local::now();
                 let times = local.timestamp();
-                let hextoken = hex::encode(hash(MessageDigest::md5(), &times.to_string().as_bytes()).unwrap());
+                let hextoken =
+                    hex::encode(hash(MessageDigest::md5(), &times.to_string().as_bytes()).unwrap());
 
                 // read local save cookie
                 let data = fs::read_to_string(&self.cookie_path).unwrap_or(String::new());
-                let make_cookie = format!("version=0;{}={};JSESSIONID-WYYY=%2FKSy%2B4xG6fYVld42G9E%2BxAj9OyjC0BYXENKxOIRH%5CR72cpy9aBjkohZ24BNkpjnBxlB6lzAG4D%5C%2FMNUZ7VUeRUeVPJKYu%2BKBnZJjEmqgpOx%2BU6VYmypKB%5CXb%2F3W7%2BDjOElCb8KlhDS2cRkxkTb9PBDXro41Oq7aBB6M6OStEK8E%2Flyc8%3A{}; _iuqxldmzr_=32; _ntes_nnid={},{}; _ntes_nuid={}; {}", name, value,times,hextoken,hextoken,times+50, data);
+                let make_cookie = format!("version=0;{}={};JSESSIONID-WYYY=%2FKSy%2B4xG6fYVld42G9E%2BxAj9OyjC0BYXENKxOIRH%5CR72cpy9aBjkohZ24BNkpjnBxlB6lzAG4D%5C%2FMNUZ7VUeRUeVPJKYu%2BKBnZJjEmqgpOx%2BU6VYmypKB%5CXb%2F3W7%2BDjOElCb8KlhDS2cRkxkTb9PBDXro41Oq7aBB6M6OStEK8E%2Flyc8%3A{}; _iuqxldmzr_=32; _ntes_nnid={},{}; _ntes_nuid={}; {}", name, value, times, hextoken, hextoken, times + 50, data);
                 headers.insert(COOKIE, make_cookie.parse().unwrap());
             }
             Method::GET => {
@@ -144,9 +174,7 @@ impl CloudMusic {
             _ => {}
         }
         let mut response = {
-            let builder = CLIENT
-                .request(method, &url.into_owned())
-                .headers(headers);
+            let builder = CLIENT.request(method, &url.into_owned()).headers(headers);
 
             // only add body if necessary
             // rejects GET requests that have a body with a 400 response
@@ -175,14 +203,12 @@ impl CloudMusic {
     }
 
     fn store_cookies(&self, res: &reqwest::Response) {
-        let cookies: Vec<String> = res.cookies()
+        let cookies: Vec<String> = res
+            .cookies()
             .into_iter()
             .map(|s| format!("{}={}", s.name().to_string(), s.value().to_string()))
             .collect();
-        let mut c: String = cookies
-            .into_iter()
-            .map(|s| format!("{}; ", s))
-            .collect();
+        let mut c: String = cookies.into_iter().map(|s| format!("{}; ", s)).collect();
         c.pop();
         if c.len() > 0 {
             fs::write(&self.cookie_path, &c).expect("Unable to write file");
@@ -190,7 +216,10 @@ impl CloudMusic {
     }
 
     pub fn login(&self, username: &str, password: &str) -> Result<Profile, failure::Error> {
-        let email_regex = regex::Regex::new(r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})").unwrap();
+        let email_regex = regex::Regex::new(
+            r"^([a-z0-9_+]([a-z0-9_+.]*[a-z0-9_+])?)@([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})",
+        )
+        .unwrap();
         if email_regex.is_match(username) {
             self.email_login(username, password)
         } else {
@@ -202,8 +231,7 @@ impl CloudMusic {
     pub fn email_login(&self, email: &str, password: &str) -> Result<Profile, failure::Error> {
         let url = format!("/weapi/login");
         let password = hash(MessageDigest::md5(), password.as_bytes()).unwrap();
-        let client_token =
-            "1_jVUMqWEPke0/1/Vu56xCmJpo5vP1grjn_SOVVDzOc78w8OKLVZ2JH7IfkjSXqgfmh";
+        let client_token = "1_jVUMqWEPke0/1/Vu56xCmJpo5vP1grjn_SOVVDzOc78w8OKLVZ2JH7IfkjSXqgfmh";
         let mut params = HashMap::new();
         params.insert("clientToken".to_owned(), client_token.to_string());
         params.insert("username".to_owned(), email.to_string());
@@ -213,12 +241,8 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         let login = self.convert_result::<Login>(&result)?;
         match login.profile {
-            Some(profile) => {
-                Ok(profile)
-            }
-            None => {
-                Err(err_msg("login failed"))
-            }
+            Some(profile) => Ok(profile),
+            None => Err(err_msg("login failed")),
         }
     }
 
@@ -234,12 +258,8 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         let login = self.convert_result::<Login>(&result).unwrap();
         match login.profile {
-            Some(profile) => {
-                Ok(profile)
-            }
-            None => {
-                Err(err_msg("login failed"))
-            }
+            Some(profile) => Ok(profile),
+            None => Err(err_msg("login failed")),
         }
     }
 
@@ -247,21 +267,18 @@ impl CloudMusic {
         let url = format!("/");
         match self.get(&url, &mut HashMap::new()) {
             Ok(r) => {
-                let re = regex::Regex::new(
-                    r#"userId:(?P<id>\d+),nickname:"(?P<nickname>\w+)""#,
-                ).unwrap();
+                let re = regex::Regex::new(r#"userId:(?P<id>\d+),nickname:"(?P<nickname>\w+)""#)
+                    .unwrap();
                 if let Some(cap) = re.captures(&r) {
                     let uid = cap.name("id").unwrap().as_str().parse::<i32>().unwrap_or(0);
                     let nickname = cap.name("nickname").unwrap().as_str().to_owned();
-                    Ok(Some(
-                        Profile{
-                            userId: Some(uid),
-                            nickname: Some(nickname),
-                            gender: None,
-                            follows: None,
-                            followeds: None,
-                        }
-                    ))
+                    Ok(Some(Profile {
+                        userId: Some(uid),
+                        nickname: Some(nickname),
+                        gender: None,
+                        follows: None,
+                        followeds: None,
+                    }))
                 } else {
                     Ok(None)
                 }
@@ -288,19 +305,18 @@ impl CloudMusic {
         let url = format!("/weapi/song/enhance/player/url");
         let mut params = HashMap::new();
         let song_id = song_id.to_string().parse::<u32>().unwrap();
-        params.insert("ids".to_owned(), serde_json::to_string(&vec![song_id]).unwrap_or("[]".to_owned()));
+        params.insert(
+            "ids".to_owned(),
+            serde_json::to_string(&vec![song_id]).unwrap_or("[]".to_owned()),
+        );
         params.insert("br".to_owned(), 999000.to_string());
 
         // send request
         let result = self.post(&url, &mut params)?;
         let songs = self.convert_result::<Songs>(&result);
         match songs {
-            Ok(songs) => {
-                Ok(songs.data[0].clone())
-            }
-            Err(_) => {
-                Err(err_msg("get track url failed"))
-            }
+            Ok(songs) => Ok(songs.data[0].clone()),
+            Err(_) => Err(err_msg("get track url failed")),
         }
     }
 
@@ -315,10 +331,8 @@ impl CloudMusic {
 
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<PlaylistRes>(&result) {
-            Ok(res) => {
-                Ok(res.playlist.clone())
-            }
-            Err(_) => Err(err_msg("get user playlists error"))
+            Ok(res) => Ok(res.playlist.clone()),
+            Err(_) => Err(err_msg("get user playlists error")),
         }
     }
 
@@ -367,7 +381,8 @@ impl CloudMusic {
     // log_track
     pub fn log_track(&self, track_id: &str) -> Result<String, failure::Error> {
         let url = format!("/weapi/feedback/weblog");
-        let data = format!(r#"
+        let data = format!(
+            r#"
             [{{
                 "action": "play",
                 "json": {{
@@ -380,7 +395,9 @@ impl CloudMusic {
                     "wifi": 0
                 }}
             }}]
-        "#, track_id);
+        "#,
+            track_id
+        );
         let mut params = HashMap::new();
         params.insert("logs".to_owned(), data.to_string());
 
@@ -402,12 +419,12 @@ impl CloudMusic {
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<LyricRes>(&result) {
             Ok(res) => {
-                let lyric: Vec<Lyric> = res.lrc.lyric
+                let lyric: Vec<Lyric> = res
+                    .lrc
+                    .lyric
                     .lines()
                     .map(|s| {
-                        let re = regex::Regex::new(
-                            r#"\[(\w+):(\w+)\.(\w+)\](.*?)$"#,
-                        ).unwrap();
+                        let re = regex::Regex::new(r#"\[(\w+):(\w+)\.(\w+)\](.*?)$"#).unwrap();
                         if let Some(cap) = re.captures(&s) {
                             let minite = cap[1].parse::<u64>().unwrap_or(0);
                             let second = cap[2].parse::<u64>().unwrap_or(0);
@@ -429,19 +446,23 @@ impl CloudMusic {
                 Ok(lyric)
             }
             Err(_) => {
-                let lyric = vec![
-                    Lyric {
-                        value: "no lyric".to_string(),
-                        timeline: Duration::new(0, 0),
-                    }
-                ];
+                let lyric = vec![Lyric {
+                    value: "no lyric".to_string(),
+                    timeline: Duration::new(0, 0),
+                }];
                 Ok(lyric)
             }
         }
     }
 
     // search api
-    pub fn search(&self, keyword: &str, search_type: &str, limit: i32, offset: i32) -> Result<String, failure::Error> {
+    pub fn search(
+        &self,
+        keyword: &str,
+        search_type: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<String, failure::Error> {
         let url = format!("/weapi/search/get");
         let mut params = HashMap::new();
         params.insert("s".to_owned(), keyword.to_string());
@@ -454,35 +475,60 @@ impl CloudMusic {
     }
 
     // search for track
-    pub fn search_track(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchTracks, failure::Error> {
+    pub fn search_track(
+        &self,
+        keyword: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<SearchTracks, failure::Error> {
         let result = self.search(keyword, "1", limit, offset)?;
         let res = self.convert_result::<SearchTrackResult>(&result)?;
         Ok(res.result)
     }
 
     // search for playlist
-    pub fn search_playlist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchPlaylists, failure::Error> {
+    pub fn search_playlist(
+        &self,
+        keyword: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<SearchPlaylists, failure::Error> {
         let result = self.search(keyword, "1000", limit, offset)?;
         let res = self.convert_result::<SearchPlaylistResult>(&result)?;
         Ok(res.result)
     }
 
     // search for artist
-    pub fn search_artist(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchArtists, failure::Error> {
+    pub fn search_artist(
+        &self,
+        keyword: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<SearchArtists, failure::Error> {
         let result = self.search(keyword, "100", limit, offset)?;
         let res = self.convert_result::<SearchArtistResult>(&result)?;
         Ok(res.result)
     }
 
     // search for album
-    pub fn search_album(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchAlbums, failure::Error> {
+    pub fn search_album(
+        &self,
+        keyword: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<SearchAlbums, failure::Error> {
         let result = self.search(keyword, "10", limit, offset)?;
         let res = self.convert_result::<SearchAlbumResult>(&result)?;
         Ok(res.result)
     }
 
     // search for album
-    pub fn search_djradio(&self, keyword: &str, limit: i32, offset: i32) -> Result<SearchDjRadios, failure::Error> {
+    pub fn search_djradio(
+        &self,
+        keyword: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<SearchDjRadios, failure::Error> {
         let result = self.search(keyword, "1009", limit, offset)?;
         let res = self.convert_result::<SearchDjradioResult>(&result)?;
         Ok(res.result)
@@ -572,7 +618,7 @@ impl CloudMusic {
     pub fn sub_playlist(&self, playlist_id: &str, sub: bool) -> Result<String, failure::Error> {
         let sub = match sub {
             true => "subscribe",
-            false => "unsubscribe"
+            false => "unsubscribe",
         };
         let url = format!("/weapi/playlist/{}", sub);
         let mut params = HashMap::new();
@@ -593,18 +639,18 @@ impl CloudMusic {
 
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<SubDjRadioRes>(&result) {
-            Ok(res) => {
-                Ok(res.djRadios)
-            }
-            Err(_) => {
-                Err(err_msg("get sub dj radio failed"))
-            }
+            Ok(res) => Ok(res.djRadios),
+            Err(_) => Err(err_msg("get sub dj radio failed")),
         }
     }
 
-
     // get dj program list api
-    pub fn dj_program(&self, radio_id: &str, limit: i32, offset: i32) -> Result<Vec<DjProgram>, failure::Error> {
+    pub fn dj_program(
+        &self,
+        radio_id: &str,
+        limit: i32,
+        offset: i32,
+    ) -> Result<Vec<DjProgram>, failure::Error> {
         let url = format!("/weapi/dj/program/byradio");
         let mut params = HashMap::new();
         params.insert("radioId".to_owned(), radio_id.to_string());
@@ -614,12 +660,8 @@ impl CloudMusic {
 
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<ProgramsRes>(&result) {
-            Ok(res) => {
-                Ok(res.programs)
-            }
-            Err(_) => {
-                Err(err_msg("get dj program failed"))
-            }
+            Ok(res) => Ok(res.programs),
+            Err(_) => Err(err_msg("get dj program failed")),
         }
     }
 
@@ -632,24 +674,29 @@ impl CloudMusic {
 
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<ProgramDetailRes>(&result) {
-            Ok(res) => {
-                Ok(res.program)
-            }
-            Err(_) => {
-                Err(err_msg("get dj program failed"))
-            }
+            Ok(res) => Ok(res.program),
+            Err(_) => Err(err_msg("get dj program failed")),
         }
     }
 
-    pub fn convert_result<'a, T: Deserialize<'a>>(&self, input: &'a str) -> Result<T, failure::Error> {
-        let result = serde_json::from_str::<T>(input)
-            .map_err(|e| format_err!("convert result failed, reason: {:?}; content: [{:?}]", e,input))?;
+    pub fn convert_result<'a, T: Deserialize<'a>>(
+        &self,
+        input: &'a str,
+    ) -> Result<T, failure::Error> {
+        let result = serde_json::from_str::<T>(input).map_err(|e| {
+            format_err!(
+                "convert result failed, reason: {:?}; content: [{:?}]",
+                e,
+                input
+            )
+        })?;
         Ok(result)
     }
 }
 
-pub fn convert_map_to_string<K: Debug + Eq + Hash+ ToString,
-V: Debug+ToString>(map: &HashMap<K, V>) -> String{
+pub fn convert_map_to_string<K: Debug + Eq + Hash + ToString, V: Debug + ToString>(
+    map: &HashMap<K, V>,
+) -> String {
     let mut string: String = String::new();
     for (key, value) in map.iter() {
         string.push_str(&key.to_string());

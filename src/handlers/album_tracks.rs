@@ -1,6 +1,6 @@
 use super::super::app::{App, TrackTable};
-use termion::event::Key;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -28,9 +28,10 @@ pub fn handler(key: Key, app: &mut App) {
                 app.my_playlist = TrackTable {
                     tracks: selected_album.tracks.to_owned(),
                     selected_index: selected_album.selected_index,
-                    name: selected_album.album.name.to_owned().unwrap()
+                    name: selected_album.album.name.to_owned().unwrap(),
                 };
-                if let Some(selected_track) = selected_album.tracks
+                if let Some(selected_track) = selected_album
+                    .tracks
                     .get(selected_album.selected_index)
                     .cloned()
                 {

@@ -1,4 +1,4 @@
-use super::super::app::{App, ActiveBlock, TrackTable, RouteId};
+use super::super::app::{ActiveBlock, App, RouteId, TrackTable};
 use super::common_events;
 use termion::event::Key;
 
@@ -39,7 +39,6 @@ pub fn handler(key: Key, app: &mut App) {
                     Some(app.search_results.selected_djradio_index),
                 );
                 app.search_results.selected_djradio_index = next_index;
-
             }
         }
         k if common_events::up_event(k) => {
@@ -99,7 +98,7 @@ pub fn handler(key: Key, app: &mut App) {
                                 app.my_playlist = TrackTable {
                                     tracks: app.search_results.tracks.to_owned().unwrap(),
                                     selected_index: app.search_results.selected_tracks_index,
-                                    name: "search result".to_string()
+                                    name: "search result".to_string(),
                                 };
                             }
                             None => {}
@@ -136,7 +135,8 @@ pub fn handler(key: Key, app: &mut App) {
             } else if app.tabs.index == 3 {
                 match &app.search_results.playlists.clone() {
                     Some(playlists) => {
-                        match playlists.get(app.search_results.selected_playlists_index.to_owned()) {
+                        match playlists.get(app.search_results.selected_playlists_index.to_owned())
+                        {
                             Some(playlist) => {
                                 let playlist_id = playlist.id.to_owned().unwrap();
                                 app.get_playlist_tracks(playlist_id.to_string());
@@ -152,7 +152,10 @@ pub fn handler(key: Key, app: &mut App) {
                         match djradios.get(app.search_results.selected_djradio_index.to_owned()) {
                             Some(djradio) => {
                                 app.get_djradio_programs(djradio.to_owned(), 500, 0);
-                                app.push_navigation_stack(RouteId::DjProgram, ActiveBlock::DjProgram);
+                                app.push_navigation_stack(
+                                    RouteId::DjProgram,
+                                    ActiveBlock::DjProgram,
+                                );
                             }
                             None => {}
                         }
@@ -171,17 +174,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_track(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.songs {
-                            Some(tracks) => {
-                                app.search_results.tracks = Some(tracks);
-                                app.search_results.selected_tracks_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.songs {
+                        Some(tracks) => {
+                            app.search_results.tracks = Some(tracks);
+                            app.search_results.selected_tracks_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -194,17 +195,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_artist(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.artists {
-                            Some(artists) => {
-                                app.search_results.artists = Some(artists);
-                                app.search_results.selected_artists_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.artists {
+                        Some(artists) => {
+                            app.search_results.artists = Some(artists);
+                            app.search_results.selected_artists_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -217,17 +216,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_album(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.albums {
-                            Some(albums) => {
-                                app.search_results.albums = Some(albums);
-                                app.search_results.selected_albums_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.albums {
+                        Some(albums) => {
+                            app.search_results.albums = Some(albums);
+                            app.search_results.selected_albums_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -240,17 +237,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_playlist(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.playlists {
-                            Some(playlists) => {
-                                app.search_results.playlists = Some(playlists);
-                                app.search_results.selected_playlists_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.playlists {
+                        Some(playlists) => {
+                            app.search_results.playlists = Some(playlists);
+                            app.search_results.selected_playlists_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -267,17 +262,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_track(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.songs {
-                            Some(tracks) => {
-                                app.search_results.tracks = Some(tracks);
-                                app.search_results.selected_tracks_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.songs {
+                        Some(tracks) => {
+                            app.search_results.tracks = Some(tracks);
+                            app.search_results.selected_tracks_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -290,17 +283,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_artist(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.artists {
-                            Some(artists) => {
-                                app.search_results.artists = Some(artists);
-                                app.search_results.selected_artists_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.artists {
+                        Some(artists) => {
+                            app.search_results.artists = Some(artists);
+                            app.search_results.selected_artists_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }
@@ -313,7 +304,7 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_album(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
                     Ok(result) => {
                         app.search_results.albums = Some(result.albums.unwrap_or(vec![]));
@@ -331,17 +322,15 @@ pub fn handler(key: Key, app: &mut App) {
                 match app.cloud_music.as_ref().unwrap().search_playlist(
                     &input,
                     limit,
-                    next_page*limit,
+                    next_page * limit,
                 ) {
-                    Ok(result) => {
-                        match result.playlists {
-                            Some(playlists) => {
-                                app.search_results.playlists = Some(playlists);
-                                app.search_results.selected_playlists_page = next_page as usize;
-                            }
-                            None => {}
+                    Ok(result) => match result.playlists {
+                        Some(playlists) => {
+                            app.search_results.playlists = Some(playlists);
+                            app.search_results.selected_playlists_page = next_page as usize;
                         }
-                    }
+                        None => {}
+                    },
                     Err(e) => {
                         app.handle_error(e);
                     }

@@ -1,6 +1,6 @@
-use super::super::app::{App, RouteId, ActiveBlock};
-use termion::event::Key;
+use super::super::app::{ActiveBlock, App, RouteId};
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -24,10 +24,10 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            if let Some(djradio_list) = &app.djradio_list.clone()
-            {
-                if let Some(djradio) =
-                    djradio_list.djradios.get(djradio_list.selected_index.to_owned())
+            if let Some(djradio_list) = &app.djradio_list.clone() {
+                if let Some(djradio) = djradio_list
+                    .djradios
+                    .get(djradio_list.selected_index.to_owned())
                 {
                     // get newest 500 raidos
                     app.get_djradio_programs(djradio.to_owned(), 500, 0);

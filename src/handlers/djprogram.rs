@@ -1,8 +1,8 @@
 use super::super::app::{App, TrackTable};
-use super::super::model::playlist::Track;
 use super::super::model::artist::Artist;
-use termion::event::Key;
+use super::super::model::playlist::Track;
 use super::common_events;
+use termion::event::Key;
 
 pub fn handler(key: Key, app: &mut App) {
     match key {
@@ -26,28 +26,26 @@ pub fn handler(key: Key, app: &mut App) {
             }
         }
         Key::Char('\n') => {
-            if let Some(djprogram_list) = &app.program_list.clone()
-            {
+            if let Some(djprogram_list) = &app.program_list.clone() {
                 // convert djprogram to tracks
-                let track_list = djprogram_list.dj_programs
+                let track_list = djprogram_list
+                    .dj_programs
                     .iter()
                     .map(|item| {
-                    let artist = Artist {
-                        id: item.radio.id as i32,
-                        name: item.radio.name.to_string(),
-                        alias: None,
-                    };
-                    Track {
-                        name: Some(item.mainSong.name.to_string()),
-                        id: Some(item.mainSong.id as i64),
-                        artists: Some(vec![artist]),
-                        album: None,
-                    }
-                })
-                .collect::<Vec<Track>>();
-                if let Some(djprogram) =
-                    track_list.get(djprogram_list.selected_index.to_owned())
-                {
+                        let artist = Artist {
+                            id: item.radio.id as i32,
+                            name: item.radio.name.to_string(),
+                            alias: None,
+                        };
+                        Track {
+                            name: Some(item.mainSong.name.to_string()),
+                            id: Some(item.mainSong.id as i64),
+                            artists: Some(vec![artist]),
+                            album: None,
+                        }
+                    })
+                    .collect::<Vec<Track>>();
+                if let Some(djprogram) = track_list.get(djprogram_list.selected_index.to_owned()) {
                     app.my_playlist = TrackTable {
                         tracks: track_list.to_owned(),
                         selected_index: djprogram_list.selected_index,

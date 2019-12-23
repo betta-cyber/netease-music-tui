@@ -2,9 +2,9 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate failure;
+extern crate config;
 extern crate serde;
 extern crate serde_json;
-extern crate config;
 #[macro_use]
 extern crate log;
 extern crate gstreamer as gst;
@@ -13,34 +13,32 @@ extern crate gstreamer_player as gst_player;
 extern crate log_panics;
 // use gst::prelude::*;
 
-use std::io;
-use termion::raw::IntoRawMode;
-use tui::Terminal;
-use tui::backend::TermionBackend;
-use termion::event::Key;
-use util::event::{Event, Events};
-use log::LevelFilter;
 use dirs;
-use std::path::Path;
-use std::fs;
 use failure::err_msg;
+use log::LevelFilter;
+use std::fs;
+use std::io;
+use std::path::Path;
+use termion::event::Key;
+use termion::raw::IntoRawMode;
+use tui::backend::TermionBackend;
+use tui::Terminal;
+use util::event::{Event, Events};
 
-mod util;
-mod model;
-mod app;
 mod api;
+mod app;
 mod handlers;
+mod model;
 mod ui;
+mod util;
 
-use app::{App, ActiveBlock};
+use app::{ActiveBlock, App};
 
 const FILE_NAME: &str = "Settings.toml";
 const CONFIG_DIR: &str = ".config";
 const APP_CONFIG_DIR: &str = "netease-music-tui";
 
-
 fn main() -> Result<(), failure::Error> {
-
     let config_file_path = match dirs::home_dir() {
         Some(home) => {
             let path = Path::new(&home);
@@ -57,16 +55,21 @@ fn main() -> Result<(), failure::Error> {
             let config_file_path = &app_config_dir.join(FILE_NAME);
             config_file_path.to_path_buf()
         }
-        None => return Err(err_msg("No $HOME directory found for config"))
+        None => return Err(err_msg("No $HOME directory found for config")),
     };
 
     // init application
     let mut settings = config::Config::default();
     let config_string = match fs::read_to_string(&config_file_path) {
-        Ok(data) => {data}
-        Err(_) => return Err(err_msg("Please set your account in config file"))
+        Ok(data) => data,
+        Err(_) => return Err(err_msg("Please set your account in config file")),
     };
-    settings.merge(config::File::from_str(&config_string, config::FileFormat::Toml)).unwrap();
+    settings
+        .merge(config::File::from_str(
+            &config_string,
+            config::FileFormat::Toml,
+        ))
+        .unwrap();
 
     match settings.get_bool("debug") {
         Ok(debug) => {
@@ -75,7 +78,7 @@ fn main() -> Result<(), failure::Error> {
                 simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug)?;
             }
         }
-        Err(e) => {error!("{}", e)}
+        Err(e) => error!("{}", e),
     }
 
     info!("start netease cloud music rust client");
@@ -97,14 +100,11 @@ fn main() -> Result<(), failure::Error> {
             let username = settings.get::<String>("username")?;
             let password = settings.get::<String>("password")?;
             match cloud_music.login(&username, &password) {
-                Ok(profile) => {profile}
-                Err(_) => {
-                    return Err(err_msg("Account/Password Error"))
-                }
+                Ok(profile) => profile,
+                Err(_) => return Err(err_msg("Account/Password Error")),
             }
         }
     };
-
 
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = termion::input::MouseTerminal::from(stdout);
@@ -113,11 +113,9 @@ fn main() -> Result<(), failure::Error> {
 
     let mut terminal = Terminal::new(backend)?;
 
-
     terminal.hide_cursor()?;
 
     let events = Events::new();
-
 
     loop {
         terminal.draw(|mut f| {
@@ -161,7 +159,7 @@ fn main() -> Result<(), failure::Error> {
                         handlers::handle_app(input, &mut app);
                     }
                 }
-            },
+            }
             Event::Tick => {
                 app.update_on_tick();
             }

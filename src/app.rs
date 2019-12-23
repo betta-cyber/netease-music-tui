@@ -1,19 +1,19 @@
 extern crate gstreamer as gst;
 extern crate gstreamer_player as gst_player;
+
+use super::api::CloudMusic;
+use super::handlers::TrackState;
+use super::model::album::Album;
+use super::model::artist::Artist;
+use super::model::dj::{DjProgram, DjRadio};
+use super::model::lyric::Lyric;
+use super::model::playlist::{Playlist, Track};
+use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
+use gst::prelude::*;
+use gst::ClockTime;
+use rand::Rng;
 use tui::layout::Rect;
 use tui::style::Color;
-use super::model::playlist::{Playlist, Track};
-use super::model::artist::Artist;
-use super::model::album::Album;
-use super::model::lyric::Lyric;
-use super::model::dj::{DjRadio, DjProgram};
-use super::api::CloudMusic;
-use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
-use super::handlers::TrackState;
-use rand::Rng;
-use gst::ClockTime;
-use gst::prelude::*;
-
 
 const DEFAULT_ROUTE: Route = Route {
     id: RouteId::Home,
@@ -27,15 +27,14 @@ pub const RECOMMEND_OPTIONS: [&str; 6] = [
     "Personal FM",
     "Hot Albums",
     "Hot Artists",
-    "Subed DjRadios"
+    "Subed DjRadios",
 ];
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Action {
     Subscribe,
-    Unsubscribe
+    Unsubscribe,
 }
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Route {
@@ -186,12 +185,12 @@ pub struct TabsState {
     pub titles: Vec<String>,
     pub index: usize,
 }
+
 impl TabsState {
     pub fn new(titles: Vec<String>) -> TabsState {
         TabsState { titles, index: 0 }
     }
 }
-
 
 pub struct App {
     navigation_stack: Vec<Route>,
@@ -233,7 +232,6 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-
         let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
         let music_player = gst_player::Player::new(
             None,
@@ -254,9 +252,7 @@ impl App {
             selected_playlist_index: None,
             track_table: Default::default(),
             cloud_music: Some(CloudMusic::default()),
-            recommend: Recommend {
-                selected_index: 0,
-            },
+            recommend: Recommend { selected_index: 0 },
             my_playlist: Default::default(),
             repeat_state: RepeatState::All,
             fm_state: false,
@@ -308,19 +304,30 @@ impl App {
         let current_route = self.get_current_route();
         if current_route.active_block == ActiveBlock::Msg {
             if self.msg_control > 2 {
-
                 match current_route.id {
                     RouteId::AlbumTracks => {
-                        self.set_current_route_state(Some(ActiveBlock::AlbumTracks), Some(ActiveBlock::AlbumTracks));
+                        self.set_current_route_state(
+                            Some(ActiveBlock::AlbumTracks),
+                            Some(ActiveBlock::AlbumTracks),
+                        );
                     }
                     RouteId::Playlist => {
-                        self.set_current_route_state(Some(ActiveBlock::Playlist), Some(ActiveBlock::Playlist));
+                        self.set_current_route_state(
+                            Some(ActiveBlock::Playlist),
+                            Some(ActiveBlock::Playlist),
+                        );
                     }
                     RouteId::DjProgram => {
-                        self.set_current_route_state(Some(ActiveBlock::DjProgram), Some(ActiveBlock::DjProgram));
+                        self.set_current_route_state(
+                            Some(ActiveBlock::DjProgram),
+                            Some(ActiveBlock::DjProgram),
+                        );
                     }
                     _ => {
-                        self.set_current_route_state(Some(ActiveBlock::TrackTable), Some(ActiveBlock::TrackTable));
+                        self.set_current_route_state(
+                            Some(ActiveBlock::TrackTable),
+                            Some(ActiveBlock::TrackTable),
+                        );
                     }
                 }
                 self.msg_control = 0;
@@ -331,7 +338,7 @@ impl App {
         if self.is_playing() {
             self.song_progress_ms = match self.player.get_position().mseconds() {
                 Some(ms) => ms,
-                None => 0 as u64
+                None => 0 as u64,
             };
             let current_route = self.get_current_route();
             if current_route.active_block == ActiveBlock::Playing {
@@ -378,7 +385,11 @@ impl App {
         }
     }
 
-    pub fn next_index<T>(selection_data: &[T], selection_index: Option<usize>, state: TrackState) -> usize {
+    pub fn next_index<T>(
+        selection_data: &[T],
+        selection_index: Option<usize>,
+        state: TrackState,
+    ) -> usize {
         match selection_index {
             Some(selection_index) => {
                 if !selection_data.is_empty() {
@@ -424,14 +435,12 @@ impl App {
                     RepeatState::All => {
                         // loop current my playlist
                         let list = &mut self.my_playlist;
-                        let next_index = App::next_index(
-                            &list.tracks,
-                            Some(list.selected_index),
-                            state,
-                        );
+                        let next_index =
+                            App::next_index(&list.tracks, Some(list.selected_index), state);
                         list.selected_index = next_index;
 
-                        let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                        let track_playing =
+                            list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                         self.start_playback(track_playing);
                     }
                     RepeatState::Shuffle => {
@@ -440,7 +449,8 @@ impl App {
                         let next_index = rng.gen_range(0, list.tracks.len());
                         list.selected_index = next_index;
 
-                        let track_playing = list.tracks.get(next_index.to_owned()).unwrap().to_owned();
+                        let track_playing =
+                            list.tracks.get(next_index.to_owned()).unwrap().to_owned();
                         self.start_playback(track_playing);
                     }
                     _ => {}
@@ -449,11 +459,7 @@ impl App {
             true => {
                 // use my playlist for play personal fm
                 let list = &mut self.my_playlist;
-                let next_index = App::next_index(
-                    &list.tracks,
-                    Some(list.selected_index),
-                    state,
-                );
+                let next_index = App::next_index(&list.tracks, Some(list.selected_index), state);
                 if next_index == 0 {
                     if let Ok(tracks) = self.cloud_music.as_ref().unwrap().personal_fm() {
                         list.tracks = tracks.to_owned();
@@ -568,15 +574,14 @@ impl App {
         match &self.cloud_music {
             Some(api) => {
                 if let Ok(playlist_tracks) = api.playlist_detail(&playlist_id) {
-                    let tracks = playlist_tracks.tracks
+                    let tracks = playlist_tracks
+                        .tracks
                         .into_iter()
-                        .map(|t| {
-                            Track{
-                                name: t.name,
-                                id: t.id,
-                                artists: t.ar,
-                                album: t.al,
-                            }
+                        .map(|t| Track {
+                            name: t.name,
+                            id: t.id,
+                            artists: t.ar,
+                            album: t.al,
                         })
                         .collect();
                     self.track_table.tracks = tracks;
@@ -595,7 +600,7 @@ impl App {
                     self.artist_albums = Some(ArtistAlbums {
                         artist_name: String::new(),
                         albums: albums,
-                        selected_index: 0
+                        selected_index: 0,
                     })
                 }
                 self.push_navigation_stack(RouteId::Artist, ActiveBlock::Artist);
@@ -611,7 +616,7 @@ impl App {
                     self.selected_album = Some(SelectedAlbum {
                         tracks: album_track.songs,
                         album: album_track.album,
-                        selected_index: 0
+                        selected_index: 0,
                     })
                 }
                 self.push_navigation_stack(RouteId::AlbumTracks, ActiveBlock::AlbumTracks);
@@ -623,7 +628,7 @@ impl App {
     pub fn get_top_playlist(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(playlists) = api.top_playlists(limit, limit*page) {
+                if let Ok(playlists) = api.top_playlists(limit, limit * page) {
                     self.playlist_list = Some(PlaylistTable {
                         playlists: playlists,
                         selected_index: 0,
@@ -635,11 +640,10 @@ impl App {
         }
     }
 
-
     pub fn get_top_albums(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(albums) = api.top_albums(limit, limit*page) {
+                if let Ok(albums) = api.top_albums(limit, limit * page) {
                     self.album_list = Some(AlbumsTable {
                         albums: albums,
                         selected_index: 0,
@@ -655,7 +659,7 @@ impl App {
     pub fn get_top_artists(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(artists) = api.top_artists(limit, limit*page) {
+                if let Ok(artists) = api.top_artists(limit, limit * page) {
                     self.artist_list = Some(ArtistsTable {
                         artists: artists,
                         selected_index: 0,
@@ -671,7 +675,7 @@ impl App {
     pub fn get_sub_dj_radio(&mut self, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(djradios) = api.dj_sublist(limit, limit*page) {
+                if let Ok(djradios) = api.dj_sublist(limit, limit * page) {
                     self.djradio_list = Some(DjRadioTable {
                         djradios: djradios,
                         selected_index: 0,
@@ -687,7 +691,9 @@ impl App {
     pub fn get_djradio_programs(&mut self, djradio: DjRadio, limit: i32, page: i32) {
         match &self.cloud_music {
             Some(api) => {
-                if let Ok(dj_programs) = api.dj_program(&djradio.id.to_string(), limit, limit*page) {
+                if let Ok(dj_programs) =
+                    api.dj_program(&djradio.id.to_string(), limit, limit * page)
+                {
                     self.program_list = Some(ProgramTable {
                         dj_programs: dj_programs,
                         selected_index: 0,
@@ -701,34 +707,25 @@ impl App {
 
     pub fn like_current(&mut self, action: Action) {
         match &self.current_playing {
-            Some(track) => {
-                match &self.cloud_music {
-                    Some(api) => {
-                        match action {
-                            Action::Subscribe => {
-                                match api.like(&track.id.unwrap().to_string(), true) {
-                                    Ok(_) => {
-                                        self.msg = format!("like {}", track.name.to_owned().unwrap());
-                                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
-                                    }
-                                    Err(e) => self.handle_error(e)
-                                }
-                            }
-                            Action::Unsubscribe => {
-                                match api.like(&track.id.unwrap().to_string(), false) {
-                                    Ok(_) => {
-                                        self.msg = format!("dislike {}", track.name.to_owned().unwrap());
-                                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
-                                    }
-                                    Err(e) => self.handle_error(e)
-                                }
-
-                            }
+            Some(track) => match &self.cloud_music {
+                Some(api) => match action {
+                    Action::Subscribe => match api.like(&track.id.unwrap().to_string(), true) {
+                        Ok(_) => {
+                            self.msg = format!("like {}", track.name.to_owned().unwrap());
+                            self.set_current_route_state(Some(ActiveBlock::Msg), None);
                         }
-                    }
-                    None => {}
-                }
-            }
+                        Err(e) => self.handle_error(e),
+                    },
+                    Action::Unsubscribe => match api.like(&track.id.unwrap().to_string(), false) {
+                        Ok(_) => {
+                            self.msg = format!("dislike {}", track.name.to_owned().unwrap());
+                            self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                        }
+                        Err(e) => self.handle_error(e),
+                    },
+                },
+                None => {}
+            },
             None => {}
         }
     }
@@ -736,75 +733,70 @@ impl App {
     // fm move to trash
     pub fn fm_trash(&mut self) {
         match &self.current_playing {
-            Some(track) => {
-                match &self.cloud_music {
-                    Some(api) => {
-                        match api.fm_trash(&track.id.unwrap().to_string()) {
-                            Ok(_) => {
-                                self.msg = format!("move {} to trash", track.name.to_owned().unwrap());
-                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
-                                self.skip_track(TrackState::Forword)
-                            }
-                            Err(e) => self.handle_error(e)
-                        }
+            Some(track) => match &self.cloud_music {
+                Some(api) => match api.fm_trash(&track.id.unwrap().to_string()) {
+                    Ok(_) => {
+                        self.msg = format!("move {} to trash", track.name.to_owned().unwrap());
+                        self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                        self.skip_track(TrackState::Forword)
                     }
-                    None => {}
-                }
-            }
+                    Err(e) => self.handle_error(e),
+                },
+                None => {}
+            },
             None => {}
         }
     }
 
     pub fn subscribe_playlist(&mut self, playlist: Playlist, action: Action) {
         match &self.cloud_music {
-            Some(api) => {
-                match action {
-                    Action::Subscribe => {
-                        match api.sub_playlist(&playlist.id.unwrap().to_string(), true) {
-                            Ok(_) => {
-                                let playlists = api.user_playlists(&self.user_id.to_string());
-                                match playlists {
-                                    Ok(p) => {
-                                        self.playlists = Some(p);
-                                    }
-                                    Err(e) => {
-                                        self.handle_error(e);
-                                    }
-                                };
-                                self.msg = format!("subscribe playlist {}", playlist.name.to_owned().unwrap());
-                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
-                            }
-                            Err(e) => self.handle_error(e)
+            Some(api) => match action {
+                Action::Subscribe => {
+                    match api.sub_playlist(&playlist.id.unwrap().to_string(), true) {
+                        Ok(_) => {
+                            let playlists = api.user_playlists(&self.user_id.to_string());
+                            match playlists {
+                                Ok(p) => {
+                                    self.playlists = Some(p);
+                                }
+                                Err(e) => {
+                                    self.handle_error(e);
+                                }
+                            };
+                            self.msg =
+                                format!("subscribe playlist {}", playlist.name.to_owned().unwrap());
+                            self.set_current_route_state(Some(ActiveBlock::Msg), None);
                         }
-                    }
-                    Action::Unsubscribe => {
-                        match api.sub_playlist(&playlist.id.unwrap().to_string(), false) {
-                            Ok(_) => {
-                                let playlists = api.user_playlists(&self.user_id.to_string());
-                                match playlists {
-                                    Ok(p) => {
-                                        self.playlists = Some(p);
-                                    }
-                                    Err(e) => {
-                                        self.handle_error(e);
-                                    }
-                                };
-                                self.msg = format!("unsubscribe playlist {}", playlist.name.to_owned().unwrap());
-                                self.set_current_route_state(Some(ActiveBlock::Msg), None);
-                            }
-                            Err(e) => self.handle_error(e)
-                        }
+                        Err(e) => self.handle_error(e),
                     }
                 }
-            }
+                Action::Unsubscribe => {
+                    match api.sub_playlist(&playlist.id.unwrap().to_string(), false) {
+                        Ok(_) => {
+                            let playlists = api.user_playlists(&self.user_id.to_string());
+                            match playlists {
+                                Ok(p) => {
+                                    self.playlists = Some(p);
+                                }
+                                Err(e) => {
+                                    self.handle_error(e);
+                                }
+                            };
+                            self.msg = format!(
+                                "unsubscribe playlist {}",
+                                playlist.name.to_owned().unwrap()
+                            );
+                            self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                        }
+                        Err(e) => self.handle_error(e),
+                    }
+                }
+            },
             None => {}
         }
     }
 
-    pub fn start_playback(
-        &mut self,
-        track: Track,
-    ) {
+    pub fn start_playback(&mut self, track: Track) {
         match &self.cloud_music {
             Some(api) => {
                 let id = track.id.unwrap().to_string();
@@ -841,14 +833,12 @@ impl App {
 
     pub fn log_track(&mut self) {
         match &self.cloud_music {
-            Some(api) => {
-                match &self.current_playing {
-                    Some(track) => {
-                        api.log_track(&track.id.unwrap().to_string()).ok();
-                    }
-                    None => {}
+            Some(api) => match &self.current_playing {
+                Some(track) => {
+                    api.log_track(&track.id.unwrap().to_string()).ok();
                 }
-            }
+                None => {}
+            },
             None => {}
         }
     }
@@ -860,7 +850,7 @@ impl App {
                     self.my_playlist = TrackTable {
                         tracks: tracks,
                         selected_index: 0,
-                        name: "personal fm".to_string()
+                        name: "personal fm".to_string(),
                     }
                 }
 
@@ -879,7 +869,6 @@ impl App {
         let current_route = self.get_current_route().clone();
         self.set_current_route_state(Some(ActiveBlock::Empty), Some(current_route.hovered_block));
     }
-
 
     pub fn is_playing(&self) -> bool {
         let player = &self.player;

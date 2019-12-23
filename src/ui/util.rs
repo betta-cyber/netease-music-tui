@@ -1,9 +1,9 @@
 extern crate chrono;
+use super::super::model::artist::Artist;
 use chrono::prelude::DateTime;
 use chrono::Utc;
-use std::time::{UNIX_EPOCH, Duration};
+use std::time::{Duration, UNIX_EPOCH};
 use tui::style::{Color, Style};
-use super::super::model::artist::Artist;
 
 pub fn get_color((is_active, is_hovered): (bool, bool)) -> Style {
     match (is_active, is_hovered) {
@@ -54,8 +54,7 @@ pub fn create_artist_string(artists: &[Artist]) -> String {
 }
 
 pub fn create_tag_string(tags: &[String]) -> String {
-    tags
-        .iter()
+    tags.iter()
         .map(|tag| tag.to_string())
         .collect::<Vec<String>>()
         .join("|")

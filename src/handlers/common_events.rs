@@ -69,81 +69,61 @@ pub fn handle_left_event(app: &mut App) {
 // handle right key event
 pub fn handle_right_event(app: &mut App) {
     match app.get_current_route().hovered_block {
-        ActiveBlock::MyPlaylists | ActiveBlock::Recommend => {
-            match app.get_current_route().id {
-                RouteId::TrackTable => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::TrackTable),
-                    );
-                }
-                RouteId::Search => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::SearchResult),
-                    );
-                }
-                RouteId::AlbumList => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::AlbumList),
-                    );
-                }
-                RouteId::Artist => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::Artist),
-                    );
-                }
-                RouteId::Playlist => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::Playlist),
-                    );
-                }
-                RouteId::ArtistList => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::ArtistList),
-                    );
-                }
-                RouteId::PersonalFm => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::PersonalFm),
-                    );
-                }
-                RouteId::AlbumTracks => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::AlbumTracks),
-                    );
-                }
-                RouteId::Playing => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::Playing),
-                    );
-                }
-                RouteId::DjRadio => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::DjRadio),
-                    );
-                }
-                RouteId::DjProgram => {
-                    app.set_current_route_state(
-                        Some(ActiveBlock::Empty),
-                        Some(ActiveBlock::DjProgram),
-                    );
-                }
-                RouteId::Home => {
-                    app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
-                }
-                RouteId::Error => {}
-                _ => {}
+        ActiveBlock::MyPlaylists | ActiveBlock::Recommend => match app.get_current_route().id {
+            RouteId::TrackTable => {
+                app.set_current_route_state(
+                    Some(ActiveBlock::Empty),
+                    Some(ActiveBlock::TrackTable),
+                );
             }
-        }
+            RouteId::Search => {
+                app.set_current_route_state(
+                    Some(ActiveBlock::Empty),
+                    Some(ActiveBlock::SearchResult),
+                );
+            }
+            RouteId::AlbumList => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::AlbumList));
+            }
+            RouteId::Artist => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Artist));
+            }
+            RouteId::Playlist => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Playlist));
+            }
+            RouteId::ArtistList => {
+                app.set_current_route_state(
+                    Some(ActiveBlock::Empty),
+                    Some(ActiveBlock::ArtistList),
+                );
+            }
+            RouteId::PersonalFm => {
+                app.set_current_route_state(
+                    Some(ActiveBlock::Empty),
+                    Some(ActiveBlock::PersonalFm),
+                );
+            }
+            RouteId::AlbumTracks => {
+                app.set_current_route_state(
+                    Some(ActiveBlock::Empty),
+                    Some(ActiveBlock::AlbumTracks),
+                );
+            }
+            RouteId::Playing => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Playing));
+            }
+            RouteId::DjRadio => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::DjRadio));
+            }
+            RouteId::DjProgram => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::DjProgram));
+            }
+            RouteId::Home => {
+                app.set_current_route_state(Some(ActiveBlock::Empty), Some(ActiveBlock::Home));
+            }
+            RouteId::Error => {}
+            _ => {}
+        },
         _ => {}
     };
 }

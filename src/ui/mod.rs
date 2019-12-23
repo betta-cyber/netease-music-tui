@@ -1,13 +1,19 @@
-mod util;
 pub mod circle;
+mod util;
 
-use super::app::{App, ActiveBlock, RouteId, RECOMMEND_OPTIONS, RepeatState};
-use tui::Frame;
-use tui::widgets::{Widget, Block, Borders, Text, Table, SelectableList, Row, Gauge, Paragraph, Tabs, canvas::Canvas};
-use tui::layout::{Layout, Constraint, Direction, Rect, Alignment};
-use tui::style::{Color, Style, Modifier};
+use super::app::{ActiveBlock, App, RepeatState, RouteId, RECOMMEND_OPTIONS};
 use tui::backend::Backend;
-use util::{get_color, get_percentage_width, display_track_progress, create_artist_string, create_tag_string, create_datetime_string};
+use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
+use tui::style::{Color, Modifier, Style};
+use tui::widgets::{
+    canvas::Canvas, Block, Borders, Gauge, Paragraph, Row, SelectableList, Table, Tabs, Text,
+    Widget,
+};
+use tui::Frame;
+use util::{
+    create_artist_string, create_datetime_string, create_tag_string, display_track_progress,
+    get_color, get_percentage_width,
+};
 
 // table item for render
 #[derive(Clone, Debug)]
@@ -49,7 +55,6 @@ where
 
     app.block_height = parent_layout[1].height as usize
 }
-
 
 pub fn draw_input_and_help_box<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
@@ -174,68 +179,49 @@ where
         .margin(1)
         .split(layout_chunk);
 
-        let state_title = if app.is_playing() {
-            "Playing"
-        } else {
-            "Pause "
-        };
+    let state_title = if app.is_playing() {
+        "Playing"
+    } else {
+        "Pause "
+    };
 
-        let repeat_text = match app.fm_state {
-            true => {
-                "FM"
-            }
-            false => {
-                match app.repeat_state {
-                    RepeatState::Off => "Off",
-                    RepeatState::Track => "Track",
-                    RepeatState::All => "All",
-                    RepeatState::Shuffle => "Shuffle",
-                }
-            }
-        };
+    let repeat_text = match app.fm_state {
+        true => "FM",
+        false => match app.repeat_state {
+            RepeatState::Off => "Off",
+            RepeatState::Track => "Track",
+            RepeatState::All => "All",
+            RepeatState::Shuffle => "Shuffle",
+        },
+    };
 
-        let title = format!("{} | Repeat: {}", state_title, repeat_text);
+    let title = format!("{} | Repeat: {}", state_title, repeat_text);
 
-        let current_route = app.get_current_route();
-        let highlight_state = (
-            current_route.active_block == ActiveBlock::PlayBar,
-            current_route.hovered_block == ActiveBlock::PlayBar,
-        );
+    let current_route = app.get_current_route();
+    let highlight_state = (
+        current_route.active_block == ActiveBlock::PlayBar,
+        current_route.hovered_block == ActiveBlock::PlayBar,
+    );
 
-        let (track_name, artist_name) = match &app.current_playing {
-            Some(track) => {
-                (
-                    track.name.to_owned().unwrap(),
-                    match &track.artists {
-                        Some(artists) => {
-                            create_artist_string(&artists)
-                        }
-                        None => "Unknown".to_string()
-                    }
-                )
-            }
-            None => {
-                (
-                    String::new(),
-                    String::new(),
-                )
-            }
-        };
+    let (track_name, artist_name) = match &app.current_playing {
+        Some(track) => (
+            track.name.to_owned().unwrap(),
+            match &track.artists {
+                Some(artists) => create_artist_string(&artists),
+                None => "Unknown".to_string(),
+            },
+        ),
+        None => (String::new(), String::new()),
+    };
 
-        Block::default()
-            .borders(Borders::ALL)
-            .title(&title)
-            .title_style(get_color(highlight_state))
-            .border_style(get_color(highlight_state))
-            .render(f, layout_chunk);
+    Block::default()
+        .borders(Borders::ALL)
+        .title(&title)
+        .title_style(get_color(highlight_state))
+        .border_style(get_color(highlight_state))
+        .render(f, layout_chunk);
 
-        Paragraph::new(
-            [Text::styled(
-                artist_name,
-                Style::default().fg(Color::White),
-            )]
-            .iter(),
-        )
+    Paragraph::new([Text::styled(artist_name, Style::default().fg(Color::White))].iter())
         .style(Style::default().fg(Color::White))
         .block(
             Block::default().title(&track_name).title_style(
@@ -246,27 +232,25 @@ where
         )
         .render(f, chunks[0]);
 
-        let (perc, label) = match app.duration_ms {
-            Some(duration_ms) => {(
-                (app.song_progress_ms as f64 / duration_ms as f64) * 100_f64,
-                display_track_progress(app.song_progress_ms, duration_ms)
-            )}
-            None => {
-                (0.0_f64, " ".to_string())
-            }
-        };
+    let (perc, label) = match app.duration_ms {
+        Some(duration_ms) => (
+            (app.song_progress_ms as f64 / duration_ms as f64) * 100_f64,
+            display_track_progress(app.song_progress_ms, duration_ms),
+        ),
+        None => (0.0_f64, " ".to_string()),
+    };
 
-        Gauge::default()
-            .block(Block::default().title(""))
-            .style(
-                Style::default()
-                    .fg(Color::LightCyan)
-                    .bg(Color::Black)
-                    .modifier(Modifier::ITALIC | Modifier::BOLD),
-            )
-            .percent(perc as u16)
-            .label(&label)
-            .render(f, chunks[1]);
+    Gauge::default()
+        .block(Block::default().title(""))
+        .style(
+            Style::default()
+                .fg(Color::LightCyan)
+                .bg(Color::Black)
+                .modifier(Modifier::ITALIC | Modifier::BOLD),
+        )
+        .percent(perc as u16)
+        .label(&label)
+        .render(f, chunks[1]);
 }
 
 pub fn draw_user_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
@@ -306,7 +290,10 @@ where
     B: Backend,
 {
     let playlist_items = match &app.playlists {
-        Some(p) => p.iter().map(|item| item.name.as_ref().unwrap().to_owned()).collect(),
+        Some(p) => p
+            .iter()
+            .map(|item| item.name.as_ref().unwrap().to_owned())
+            .collect(),
         None => vec![],
     };
 
@@ -359,7 +346,6 @@ pub fn draw_track_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let header = [
         TableHeader {
             text: "ID",
@@ -515,8 +501,8 @@ where
         .border_style(get_color(highlight_state))
         .render(f, layout_chunk);
 
-    let top_text = vec![
-        Text::styled("
+    let top_text = vec![Text::styled(
+        "
                  __
   ____    ____ _/  |_   ____  _____     ______  ____
  /    \\ _/ __ \\\\   __\\_/ __ \\ \\__  \\   /  ___/_/ __ \\ 
@@ -535,8 +521,9 @@ _______  __ __  _______/  |_          _/  |_  __ __ |__|
  |  | \\/|  |  /\\___ \\  |  |   /_____/  |  |  |  |  /|  |
  |__|   |____//____  > |__|            |__|  |____/ |__|
                    \\/
-            ", Style::default().fg(Color::LightCyan)),
-    ];
+            ",
+        Style::default().fg(Color::LightCyan),
+    )];
 
     // Contains the banner
     Paragraph::new(top_text.iter())
@@ -545,24 +532,21 @@ _______  __ __  _______/  |_          _/  |_  __ __ |__|
         .render(f, chunks[0]);
 
     // Canvas::default()
-        // .block(
-            // Block::default()
-            // .borders(Borders::ALL)
-            // .title("Welcome!")
-        // )
-        // .paint(|ctx| {
-            // ctx.draw(&Circle::default());
-        // })
-        // .x_bounds([-180.0, 180.0])
-        // .y_bounds([-90.0, 90.0])
-        // .render(f, layout_chunk);
+    // .block(
+    // Block::default()
+    // .borders(Borders::ALL)
+    // .title("Welcome!")
+    // )
+    // .paint(|ctx| {
+    // ctx.draw(&Circle::default());
+    // })
+    // .x_bounds([-180.0, 180.0])
+    // .y_bounds([-90.0, 90.0])
+    // .render(f, layout_chunk);
 }
 
-fn draw_personal_fm<B>(
-    f: &mut Frame<B>,
-    app: &App,
-    layout_chunk: Rect,
-) where
+fn draw_personal_fm<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+where
     B: Backend,
 {
     let current_route = app.get_current_route();
@@ -589,8 +573,6 @@ pub fn draw_search_results<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::SearchResult,
@@ -606,28 +588,43 @@ where
         let songs = match &app.search_results.tracks {
             Some(r) => r
                 .iter()
-                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), create_artist_string(&item.artists.to_owned().unwrap())))
+                .map(|item| {
+                    format!(
+                        "{} - {}",
+                        item.name.to_owned().unwrap(),
+                        create_artist_string(&item.artists.to_owned().unwrap())
+                    )
+                })
                 .collect(),
             None => vec![],
         };
         let playlists = match &app.search_results.playlists {
             Some(r) => r
                 .iter()
-                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), item.creator.to_owned().unwrap().nickname.unwrap()))
+                .map(|item| {
+                    format!(
+                        "{} - {}",
+                        item.name.to_owned().unwrap(),
+                        item.creator.to_owned().unwrap().nickname.unwrap()
+                    )
+                })
                 .collect(),
             None => vec![],
         };
         let artists = match &app.search_results.artists {
-            Some(r) => r
-                .iter()
-                .map(|item| item.to_owned().name)
-                .collect(),
+            Some(r) => r.iter().map(|item| item.to_owned().name).collect(),
             None => vec![],
         };
         let albums = match &app.search_results.albums {
             Some(r) => r
                 .iter()
-                .map(|item| format!("{} - {}", item.name.to_owned().unwrap(), create_artist_string(&[item.artist.to_owned().unwrap()])))
+                .map(|item| {
+                    format!(
+                        "{} - {}",
+                        item.name.to_owned().unwrap(),
+                        create_artist_string(&[item.artist.to_owned().unwrap()])
+                    )
+                })
                 .collect(),
             None => vec![],
         };
@@ -639,15 +636,13 @@ where
             None => vec![],
         };
 
-
-
         Tabs::default()
             .block(
                 Block::default()
-                .borders(Borders::ALL)
-                .title("Search Result")
-                .title_style(get_color(highlight_state))
-                .border_style(get_color(highlight_state)),
+                    .borders(Borders::ALL)
+                    .title("Search Result")
+                    .title_style(get_color(highlight_state))
+                    .border_style(get_color(highlight_state)),
             )
             .titles(&app.tabs.titles)
             .select(app.tabs.index)
@@ -702,7 +697,6 @@ where
     }
 }
 
-
 pub fn draw_help_menu<B>(f: &mut Frame<B>)
 where
     B: Backend,
@@ -733,23 +727,36 @@ where
         vec!["Enter Search", "/", "General"],
         vec!["Pause/Resume playback", "<Space>", "General"],
         vec!["Fullsize playbar", "f", "General"],
-        vec!["Go back or exit when nowhere left to back to", "q", "General"],
+        vec![
+            "Go back or exit when nowhere left to back to",
+            "q",
+            "General",
+        ],
         vec!["Enter hover mode", "<Esc>", "General"],
         vec!["Enter active mode", "<Enter>", "General"],
         vec!["Like current playing track", "<Ctrl+y>", "General"],
         vec!["Dislike current playing track", "<Ctrl+d>", "General"],
         vec!["move track to trash", "<Ctrl+t>", "FM block"],
-
         vec!["Delete entire input", "<Ctrl+u>", "Search input"],
         vec!["Search with input text", "<Enter>", "Search input"],
         vec!["Jump to start of input", "<Ctrl+a>", "Search input"],
         vec!["Jump to end of input", "<Ctrl+e>", "Search input"],
-
-        vec!["Subscribe current hover playlist", "<Alt+s>", "Playlist block"],
-        vec!["Unsubscribe current hover playlist", "<Alt+d>", "Playlist block"],
-
+        vec![
+            "Subscribe current hover playlist",
+            "<Alt+s>",
+            "Playlist block",
+        ],
+        vec![
+            "Unsubscribe current hover playlist",
+            "<Alt+d>",
+            "Playlist block",
+        ],
         vec!["Jump to next page", "<Ctrl+f>", "Search result | top list"],
-        vec!["Jump to previous page", "<Ctrl+b>", "Search result | top list"],
+        vec![
+            "Jump to previous page",
+            "<Ctrl+b>",
+            "Search result | top list",
+        ],
     ];
 
     let rows = help_docs
@@ -770,12 +777,10 @@ where
         .render(f, chunks[0]);
 }
 
-
 pub fn draw_playing_detail<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::Playing,
@@ -791,10 +796,10 @@ where
     Canvas::default()
         .block(
             Block::default()
-            .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM)
-            .title("Playing")
-            .title_style(get_color(highlight_state))
-            .border_style(get_color(highlight_state)),
+                .borders(Borders::LEFT | Borders::TOP | Borders::BOTTOM)
+                .title("Playing")
+                .title_style(get_color(highlight_state))
+                .border_style(get_color(highlight_state)),
         )
         .paint(|ctx| {
             ctx.draw(&app.playing_circle);
@@ -808,7 +813,6 @@ where
         None => vec![],
     };
     let selected_index = app.lyric_index;
-
 
     let interval = (layout_chunk.height / 2) as usize;
     let (row_items, margin) = if !lyric_items.is_empty() {
@@ -829,13 +833,10 @@ where
         (lyric_items.as_ref(), 0 as usize)
     };
 
-
-    let header = [
-        TableHeader {
-            text: "",
-            width: get_percentage_width(layout_chunk.width, 0.5),
-        }
-    ];
+    let header = [TableHeader {
+        text: "",
+        width: get_percentage_width(layout_chunk.width, 0.5),
+    }];
 
     let selected_style = get_color(highlight_state).modifier(Modifier::BOLD);
     let rows = row_items.iter().enumerate().map(|(i, item)| {
@@ -852,16 +853,15 @@ where
     Table::new(header.iter().map(|h| h.text), rows)
         .block(
             Block::default()
-            .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
-            .style(Style::default().fg(Color::White))
-            .title_style(get_color(highlight_state))
-            .border_style(get_color(highlight_state)),
+                .borders(Borders::RIGHT | Borders::TOP | Borders::BOTTOM)
+                .style(Style::default().fg(Color::White))
+                .title_style(get_color(highlight_state))
+                .border_style(get_color(highlight_state)),
         )
         .style(Style::default().fg(Color::White))
         .widths(&widths)
         .render(f, chunks[1]);
 }
-
 
 // list ui struct
 struct ListUI {
@@ -874,7 +874,6 @@ pub fn draw_artist_albums<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::Artist,
@@ -899,7 +898,8 @@ where
     let mut num = 0;
     let album_ui = match &app.artist_albums {
         Some(album_list) => Some(ListUI {
-            items: album_list.albums
+            items: album_list
+                .albums
                 .iter()
                 .map(|item| {
                     num += 1;
@@ -913,9 +913,7 @@ where
                     }
                 })
                 .collect::<Vec<TableItem>>(),
-            title: format!(
-                "Albums",
-            ),
+            title: format!("Albums",),
             selected_index: album_list.selected_index,
         }),
         None => None,
@@ -939,7 +937,6 @@ pub fn draw_album_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::AlbumTracks,
@@ -960,16 +957,14 @@ where
     let mut num = 0;
     let album_ui = match &app.selected_album {
         Some(selected_album) => Some(ListUI {
-            items: selected_album.tracks
+            items: selected_album
+                .tracks
                 .iter()
                 .map(|item| {
                     num += 1;
                     TableItem {
                         id: item.id.clone().unwrap_or_else(|| 0).to_string(),
-                        format: vec![
-                            num.to_string(),
-                            item.to_owned().name.unwrap().to_string(),
-                        ],
+                        format: vec![num.to_string(), item.to_owned().name.unwrap().to_string()],
                     }
                 })
                 .collect::<Vec<TableItem>>(),
@@ -1000,7 +995,6 @@ pub fn draw_playlist_table<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::Playlist,
@@ -1031,14 +1025,13 @@ where
     ];
 
     let mut num = match app.playlist_list.to_owned() {
-        Some(playlist) => {
-            playlist.selected_page * (app.block_height - 4)
-        }
-        None => 0
+        Some(playlist) => playlist.selected_page * (app.block_height - 4),
+        None => 0,
     };
     let playlist_ui = match &app.playlist_list {
         Some(playlist) => Some(ListUI {
-            items: playlist.playlists
+            items: playlist
+                .playlists
                 .iter()
                 .map(|item| {
                     num += 1;
@@ -1048,15 +1041,18 @@ where
                             num.to_string(),
                             item.to_owned().name.unwrap().to_string(),
                             item.trackCount.unwrap().to_string(),
-                            item.creator.to_owned().unwrap().nickname.unwrap().to_string(),
+                            item.creator
+                                .to_owned()
+                                .unwrap()
+                                .nickname
+                                .unwrap()
+                                .to_string(),
                             create_tag_string(&item.tags.to_owned().unwrap()),
                         ],
                     }
                 })
                 .collect::<Vec<TableItem>>(),
-            title: format!(
-                "Discover Playlists",
-            ),
+            title: format!("Discover Playlists",),
             selected_index: playlist.selected_index,
         }),
         None => None,
@@ -1079,7 +1075,6 @@ pub fn draw_album_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::AlbumList,
@@ -1102,15 +1097,14 @@ where
     ];
 
     let mut num = match app.album_list.to_owned() {
-        Some(albumlist) => {
-            albumlist.selected_page * (app.block_height - 4)
-        }
-        None => 0
+        Some(albumlist) => albumlist.selected_page * (app.block_height - 4),
+        None => 0,
     };
 
     let album_ui = match &app.album_list {
         Some(album_list) => Some(ListUI {
-            items: album_list.albums
+            items: album_list
+                .albums
                 .iter()
                 .map(|item| {
                     num += 1;
@@ -1124,9 +1118,7 @@ where
                     }
                 })
                 .collect::<Vec<TableItem>>(),
-            title: format!(
-                "Discover Albums",
-            ),
+            title: format!("Discover Albums",),
             selected_index: album_list.selected_index,
         }),
         None => None,
@@ -1149,7 +1141,6 @@ pub fn draw_artist_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::ArtistList,
@@ -1168,30 +1159,24 @@ where
     ];
 
     let mut num = match app.artist_list.to_owned() {
-        Some(artistlist) => {
-            artistlist.selected_page * (app.block_height - 4)
-        }
-        None => 0
+        Some(artistlist) => artistlist.selected_page * (app.block_height - 4),
+        None => 0,
     };
 
     let artist_ui = match &app.artist_list {
         Some(artist_list) => Some(ListUI {
-            items: artist_list.artists
+            items: artist_list
+                .artists
                 .iter()
                 .map(|item| {
                     num += 1;
                     TableItem {
                         id: item.id.to_string(),
-                        format: vec![
-                            num.to_string(),
-                            item.to_owned().name,
-                        ],
+                        format: vec![num.to_string(), item.to_owned().name],
                     }
                 })
                 .collect::<Vec<TableItem>>(),
-            title: format!(
-                "Discover Artists",
-            ),
+            title: format!("Discover Artists",),
             selected_index: artist_list.selected_index,
         }),
         None => None,
@@ -1214,7 +1199,6 @@ pub fn draw_djradio_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::DjRadio,
@@ -1233,30 +1217,24 @@ where
     ];
 
     let mut num = match app.djradio_list.to_owned() {
-        Some(djradio_list) => {
-            djradio_list.selected_page * (app.block_height - 4)
-        }
-        None => 0
+        Some(djradio_list) => djradio_list.selected_page * (app.block_height - 4),
+        None => 0,
     };
 
     let djradio_ui = match &app.djradio_list {
         Some(djradio_list) => Some(ListUI {
-            items: djradio_list.djradios
+            items: djradio_list
+                .djradios
                 .iter()
                 .map(|item| {
                     num += 1;
                     TableItem {
                         id: item.id.to_string(),
-                        format: vec![
-                            num.to_string(),
-                            item.to_owned().name,
-                        ],
+                        format: vec![num.to_string(), item.to_owned().name],
                     }
                 })
                 .collect::<Vec<TableItem>>(),
-            title: format!(
-                "My Subscribe DjRadio",
-            ),
+            title: format!("My Subscribe DjRadio",),
             selected_index: djradio_list.selected_index,
         }),
         None => None,
@@ -1279,7 +1257,6 @@ pub fn draw_dj_program_list<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
 {
-
     let current_route = app.get_current_route();
     let highlight_state = (
         current_route.active_block == ActiveBlock::DjProgram,
@@ -1307,7 +1284,8 @@ where
 
     let program_ui = match &app.program_list {
         Some(program_list) => Some(ListUI {
-            items: program_list.dj_programs
+            items: program_list
+                .dj_programs
                 .iter()
                 .map(|item| {
                     let num_string = match &app.current_playing {
@@ -1318,9 +1296,7 @@ where
                                 item.serialNum.to_string()
                             }
                         }
-                        None => {
-                            item.serialNum.to_string()
-                        }
+                        None => item.serialNum.to_string(),
                     };
                     TableItem {
                         id: item.id.to_string(),
@@ -1352,7 +1328,6 @@ where
     };
 }
 
-
 pub fn draw_error_screen<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
 where
     B: Backend,
@@ -1365,10 +1340,7 @@ where
     let playing_text = vec![
         Text::raw("Api response: "),
         Text::styled(&app.error_msg, Style::default().fg(Color::LightRed)),
-        Text::styled(
-            "\nPress `e` to return",
-            Style::default().fg(Color::Gray),
-        ),
+        Text::styled("\nPress `e` to return", Style::default().fg(Color::Gray)),
     ];
 
     Paragraph::new(playing_text.iter())
@@ -1390,16 +1362,28 @@ where
 {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(40),
+                Constraint::Percentage(20),
+                Constraint::Percentage(40),
+            ]
+            .as_ref(),
+        )
         .split(f.size());
     let child_chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(40),
+                Constraint::Percentage(20),
+                Constraint::Percentage(40),
+            ]
+            .as_ref(),
+        )
         .split(chunks[1]);
 
-    let msg = vec![
-        Text::styled(&app.msg, Style::default().fg(Color::Cyan)),
-    ];
+    let msg = vec![Text::styled(&app.msg, Style::default().fg(Color::Cyan))];
 
     Paragraph::new(msg.iter())
         .wrap(true)
@@ -1412,4 +1396,3 @@ where
         )
         .render(f, child_chunks[1]);
 }
-

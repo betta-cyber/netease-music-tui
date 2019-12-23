@@ -1,21 +1,21 @@
+mod album_tracks;
+mod albumlist;
+mod artist;
+mod artistlist;
 mod common_events;
+mod djprogram;
+mod djradio;
+mod empty;
+mod fm;
+mod home;
 mod my_playlist;
 mod playlist;
-mod track;
 mod recommend;
-mod empty;
-mod home;
 mod search;
 mod search_results;
-mod artist;
-mod albumlist;
-mod album_tracks;
-mod artistlist;
-mod fm;
-mod djradio;
-mod djprogram;
+mod track;
 
-use super::app::{App, ActiveBlock, RouteId, Action};
+use super::app::{Action, ActiveBlock, App, RouteId};
 use termion::event::Key;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -28,75 +28,68 @@ pub fn handle_app(key: Key, app: &mut App) {
     // get current route
     let current_route = app.get_current_route();
     match current_route.active_block {
-        ActiveBlock::Search => {
-            match key {
-                Key::Ctrl('h') => {
-                    app.hover_mode();
-                }
-                _ => {
-                    search::handler(key, app);
-                }
+        ActiveBlock::Search => match key {
+            Key::Ctrl('h') => {
+                app.hover_mode();
+            }
+            _ => {
+                search::handler(key, app);
             }
         },
-        _ => {
-            match key {
-                Key::Char('-') => {
-                    app.decrease_volume();
-                }
-                Key::Char('+') => {
-                    app.increase_volume();
-                }
-                Key::Char('n') => {
-                    app.skip_track(TrackState::Forword);
-                }
-                Key::Char('p') => {
-                    app.skip_track(TrackState::Backword);
-                }
-                Key::Char('/') => {
-                    app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
-                }
-                Key::Char('r') => {
-                    app.repeat();
-                }
-                Key::Char('?') => {
-                    app.set_current_route_state(Some(ActiveBlock::Help), None);
-                }
-                Key::Char('f') => {
-                    app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
-                }
-                Key::Char('>') => {
-                    app.seek_forwards();
-                }
-                Key::Char('<') => {
-                    app.seek_backwards();
-                }
-                Key::Esc => {
-                    app.hover_mode();
-                }
-                Key::Ctrl('y') => {
-                    app.like_current(Action::Subscribe);
-                }
-                Key::Ctrl('d') => {
-                    app.like_current(Action::Unsubscribe);
-                }
-                Key::Char('a') => {
-                    let album_id = match &app.current_playing {
-                        Some(track) => {
-                            track.album.to_owned().unwrap().id
-                        }
-                        None => None
-                    };
-                    app.get_album_tracks(album_id.unwrap().to_string());
-                }
-                _ => handle_block_events(key, app),
+        _ => match key {
+            Key::Char('-') => {
+                app.decrease_volume();
             }
-        }
+            Key::Char('+') => {
+                app.increase_volume();
+            }
+            Key::Char('n') => {
+                app.skip_track(TrackState::Forword);
+            }
+            Key::Char('p') => {
+                app.skip_track(TrackState::Backword);
+            }
+            Key::Char('/') => {
+                app.set_current_route_state(Some(ActiveBlock::Search), Some(ActiveBlock::Search));
+            }
+            Key::Char('r') => {
+                app.repeat();
+            }
+            Key::Char('?') => {
+                app.set_current_route_state(Some(ActiveBlock::Help), None);
+            }
+            Key::Char('f') => {
+                app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
+            }
+            Key::Char('>') => {
+                app.seek_forwards();
+            }
+            Key::Char('<') => {
+                app.seek_backwards();
+            }
+            Key::Esc => {
+                app.hover_mode();
+            }
+            Key::Ctrl('y') => {
+                app.like_current(Action::Subscribe);
+            }
+            Key::Ctrl('d') => {
+                app.like_current(Action::Unsubscribe);
+            }
+            Key::Char('a') => {
+                let album_id = match &app.current_playing {
+                    Some(track) => track.album.to_owned().unwrap().id,
+                    None => None,
+                };
+                app.get_album_tracks(album_id.unwrap().to_string());
+            }
+            _ => handle_block_events(key, app),
+        },
     }
 }
 
 // handle current block events
 fn handle_block_events(key: Key, app: &mut App) {
-
     // get current route
     let current_route = app.get_current_route();
 
