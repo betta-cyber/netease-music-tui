@@ -374,7 +374,9 @@ impl App {
             // check progress duration
             match self.duration_ms {
                 Some(duration_ms) => {
-                    if self.song_progress_ms >= duration_ms {
+                    // caculate song duration and current progress
+                    // if difference less than 1000 means it less than 1s. skip it
+                    if (duration_ms - self.song_progress_ms) < 1000 {
                         // log track
                         self.log_track();
                         self.skip_track(TrackState::Forword)
@@ -584,8 +586,11 @@ impl App {
                             album: t.al,
                         })
                         .collect();
-                    self.track_table.tracks = tracks;
-                    self.track_table.name = playlist_tracks.name.unwrap();
+                    self.track_table = TrackTable {
+                        tracks: tracks,
+                        name: playlist_tracks.name.unwrap(),
+                        selected_index: 0,
+                    }
                 }
             }
             None => {}

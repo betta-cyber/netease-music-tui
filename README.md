@@ -111,6 +111,12 @@ This table shows some key binds
 | Jump to next page | \<Ctrl+f> | Search result \| top list |
 | Jump to previous page | \<Ctrl+b> | Search result \| top list |
 
+## Dev plan
+- [x] Djradio and djprogram
+- [ ] User page
+- [ ] Spectrum effect
+- [ ] Comment function
+- [ ] Docker deploy
 
 ## License
 MIT
