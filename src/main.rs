@@ -19,6 +19,7 @@ use log::LevelFilter;
 use std::fs;
 use std::io;
 use std::path::Path;
+use std::time::Duration;
 use termion::event::Key;
 use termion::raw::IntoRawMode;
 use tui::backend::TermionBackend;
@@ -30,9 +31,11 @@ mod app;
 mod handlers;
 mod model;
 mod ui;
+mod dbus_mpris;
 mod util;
 
 use app::{ActiveBlock, App};
+use dbus_mpris::dbus_mpris_server;
 
 const FILE_NAME: &str = "Settings.toml";
 const CONFIG_DIR: &str = ".config";
@@ -116,8 +119,11 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
+    let mut c = dbus_mpris_server().unwrap();
 
     loop {
+        c.process(Duration::from_nanos(1))?;
+
         terminal.draw(|mut f| {
             let current_route = app.get_current_route();
             match current_route.active_block {
