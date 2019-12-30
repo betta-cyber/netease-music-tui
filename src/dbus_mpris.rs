@@ -59,10 +59,10 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
 
 pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
     match r {
-        Next => {
+        PlayerCommand::Next => {
             app.skip_track(TrackState::Forword);
         }
-        Previous => {
+        PlayerCommand::Previous => {
             app.skip_track(TrackState::Backword);
         }
         _ => {}
