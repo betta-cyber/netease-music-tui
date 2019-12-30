@@ -179,7 +179,7 @@ where
         .margin(1)
         .split(layout_chunk);
 
-    let state_title = if app.is_playing() {
+    let state_title = if app.player.is_playing() {
         "Playing"
     } else {
         "Pause "
@@ -522,7 +522,7 @@ _______  __ __  _______/  |_          _/  |_  __ __ |__|
  |__|   |____//____  > |__|            |__|  |____/ |__|
                    \\/
             ",
-        Style::default().fg(Color::LightCyan),
+        Style::default().fg(Color::LightCyan).modifier(Modifier::BOLD),
     )];
 
     // Contains the banner

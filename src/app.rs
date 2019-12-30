@@ -1,6 +1,3 @@
-extern crate gstreamer as gst;
-extern crate gstreamer_player as gst_player;
-
 use super::api::CloudMusic;
 use super::handlers::TrackState;
 use super::model::album::Album;
@@ -8,9 +5,9 @@ use super::model::artist::Artist;
 use super::model::dj::{DjProgram, DjRadio};
 use super::model::lyric::Lyric;
 use super::model::playlist::{Playlist, Track};
+use super::player::Nplayer;
 use super::ui::circle::{Circle, CIRCLE, CIRCLE_TICK};
-use gst::prelude::*;
-use gst::ClockTime;
+
 use rand::Rng;
 use tui::layout::Rect;
 use tui::style::Color;
@@ -194,7 +191,7 @@ impl TabsState {
 
 pub struct App {
     navigation_stack: Vec<Route>,
-    pub player: gst_player::Player,
+    pub player: Nplayer,
     pub size: Rect,
     pub input: Vec<char>,
     pub input_idx: usize,
@@ -232,15 +229,9 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
-        let music_player = gst_player::Player::new(
-            None,
-            Some(&dispatcher.upcast::<gst_player::PlayerSignalDispatcher>()),
-        );
-
         App {
             navigation_stack: vec![DEFAULT_ROUTE],
-            player: music_player,
+            player: Nplayer::new(),
             size: Rect::default(),
             input: vec![],
             input_idx: 0,
@@ -335,8 +326,8 @@ impl App {
                 self.msg_control += 1;
             }
         }
-        if self.is_playing() {
-            self.song_progress_ms = match self.player.get_position().mseconds() {
+        if self.player.is_playing() {
+            self.song_progress_ms = match self.player.get_position() {
                 Some(ms) => ms,
                 None => 0 as u64,
             };
@@ -473,40 +464,6 @@ impl App {
                 self.start_playback(track_playing);
             }
         }
-    }
-
-    pub fn increase_volume(&mut self) {
-        let current = self.player.get_volume();
-        let volume = if current < 9.9 {
-            current + 0.1_f64
-        } else {
-            10.0_f64
-        };
-        self.player.set_volume(volume);
-    }
-
-    pub fn decrease_volume(&mut self) {
-        let current = self.player.get_volume();
-        let volume = if current > 0.1 {
-            current - 0.1_f64
-        } else {
-            0.0_f64
-        };
-        self.player.set_volume(volume);
-    }
-
-    pub fn seek_forwards(&mut self) {
-        let next_duration = self.song_progress_ms + 3000;
-        self.player.seek(ClockTime::from_mseconds(next_duration))
-    }
-
-    pub fn seek_backwards(&mut self) {
-        let next_duration = if self.song_progress_ms < 3000 {
-            0
-        } else {
-            self.song_progress_ms - 3000
-        };
-        self.player.seek(ClockTime::from_mseconds(next_duration))
     }
 
     pub fn get_current_route(&self) -> &Route {
@@ -813,15 +770,14 @@ impl App {
                         self.duration_ms = None;
                         self.song_progress_ms = 0;
                         self.lyric_index = 0;
-                        self.player.set_uri(&url);
+                        self.player.play_url(&url);
                         self.lyric = Some(api.lyric(&id).unwrap());
-                        self.player.play();
                         self.current_playing = Some(track);
 
                         let mut flag = false;
                         while !flag {
-                            if self.is_playing() {
-                                self.duration_ms = self.player.get_duration().mseconds();
+                            if self.player.is_playing() {
+                                self.duration_ms = self.player.get_duration();
                                 flag = true;
                             }
                         }
@@ -873,11 +829,5 @@ impl App {
     pub fn hover_mode(&mut self) {
         let current_route = self.get_current_route().clone();
         self.set_current_route_state(Some(ActiveBlock::Empty), Some(current_route.hovered_block));
-    }
-
-    pub fn is_playing(&self) -> bool {
-        let player = &self.player;
-        let element = player.get_pipeline();
-        element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
     }
 }

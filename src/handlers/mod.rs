@@ -38,10 +38,10 @@ pub fn handle_app(key: Key, app: &mut App) {
         },
         _ => match key {
             Key::Char('-') => {
-                app.decrease_volume();
+                app.player.decrease_volume();
             }
             Key::Char('+') => {
-                app.increase_volume();
+                app.player.increase_volume();
             }
             Key::Char('n') => {
                 app.skip_track(TrackState::Forword);
@@ -62,10 +62,10 @@ pub fn handle_app(key: Key, app: &mut App) {
                 app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
             }
             Key::Char('>') => {
-                app.seek_forwards();
+                app.player.seek_forwards();
             }
             Key::Char('<') => {
-                app.seek_backwards();
+                app.player.seek_backwards();
             }
             Key::Esc => {
                 app.hover_mode();

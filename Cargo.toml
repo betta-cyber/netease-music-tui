@@ -32,6 +32,9 @@ log-panics = "2.0.0"
 dirs = "2.0.2"
 dbus = "0.7.1"
 
+# [features]
+# dbus_mpris = ["dbus"]
+
 [[bin]]
 name = "ncmt"
 path = "src/main.rs"

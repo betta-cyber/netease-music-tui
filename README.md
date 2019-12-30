@@ -117,6 +117,8 @@ This table shows some key binds
 - [ ] Spectrum effect
 - [ ] Comment function
 - [ ] Docker deploy
+- [ ] mpris support
+- [ ] remove gstreamer
 
 ## License
 MIT
