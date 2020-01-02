@@ -11,13 +11,14 @@ pub enum PlayerCommand {
     Play,
     Pause,
     Stop,
-    Seek(u32),
+    PlayPause,
+    Seek(i32),
     Next,
     Previous,
     Load(String),
     Status,
     LoopStatus,
-    Postion,
+    Position(i32, u64),
     Metadata,
 }
 
@@ -57,6 +58,10 @@ impl Nplayer {
         self.player.play()
     }
 
+    pub fn stop(&self) {
+        self.player.stop()
+    }
+
     pub fn get_position(&self) -> Option<u64> {
         self.player.get_position().mseconds()
     }
@@ -78,6 +83,15 @@ impl Nplayer {
             song_progress_ms - 3000
         };
         self.player.seek(ClockTime::from_mseconds(next_duration))
+    }
+
+    pub fn seek(&mut self, offset: i32) {
+        let next_duration = self.get_position().unwrap() as i32 + (offset * 1000);
+        self.player.seek(ClockTime::from_mseconds(next_duration as u64))
+    }
+
+    pub fn position(&mut self, position: u64) {
+        self.player.seek(ClockTime::from_mseconds(position))
     }
 
     pub fn increase_volume(&mut self) {
