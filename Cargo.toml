@@ -30,10 +30,10 @@ gstreamer = "0.14.5"
 gstreamer-player = "0.14.0"
 log-panics = "2.0.0"
 dirs = "2.0.2"
-dbus = "0.7.1"
+dbus = { version = "0.7.1" , optional = true }
 
-# [features]
-# dbus_mpris = ["dbus"]
+[features]
+dbus_mpris = ["dbus"]
 
 [[bin]]
 name = "ncmt"

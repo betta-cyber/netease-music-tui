@@ -29,14 +29,16 @@ use util::event::{Event, Events};
 
 mod api;
 mod app;
-mod dbus_mpris;
 mod handlers;
 mod model;
 mod player;
 mod ui;
 mod util;
 
+mod dbus_mpris;
+
 use app::{ActiveBlock, App};
+
 use dbus_mpris::{dbus_mpris_server, dbus_mpris_handler};
 
 const FILE_NAME: &str = "Settings.toml";

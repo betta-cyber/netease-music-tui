@@ -3,17 +3,28 @@
 // dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:"org.mpris.MediaPlayer2.ncmt" string:"Rate"
 // for method
 // dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.ncmt.Next  string:"betta"
+#[cfg(feature = "dbus_mpris")]
 extern crate dbus;
-
+#[cfg(feature = "dbus_mpris")]
 use dbus::blocking::Connection;
+#[cfg(feature = "dbus_mpris")]
 use dbus::tree::{Factory, Access};
 use std::error::Error;
 use std::sync::mpsc::Sender;
+#[cfg(feature = "dbus_mpris")]
 use std::time::Duration;
 use super::app::App;
+#[cfg(feature = "dbus_mpris")]
 use super::handlers::TrackState;
 use super::player::PlayerCommand;
 
+#[cfg(not(feature = "dbus_mpris"))]
+#[allow(unused)]
+pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>> {
+    Ok(())
+}
+
+#[cfg(feature = "dbus_mpris")]
 pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>> {
     // Let's start by starting up a connection to the session bus and request a name.
     let mut c = Connection::new_session()?;
@@ -170,6 +181,12 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     }
 }
 
+#[cfg(not(feature = "dbus_mpris"))]
+#[allow(unused)]
+pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
+}
+
+#[cfg(feature = "dbus_mpris")]
 pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
     match r {
         PlayerCommand::Next => {

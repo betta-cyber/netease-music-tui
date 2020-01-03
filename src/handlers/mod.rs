@@ -59,7 +59,13 @@ pub fn handle_app(key: Key, app: &mut App) {
                 app.set_current_route_state(Some(ActiveBlock::Help), None);
             }
             Key::Char('f') => {
-                app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
+                let current_route = app.get_current_route();
+                match current_route.id {
+                    RouteId::Playing => {}
+                    _ => {
+                        app.push_navigation_stack(RouteId::Playing, ActiveBlock::Playing);
+                    }
+                }
             }
             Key::Char('>') => {
                 app.player.seek_forwards();
