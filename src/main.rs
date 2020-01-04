@@ -19,8 +19,6 @@ use log::LevelFilter;
 use std::fs;
 use std::io;
 use std::path::Path;
-use std::sync::mpsc;
-use std::thread;
 use termion::event::Key;
 use termion::raw::IntoRawMode;
 use tui::backend::TermionBackend;
@@ -39,7 +37,7 @@ mod dbus_mpris;
 
 use app::{ActiveBlock, App};
 
-use dbus_mpris::{dbus_mpris_server, dbus_mpris_handler};
+use dbus_mpris::{DbusMpris, dbus_mpris_handler};
 
 const FILE_NAME: &str = "Settings.toml";
 const CONFIG_DIR: &str = ".config";
@@ -123,22 +121,9 @@ fn main() -> Result<(), failure::Error> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
-
-    // new thread for dbus mpris
-    let (tx, rx) = mpsc::channel::<>();
-    if settings.get_bool("mpris").unwrap_or(false) == true {
-        thread::spawn(move || {
-            dbus_mpris_server(tx).unwrap();
-        });
-    }
+    let dbus_mpris = DbusMpris::new();
 
     loop {
-        if settings.get_bool("mpris").unwrap_or(false) == true {
-            for r in rx.try_recv() {
-                dbus_mpris_handler(r, &mut app);
-            }
-        }
-
         terminal.draw(|mut f| {
             let current_route = app.get_current_route();
             match current_route.active_block {
@@ -153,6 +138,14 @@ fn main() -> Result<(), failure::Error> {
                 }
             }
         })?;
+
+        // try get dbus cmd
+        match dbus_mpris.next() {
+            Ok(cmd) => {
+                dbus_mpris_handler(cmd, &mut app);
+            }
+            Err(_) => {}
+        }
 
         match events.next()? {
             Event::Input(input) => {

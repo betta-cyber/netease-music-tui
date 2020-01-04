@@ -6,7 +6,7 @@
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 #[cfg(feature = "dbus_mpris")]
-use dbus::blocking::Connection;
+use dbus::blocking::SyncConnection;
 #[cfg(feature = "dbus_mpris")]
 use dbus::tree::{Factory, Access};
 use std::error::Error;
@@ -17,6 +17,34 @@ use super::app::App;
 #[cfg(feature = "dbus_mpris")]
 use super::handlers::TrackState;
 use super::player::PlayerCommand;
+use std::sync::mpsc;
+use std::thread;
+
+pub struct DbusMpris {
+    rx: mpsc::Receiver<PlayerCommand>,
+}
+
+impl DbusMpris {
+    pub fn new() -> DbusMpris {
+        DbusMpris::init()
+    }
+
+    pub fn init() -> DbusMpris {
+        let (tx, rx) = mpsc::channel();
+        let _server_handle = {
+            let tx = tx.clone();
+            thread::spawn(move || {
+                dbus_mpris_server(tx).unwrap();
+            })
+        };
+        DbusMpris { rx }
+    }
+
+    pub fn next(&self) -> Result<PlayerCommand, mpsc::RecvError> {
+        self.rx.recv()
+    }
+}
+
 
 #[cfg(not(feature = "dbus_mpris"))]
 #[allow(unused)]
@@ -27,12 +55,12 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
 #[cfg(feature = "dbus_mpris")]
 pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>> {
     // Let's start by starting up a connection to the session bus and request a name.
-    let mut c = Connection::new_session()?;
+    let mut c = SyncConnection::new_session()?;
     c.request_name("org.mpris.MediaPlayer2.ncmt", false, true, false)?;
 
     // The choice of factory tells us what type of tree we want,
     // and if we want any extra data inside. We pick the simplest variant.
-    let f = Factory::new_fn::<()>();
+    let f = Factory::new_sync::<()>();
 
     let method_next = {
         let local_tx = tx.clone();
@@ -175,6 +203,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     // We add the tree to the connection so that incoming method calls will be handled.
     tree.start_receive(&c);
 
+    // Ok(())
     // Serve clients forever.
     loop {
         c.process(Duration::from_nanos(1))?;
@@ -216,6 +245,8 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
         PlayerCommand::Load(uri) => {
             app.player.play_url(&uri);
         }
-        _ => {}
+        _ => {
+            info!("nothing happend");
+        }
     }
 }
