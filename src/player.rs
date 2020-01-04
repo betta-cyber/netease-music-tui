@@ -3,6 +3,7 @@ extern crate gstreamer_player as gst_player;
 
 use gst::prelude::*;
 use gst::ClockTime;
+use std::sync::mpsc::Sender;
 
 // TODO: change gstreamer for more less dependence diy player
 
@@ -16,10 +17,19 @@ pub enum PlayerCommand {
     Next,
     Previous,
     Load(String),
-    Status,
-    LoopStatus,
     Position(i32, u64),
-    Metadata,
+    Metadata(MetaInfo, Sender<String>),
+}
+
+#[allow(unused)]
+pub enum MetaInfo {
+    Volume,
+    Shuffle,
+    Position,
+    Canplay,
+    CanPause,
+    LoopStatus,
+    Status,
 }
 
 pub struct Nplayer {

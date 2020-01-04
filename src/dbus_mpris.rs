@@ -6,7 +6,7 @@
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 #[cfg(feature = "dbus_mpris")]
-use dbus::blocking::SyncConnection;
+use dbus::blocking::Connection;
 #[cfg(feature = "dbus_mpris")]
 use dbus::tree::{Factory, Access};
 use std::error::Error;
@@ -16,7 +16,9 @@ use std::time::Duration;
 use super::app::App;
 #[cfg(feature = "dbus_mpris")]
 use super::handlers::TrackState;
-use super::player::PlayerCommand;
+use super::app::RepeatState;
+// #[cfg(feature = "dbus_mpris")]
+use super::player::{PlayerCommand, MetaInfo};
 use std::sync::mpsc;
 use std::thread;
 
@@ -31,17 +33,18 @@ impl DbusMpris {
 
     pub fn init() -> DbusMpris {
         let (tx, rx) = mpsc::channel();
+        info!("start thred");
         let _server_handle = {
-            let tx = tx.clone();
             thread::spawn(move || {
                 dbus_mpris_server(tx).unwrap();
             })
         };
+        info!("finish thred");
         DbusMpris { rx }
     }
 
-    pub fn next(&self) -> Result<PlayerCommand, mpsc::RecvError> {
-        self.rx.recv()
+    pub fn next(&self) -> Result<PlayerCommand, mpsc::TryRecvError> {
+        self.rx.try_recv()
     }
 }
 
@@ -55,12 +58,13 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
 #[cfg(feature = "dbus_mpris")]
 pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>> {
     // Let's start by starting up a connection to the session bus and request a name.
-    let mut c = SyncConnection::new_session()?;
+    let mut c = Connection::new_session()?;
     c.request_name("org.mpris.MediaPlayer2.ncmt", false, true, false)?;
 
     // The choice of factory tells us what type of tree we want,
     // and if we want any extra data inside. We pick the simplest variant.
-    let f = Factory::new_sync::<()>();
+    let f = Factory::new_fnmut::<()>();
+    let tx = Arc::new(tx);
 
     let method_next = {
         let local_tx = tx.clone();
@@ -169,11 +173,26 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
             Ok(())
         });
 
-    // let property_loop_status = f
-        // .property::<String, _>("LoopStatus", ())
-        // .access(Access::Read)
-        // .on_get(
-        // ));
+    let property_loop_status = {
+        let local_tx = tx.clone();
+        f.property::<String, _>("LoopStatus", ())
+        .access(Access::Read)
+        .on_get(move |iter, _| {
+            // listen channel response
+            let (mtx, mrx) = mpsc::channel();
+            local_tx.send(PlayerCommand::Metadata(MetaInfo::LoopStatus, mtx)).unwrap();
+            let res = mrx.recv();
+            match res {
+                Ok(r) => {
+                    iter.append(r);
+                }
+                Err(_) => {
+                    iter.append("error".to_owned());
+                }
+            }
+            Ok(())
+        })
+    };
 
     // We create a tree with one object path inside and make that path introspectable.
     let tree = f
@@ -196,6 +215,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
                         .add_p(property_rate)
                         .add_p(property_max_rate)
                         .add_p(property_min_rate)
+                        .add_p(property_loop_status)
                 ),
         )
         .add(f.object_path("/", ()).introspectable());
@@ -207,6 +227,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     // Serve clients forever.
     loop {
         c.process(Duration::from_nanos(1))?;
+        thread::sleep(Duration::from_millis(250));
     }
 }
 
@@ -244,6 +265,27 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
         }
         PlayerCommand::Load(uri) => {
             app.player.play_url(&uri);
+        }
+        PlayerCommand::Metadata(info, tx) => {
+            let msg = match info {
+                MetaInfo::LoopStatus => {
+                    match app.repeat_state {
+                        RepeatState::Off => {
+                            "off"
+                        }
+                        _ => {
+                            "off"
+                        }
+                    }
+                }
+                MetaInfo::Canplay => {
+                    "true"
+                }
+                _ => {
+                    return
+                }
+            };
+            tx.send(msg.to_string());
         }
         _ => {
             info!("nothing happend");
