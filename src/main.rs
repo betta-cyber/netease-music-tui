@@ -37,7 +37,7 @@ mod dbus_mpris;
 
 use app::{ActiveBlock, App};
 
-use dbus_mpris::{DbusMpris, dbus_mpris_handler};
+use dbus_mpris::{dbus_mpris_handler, DbusMpris};
 
 const FILE_NAME: &str = "Settings.toml";
 const CONFIG_DIR: &str = ".config";

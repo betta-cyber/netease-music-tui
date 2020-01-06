@@ -26,10 +26,9 @@ pub enum MetaInfo {
     Volume,
     Shuffle,
     Position,
-    Canplay,
-    CanPause,
     LoopStatus,
     Status,
+    Info,
 }
 
 pub struct Nplayer {
@@ -99,7 +98,8 @@ impl Nplayer {
     #[allow(unused)]
     pub fn seek(&mut self, offset: i32) {
         let next_duration = self.get_position().unwrap() as i32 + (offset * 1000);
-        self.player.seek(ClockTime::from_mseconds(next_duration as u64))
+        self.player
+            .seek(ClockTime::from_mseconds(next_duration as u64))
     }
 
     #[allow(unused)]

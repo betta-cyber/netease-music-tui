@@ -1,26 +1,31 @@
 // dbus-send example
+// according to https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html
 // for get Properties
 // dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:"org.mpris.MediaPlayer2.ncmt" string:"Rate"
 // for method
 // dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.ncmt.Next  string:"betta"
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
+use super::app::App;
+#[cfg(feature = "dbus_mpris")]
+use super::app::RepeatState;
+#[cfg(feature = "dbus_mpris")]
+use super::handlers::TrackState;
+#[cfg(feature = "dbus_mpris")]
+use super::player::MetaInfo;
+use super::player::PlayerCommand;
 #[cfg(feature = "dbus_mpris")]
 use dbus::blocking::Connection;
 #[cfg(feature = "dbus_mpris")]
-use dbus::tree::{Factory, Access};
+use dbus::tree::{Access, Factory};
 use std::error::Error;
+use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 #[cfg(feature = "dbus_mpris")]
-use std::time::Duration;
-use super::app::App;
-#[cfg(feature = "dbus_mpris")]
-use super::handlers::TrackState;
-use super::app::RepeatState;
-// #[cfg(feature = "dbus_mpris")]
-use super::player::{PlayerCommand, MetaInfo};
-use std::sync::mpsc;
+use std::sync::Arc;
 use std::thread;
+#[cfg(feature = "dbus_mpris")]
+use std::time::Duration;
 
 pub struct DbusMpris {
     rx: mpsc::Receiver<PlayerCommand>,
@@ -47,7 +52,6 @@ impl DbusMpris {
         self.rx.try_recv()
     }
 }
-
 
 #[cfg(not(feature = "dbus_mpris"))]
 #[allow(unused)]
@@ -117,7 +121,9 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     let method_seek = {
         let local_tx = tx.clone();
         f.method("Seek", (), move |m| {
-            local_tx.send(PlayerCommand::Seek(5)).unwrap();
+            // I change the Time in microseconds to the seconds.
+            let offset = m.msg.read1()?;
+            local_tx.send(PlayerCommand::Seek(offset)).unwrap();
             Ok(vec![m.msg.method_return()])
         })
     };
@@ -126,7 +132,9 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
         let local_tx = tx.clone();
         f.method("SetPosition", (), move |m| {
             let (track_id, position) = m.msg.read2()?;
-            local_tx.send(PlayerCommand::Position(track_id, position)).unwrap();
+            local_tx
+                .send(PlayerCommand::Position(track_id, position))
+                .unwrap();
             Ok(vec![m.msg.method_return()])
         })
     };
@@ -139,15 +147,6 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
             Ok(vec![m.msg.method_return()])
         })
     };
-
-    let property_playback_status = f
-        .property::<String, _>("PlaybackStatus", ())
-        .access(Access::Read)
-        .on_get(|iter, _| {
-            iter.append(1.0);
-            Ok(())
-        });
-
 
     let property_rate = f
         .property::<f64, _>("Rate", ())
@@ -173,25 +172,149 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
             Ok(())
         });
 
+    let property_can_play = f
+        .property::<f64, _>("CanPlay", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_pause = f
+        .property::<f64, _>("CanPause", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_seek = f
+        .property::<f64, _>("CanSeek", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_control = f
+        .property::<bool, _>("CanControl", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_go_previous = f
+        .property::<bool, _>("CanGoPrevious", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_go_next = f
+        .property::<bool, _>("CanGoNext", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
     let property_loop_status = {
         let local_tx = tx.clone();
         f.property::<String, _>("LoopStatus", ())
-        .access(Access::Read)
-        .on_get(move |iter, _| {
-            // listen channel response
-            let (mtx, mrx) = mpsc::channel();
-            local_tx.send(PlayerCommand::Metadata(MetaInfo::LoopStatus, mtx)).unwrap();
-            let res = mrx.recv();
-            match res {
-                Ok(r) => {
-                    iter.append(r);
+            .access(Access::Read)
+            .on_get(move |iter, _| {
+                // listen channel response
+                let (mtx, mrx) = mpsc::channel();
+                local_tx
+                    .send(PlayerCommand::Metadata(MetaInfo::LoopStatus, mtx))
+                    .unwrap();
+                let res = mrx.recv();
+                match res {
+                    Ok(r) => {
+                        iter.append(r);
+                    }
+                    Err(_) => {
+                        iter.append("error".to_owned());
+                    }
                 }
-                Err(_) => {
-                    iter.append("error".to_owned());
+                Ok(())
+            })
+    };
+
+    let property_playback_status = {
+        let local_tx = tx.clone();
+        f.property::<String, _>("PlaybackStatus", ())
+            .access(Access::Read)
+            .on_get(move |iter, _| {
+                // listen channel response
+                let (mtx, mrx) = mpsc::channel();
+                local_tx
+                    .send(PlayerCommand::Metadata(MetaInfo::Status, mtx))
+                    .unwrap();
+                let res = mrx.recv();
+                match res {
+                    Ok(r) => {
+                        iter.append(r);
+                    }
+                    Err(_) => {
+                        iter.append("error".to_owned());
+                    }
                 }
-            }
-            Ok(())
-        })
+                Ok(())
+            })
+    };
+
+    let property_shuffle = {
+        let local_tx = tx.clone();
+        f.property::<bool, _>("Shuffle", ())
+            .access(Access::Read)
+            .on_get(move |iter, _| {
+                // listen channel response
+                let (mtx, mrx) = mpsc::channel();
+                local_tx
+                    .send(PlayerCommand::Metadata(MetaInfo::Shuffle, mtx))
+                    .unwrap();
+                let res = mrx.recv();
+                match res {
+                    Ok(r) => {
+                        let rr = match r.as_ref() {
+                            "true" => true,
+                            &_ => false,
+                        };
+                        iter.append(rr);
+                    }
+                    Err(_) => {
+                        iter.append("error".to_owned());
+                    }
+                }
+                Ok(())
+            })
+    };
+
+    let property_position = {
+        let local_tx = tx.clone();
+        f.property::<i64, _>("Position", ())
+            .access(Access::Read)
+            .on_get(move |iter, _| {
+                // listen channel response
+                let (mtx, mrx) = mpsc::channel();
+                local_tx
+                    .send(PlayerCommand::Metadata(MetaInfo::Position, mtx))
+                    .unwrap();
+                let res = mrx.recv();
+                match res {
+                    Ok(r) => {
+                        let rr = r.parse::<i64>().unwrap_or(0) * 1000;
+                        iter.append(rr);
+                    }
+                    Err(_) => {
+                        iter.append("error".to_owned());
+                    }
+                }
+                Ok(())
+            })
     };
 
     // We create a tree with one object path inside and make that path introspectable.
@@ -211,11 +334,19 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
                         .add_m(method_seek)
                         .add_m(method_set_position)
                         .add_m(method_open_uri)
-                        .add_p(property_playback_status)
                         .add_p(property_rate)
                         .add_p(property_max_rate)
                         .add_p(property_min_rate)
+                        .add_p(property_can_play)
+                        .add_p(property_can_pause)
+                        .add_p(property_can_seek)
+                        .add_p(property_can_control)
+                        .add_p(property_can_go_next)
+                        .add_p(property_can_go_previous)
                         .add_p(property_loop_status)
+                        .add_p(property_playback_status)
+                        .add_p(property_shuffle)
+                        .add_p(property_position),
                 ),
         )
         .add(f.object_path("/", ()).introspectable());
@@ -233,8 +364,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
 
 #[cfg(not(feature = "dbus_mpris"))]
 #[allow(unused)]
-pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
-}
+pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {}
 
 #[cfg(feature = "dbus_mpris")]
 pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
@@ -261,6 +391,7 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
             app.player.seek(x);
         }
         PlayerCommand::Position(_track_id, position) => {
+            let position = position / 1000;
             app.player.position(position);
         }
         PlayerCommand::Load(uri) => {
@@ -268,27 +399,30 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
         }
         PlayerCommand::Metadata(info, tx) => {
             let msg = match info {
-                MetaInfo::LoopStatus => {
-                    match app.repeat_state {
-                        RepeatState::Off => {
-                            "off"
-                        }
-                        _ => {
-                            "off"
+                MetaInfo::LoopStatus => match app.repeat_state {
+                    RepeatState::Off => "None".to_owned(),
+                    RepeatState::All => "Playlist".to_owned(),
+                    RepeatState::Track => "Track".to_owned(),
+                    _ => "None".to_owned(),
+                },
+                MetaInfo::Status => match &app.current_playing {
+                    Some(_) => {
+                        if app.player.is_playing() {
+                            "Playing".to_owned()
+                        } else {
+                            "Paused".to_owned()
                         }
                     }
-                }
-                MetaInfo::Canplay => {
-                    "true"
-                }
-                _ => {
-                    return
-                }
+                    None => "Stopped".to_owned(),
+                },
+                MetaInfo::Shuffle => match app.repeat_state {
+                    RepeatState::Shuffle => "true".to_owned(),
+                    _ => "false".to_owned(),
+                },
+                MetaInfo::Position => app.player.get_position().unwrap().to_string(),
+                _ => return,
             };
-            tx.send(msg.to_string());
-        }
-        _ => {
-            info!("nothing happend");
+            tx.send(msg).unwrap();
         }
     }
 }

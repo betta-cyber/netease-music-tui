@@ -522,7 +522,9 @@ _______  __ __  _______/  |_          _/  |_  __ __ |__|
  |__|   |____//____  > |__|            |__|  |____/ |__|
                    \\/
             ",
-        Style::default().fg(Color::LightCyan).modifier(Modifier::BOLD),
+        Style::default()
+            .fg(Color::LightCyan)
+            .modifier(Modifier::BOLD),
     )];
 
     // Contains the banner
