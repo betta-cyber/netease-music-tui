@@ -1,9 +1,9 @@
 // dbus-send example
 // according to https://specifications.freedesktop.org/mpris-spec/latest/Player_Interface.html
 // for get Properties
-// dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:"org.mpris.MediaPlayer2.ncmt" string:"Rate"
+// dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.freedesktop.DBus.Properties.Get string:"org.mpris.MediaPlayer2.Player" string:"Rate"
 // for method
-// dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.ncmt.Next  string:"betta"
+// dbus-send --session --print-reply --dest=org.mpris.MediaPlayer2.ncmt /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.Next
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 use super::app::App;
@@ -15,7 +15,10 @@ use super::handlers::TrackState;
 use super::player::MetaInfo;
 use super::player::PlayerCommand;
 #[cfg(feature = "dbus_mpris")]
-use dbus::blocking::Connection;
+use dbus::{
+    blocking::Connection,
+    arg::{RefArg, Variant, messageitem::MessageItem},
+};
 #[cfg(feature = "dbus_mpris")]
 use dbus::tree::{Access, Factory};
 use std::error::Error;
@@ -25,7 +28,7 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::thread;
 #[cfg(feature = "dbus_mpris")]
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 pub struct DbusMpris {
     rx: mpsc::Receiver<PlayerCommand>,
@@ -70,6 +73,77 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     let f = Factory::new_fnmut::<()>();
     let tx = Arc::new(tx);
 
+    let method_raise = f.method("Raise", (), move |m| {
+        let mret = m.msg.method_return();
+        Ok(vec![mret])
+    });
+
+    let method_quit = {
+        let local_tx = tx.clone();
+        f.method("Quit", (), move |m| {
+            // local_spirc.shutdown();
+            let mret = m.msg.method_return();
+            Ok(vec![mret])
+        })
+    };
+
+    let property_identity = f
+        .property::<String, _>("Identity", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append("ncmt".to_string());
+            Ok(())
+        });
+
+    let property_supported_uri_schemes = f
+        .property::<Vec<String>, _>("SupportedUriSchemes", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(vec!["http".to_string()]);
+            Ok(())
+        });
+
+    let property_mimetypes = f
+        .property::<Vec<String>, _>("SupportedMimeTypes", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(Vec::<String>::new());
+            Ok(())
+        });
+
+    let property_can_quit = f
+        .property::<bool, _>("CanQuit", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(true);
+            Ok(())
+        });
+
+    let property_can_raise = f
+        .property::<bool, _>("CanRaise", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(false);
+            Ok(())
+        });
+
+    let property_can_fullscreen = f
+        .property::<bool, _>("CanSetFullscreen", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(false);
+            Ok(())
+        });
+
+    let property_has_tracklist = f
+        .property::<bool, _>("HasTrackList", ())
+        .access(Access::Read)
+        .on_get(|iter, _| {
+            iter.append(false);
+            Ok(())
+        });
+
+    // player method
     let method_next = {
         let local_tx = tx.clone();
         f.method("Next", (), move |m| {
@@ -317,6 +391,38 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
             })
     };
 
+    let property_metadata = {
+        let local_tx = tx.clone();
+        f.property::<HashMap<String, Variant<Box<dyn RefArg>>>, _>("MetaData", ())
+            .access(Access::Read)
+            .on_get(move |iter, _| {
+                // listen channel response
+                let (mtx, mrx) = mpsc::channel();
+                local_tx
+                    .send(PlayerCommand::Metadata(MetaInfo::Info, mtx))
+                    .unwrap();
+                let res = mrx.recv();
+                match res {
+                    Ok(r) => {
+                        let mut m = HashMap::new();
+                        m.insert("mpris:trackid".to_string(), Variant(Box::new(
+                            MessageItem::Str(
+                               "1111".to_owned()
+                            )) as Box<dyn RefArg>));
+                        m.insert("xesam:title".to_string(), Variant(Box::new(
+                        MessageItem::Str(
+                            "kkkk".to_owned()
+                        )) as Box<dyn RefArg>));
+                        iter.append(m);
+                    }
+                    Err(_) => {
+                        iter.append("error".to_owned());
+                    }
+                }
+                Ok(())
+            })
+    };
+
     // We create a tree with one object path inside and make that path introspectable.
     let tree = f
         .tree(())
@@ -324,7 +430,19 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
             f.object_path("/org/mpris/MediaPlayer2", ())
                 .introspectable()
                 .add(
-                    f.interface("org.mpris.MediaPlayer2.ncmt", ())
+                    f.interface("org.mpris.MediaPlayer2", ())
+                        .add_m(method_raise)
+                        .add_m(method_quit)
+                        .add_p(property_can_quit)
+                        .add_p(property_can_raise)
+                        .add_p(property_can_fullscreen)
+                        .add_p(property_has_tracklist)
+                        .add_p(property_identity)
+                        .add_p(property_supported_uri_schemes)
+                        .add_p(property_mimetypes),
+                )
+                .add(
+                    f.interface("org.mpris.MediaPlayer2.Player", ())
                         .add_m(method_next)
                         .add_m(method_previous)
                         .add_m(method_pause)
@@ -346,13 +464,15 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
                         .add_p(property_loop_status)
                         .add_p(property_playback_status)
                         .add_p(property_shuffle)
-                        .add_p(property_position),
+                        .add_p(property_position)
+                        .add_p(property_metadata),
                 ),
-        )
-        .add(f.object_path("/", ()).introspectable());
+        );
+        // .add(f.object_path("/", ()).introspectable());
 
     // We add the tree to the connection so that incoming method calls will be handled.
     tree.start_receive(&c);
+    info!("start");
 
     // Ok(())
     // Serve clients forever.
@@ -419,10 +539,12 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
                     RepeatState::Shuffle => "true".to_owned(),
                     _ => "false".to_owned(),
                 },
-                MetaInfo::Position => app.player.get_position().unwrap().to_string(),
+                MetaInfo::Position => app.player.get_position().unwrap_or(0).to_string(),
+                MetaInfo::Info => app.player.get_position().unwrap_or(0).to_string(),
                 _ => return,
             };
-            tx.send(msg).unwrap();
+            info!("send msg {:#?}", msg);
+            tx.send(msg).expect("send error");
         }
     }
 }
