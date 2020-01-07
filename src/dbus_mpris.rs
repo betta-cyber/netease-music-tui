@@ -7,6 +7,7 @@
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 use super::app::App;
+use super::model::playlist::Track;
 #[cfg(feature = "dbus_mpris")]
 use super::app::RepeatState;
 #[cfg(feature = "dbus_mpris")]
@@ -79,7 +80,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
     });
 
     let method_quit = {
-        let local_tx = tx.clone();
+        // let local_tx = tx.clone();
         f.method("Quit", (), move |m| {
             // local_spirc.shutdown();
             let mret = m.msg.method_return();
@@ -393,7 +394,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
 
     let property_metadata = {
         let local_tx = tx.clone();
-        f.property::<HashMap<String, Variant<Box<dyn RefArg>>>, _>("MetaData", ())
+        f.property::<HashMap<String, Variant<Box<dyn RefArg>>>, _>("Metadata", ())
             .access(Access::Read)
             .on_get(move |iter, _| {
                 // listen channel response
@@ -405,14 +406,32 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
                 match res {
                     Ok(r) => {
                         let mut m = HashMap::new();
-                        m.insert("mpris:trackid".to_string(), Variant(Box::new(
-                            MessageItem::Str(
-                               "1111".to_owned()
-                            )) as Box<dyn RefArg>));
-                        m.insert("xesam:title".to_string(), Variant(Box::new(
-                        MessageItem::Str(
-                            "kkkk".to_owned()
-                        )) as Box<dyn RefArg>));
+                        match serde_json::from_str::<Track>(&r) {
+                            Ok(current_playing) => {
+                                m.insert("mpris:trackid".to_string(), Variant(Box::new(
+                                    MessageItem::Int64(
+                                       current_playing.id.unwrap().to_owned()
+                                    )) as Box<dyn RefArg>));
+                                m.insert("mpris:length".to_string(), Variant(Box::new(
+                                    MessageItem::Int64(
+                                        i64::from(100) * 1000
+                                    )) as Box<dyn RefArg>));
+                                m.insert("xesam:title".to_string(), Variant(Box::new(
+                                    MessageItem::Str(
+                                        current_playing.name.unwrap().to_owned()
+                                )) as Box<dyn RefArg>));
+                                m.insert("xesam:album".to_string(), Variant(Box::new(
+                                    MessageItem::Str(
+                                        current_playing.album.unwrap().name.unwrap().to_owned()
+                                )) as Box<dyn RefArg>));
+                                m.insert("xesam:artist".to_string(), Variant(Box::new(
+                                    MessageItem::Str(
+                                        current_playing.artists.unwrap()[0].name.to_owned()
+                                )) as Box<dyn RefArg>));
+
+                            }
+                            Err(_) => {}
+                        }
                         iter.append(m);
                     }
                     Err(_) => {
@@ -499,7 +518,7 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
             app.player.pause();
         }
         PlayerCommand::PlayPause => {
-            app.player.play();
+            app.player.pause();
         }
         PlayerCommand::Stop => {
             app.player.stop();
@@ -540,7 +559,7 @@ pub fn dbus_mpris_handler(r: PlayerCommand, app: &mut App) {
                     _ => "false".to_owned(),
                 },
                 MetaInfo::Position => app.player.get_position().unwrap_or(0).to_string(),
-                MetaInfo::Info => app.player.get_position().unwrap_or(0).to_string(),
+                MetaInfo::Info => serde_json::to_string(&app.current_playing.to_owned()).unwrap(),
                 _ => return,
             };
             info!("send msg {:#?}", msg);
