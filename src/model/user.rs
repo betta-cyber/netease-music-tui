@@ -1,5 +1,4 @@
-#[allow(non_snake_case)]
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 // use serde_json::Value;
 
 // use std::collections::HashMap;

@@ -1,11 +1,12 @@
 use serde_json;
 // use serde_json::{Value, json};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
+use serde::de::Deserialize;
 
 use reqwest::header::{
     HeaderMap, ACCEPT, ACCEPT_ENCODING, CONTENT_TYPE, COOKIE, HOST, REFERER, USER_AGENT,
 };
-use reqwest::Client;
+use reqwest::blocking::Client;
 use reqwest::Method;
 use reqwest::StatusCode;
 
@@ -40,7 +41,7 @@ use std::fs;
 
 lazy_static! {
     /// HTTP Client
-    pub static ref CLIENT: Client = Client::builder()
+    pub static ref CLIENT: Client = reqwest::blocking::Client::builder()
         .gzip(true)
         // .cookie_store(true)
         .timeout(Duration::from_secs(10))
@@ -63,8 +64,8 @@ impl fmt::Display for ApiError {
     }
 }
 
-impl From<&reqwest::Response> for ApiError {
-    fn from(response: &reqwest::Response) -> Self {
+impl From<&reqwest::blocking::Response> for ApiError {
+    fn from(response: &reqwest::blocking::Response) -> Self {
         match response.status() {
             StatusCode::UNAUTHORIZED => ApiError::Unauthorized,
             StatusCode::TOO_MANY_REQUESTS => {
@@ -202,7 +203,7 @@ impl CloudMusic {
         }
     }
 
-    fn store_cookies(&self, res: &reqwest::Response) {
+    fn store_cookies(&self, res: &reqwest::blocking::Response) {
         let cookies: Vec<String> = res
             .cookies()
             .into_iter()

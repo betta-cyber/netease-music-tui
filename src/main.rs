@@ -3,15 +3,12 @@ extern crate lazy_static;
 #[macro_use]
 extern crate failure;
 extern crate config;
-extern crate serde;
+extern crate serde_derive;
 extern crate serde_json;
 #[macro_use]
 extern crate log;
-extern crate gstreamer as gst;
-extern crate gstreamer_player as gst_player;
 // log panics to find unknown error
 extern crate log_panics;
-// use gst::prelude::*;
 
 use dirs;
 use failure::err_msg;
@@ -80,15 +77,13 @@ fn main() -> Result<(), failure::Error> {
         Ok(debug) => {
             if debug {
                 log_panics::init();
-                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug)?;
+                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Trace)?;
             }
         }
         Err(e) => error!("{}", e),
     }
 
     info!("start netease cloud music rust client");
-
-    gst::init()?;
 
     // init application
     let mut app = App::new();
