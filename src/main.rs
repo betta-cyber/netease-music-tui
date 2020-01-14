@@ -77,7 +77,7 @@ fn main() -> Result<(), failure::Error> {
         Ok(debug) => {
             if debug {
                 log_panics::init();
-                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Trace)?;
+                simple_logging::log_to_file("/var/log/ncmt.log", LevelFilter::Debug)?;
             }
         }
         Err(e) => error!("{}", e),
@@ -119,6 +119,7 @@ fn main() -> Result<(), failure::Error> {
     let dbus_mpris = DbusMpris::new();
 
     loop {
+        debug!("main loop");
         terminal.draw(|mut f| {
             let current_route = app.get_current_route();
             match current_route.active_block {

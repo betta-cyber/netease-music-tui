@@ -3,6 +3,7 @@ use futures::channel::oneshot;
 use futures::{future, Future};
 use std::sync::mpsc::{RecvError, RecvTimeoutError, TryRecvError};
 use futures::channel::mpsc;
+use futures::executor::block_on;
 use std::sync::Arc;
 use tempfile::NamedTempFile;
 use super::sink::Sink;
@@ -98,9 +99,11 @@ impl Player {
                 event_sender: event_sender,
             };
 
+            debug!("internal new");
             internal.run();
         });
-        debug!("internal init");
+        // handle.join().expect("error create thread");
+        // debug!("internal init");
 
         (
             Player {
@@ -113,11 +116,7 @@ impl Player {
 
     // run command
     fn command(&self, cmd: PlayerCommand) {
-        debug!("{:#?}", cmd);
-        let a = self.commands.as_ref().expect("commands error");
-        debug!("dddd");
-        a.send(cmd).expect("send error");
-        debug!("ok");
+        self.commands.as_ref().expect("commands error").send(cmd).expect("send error");
     }
 
     pub fn load(
@@ -187,6 +186,9 @@ impl PlayerInternal {
                     Err(RecvError) => return,
                 }
             };
+            if self.sink_running {
+                return;
+            }
             debug!("cmd {:#?}", cmd);
             if let Some(cmd) = cmd {
                 self.handle_command(cmd);
@@ -196,7 +198,7 @@ impl PlayerInternal {
     }
 
     fn handle_command(&mut self, cmd: PlayerCommand) {
-        debug!("command={:#?}", cmd);
+        debug!("handle command={:#?}", cmd);
         match cmd {
             PlayerCommand::Load(url, start_playing, start_tx) => {
                 if self.state.is_playing() {
@@ -207,12 +209,16 @@ impl PlayerInternal {
                 let mut buffer = NamedTempFile::new().unwrap();
                 let path = buffer.path().to_string_lossy().to_string();
 
+                debug!("buffer {}", path);
+
                 thread::spawn(move || {
-                    fetch_data(&url, buffer, start_tx);
+                    debug!("fetch {}", url);
+                    fetch_data(&url, buffer, start_tx).expect("error thread task");
+                    debug!("fetch finish {}", url);
                 });
                 // load and autoplaying
                 if start_playing {
-                    thread::sleep(Duration::from_millis(100));
+                    thread::sleep(Duration::from_secs(1));
                     // let path = start_rx.try_recv().unwrap().unwrap();
                     self.sink.append(&path);
                 }
@@ -228,8 +234,8 @@ impl PlayerInternal {
                 self.sink.start();
             }
             _ => {}
-
         }
+        debug!("end this cmd");
     }
 
     fn start_sink(&mut self) {

@@ -15,7 +15,8 @@ pub trait Sink {
 }
 
 fn mk_sink<S: Sink + Open + 'static>(device: Option<String>) -> Box<dyn Sink> {
-    debug!("{}", device.unwrap());
+    // debug!("{}", device.unwrap());
+    // debug!("new sink");
     Box::new(S::open())
 }
 
