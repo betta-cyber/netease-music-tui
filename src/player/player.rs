@@ -99,7 +99,6 @@ impl Player {
                 event_sender: event_sender,
             };
 
-            debug!("internal new");
             internal.run();
         });
         // handle.join().expect("error create thread");
@@ -117,6 +116,7 @@ impl Player {
     // run command
     fn command(&self, cmd: PlayerCommand) {
         self.commands.as_ref().expect("commands error").send(cmd).expect("send error");
+        debug!("cmd do finish");
     }
 
     pub fn load(
@@ -163,7 +163,6 @@ impl Drop for Player {
 // loop for listen command
 impl PlayerInternal {
     fn run(mut self) {
-        debug!("run ..............");
         loop {
             debug!("loop");
             let cmd = if self.state.is_playing() {
@@ -189,11 +188,11 @@ impl PlayerInternal {
             if self.sink_running {
                 return;
             }
-            debug!("cmd {:#?}", cmd);
+            // debug!("cmd {:#?}", cmd);
             if let Some(cmd) = cmd {
                 self.handle_command(cmd);
             }
-            thread::sleep(Duration::from_secs(1));
+            debug!("this loop end");
         }
     }
 
@@ -212,14 +211,13 @@ impl PlayerInternal {
                 debug!("buffer {}", path);
 
                 thread::spawn(move || {
-                    debug!("fetch {}", url);
                     fetch_data(&url, buffer, start_tx).expect("error thread task");
-                    debug!("fetch finish {}", url);
                 });
                 // load and autoplaying
                 if start_playing {
-                    thread::sleep(Duration::from_secs(1));
+                    thread::sleep(Duration::from_millis(1000));
                     // let path = start_rx.try_recv().unwrap().unwrap();
+                    debug!("append to sink");
                     self.sink.append(&path);
                 }
                 // self.sink.append();

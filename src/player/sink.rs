@@ -1,6 +1,7 @@
 use std::io;
 use std::time::Duration;
 use std::thread;
+use std::sync::atomic::{AtomicBool, AtomicUsize};
 
 pub trait Open {
     fn open() -> Self;
@@ -96,6 +97,7 @@ impl Sink for RodioSink {
             std::io::BufReader::with_capacity(100, b)
         ).unwrap();
 
+        // self.rodio_sink.stop();
         self.rodio_sink.append(source);
     }
 }

@@ -119,7 +119,6 @@ fn main() -> Result<(), failure::Error> {
     let dbus_mpris = DbusMpris::new();
 
     loop {
-        debug!("main loop");
         terminal.draw(|mut f| {
             let current_route = app.get_current_route();
             match current_route.active_block {

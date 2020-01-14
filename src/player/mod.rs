@@ -54,11 +54,12 @@ impl Nplayer {
     pub fn play_url(&self, url: &str) {
         self.player.load(&url, true);
         // self.player.play();
+        debug!("player load url 22222222");
     }
 
     pub fn is_playing(&self) -> bool {
         // let player = &self.player;
-        false
+        true
         // let element = player.get_pipeline();
         // element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
     }
@@ -78,12 +79,12 @@ impl Nplayer {
 
     pub fn get_position(&self) -> Option<u64> {
         // self.player.get_position().mseconds()
-        Some(10_u64)
+        Some(1000_u64)
     }
 
     pub fn get_duration(&self) -> Option<u64> {
         // self.player.get_duration().mseconds();
-        Some(1000_u64)
+        Some(100000000_u64)
     }
 
     pub fn seek_forwards(&mut self) {
