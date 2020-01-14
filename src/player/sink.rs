@@ -1,7 +1,6 @@
 use std::io;
 use std::time::Duration;
 use std::thread;
-use std::sync::atomic::{AtomicBool, AtomicUsize};
 
 pub trait Open {
     fn open() -> Self;
@@ -43,6 +42,7 @@ pub fn find(name: Option<String>) -> Option<fn(Option<String>) -> Box<dyn Sink>>
 
 pub struct RodioSink {
     rodio_sink: rodio::Sink,
+    rodio_device: rodio::Device,
 }
 
 impl Open for RodioSink {
@@ -54,6 +54,7 @@ impl Open for RodioSink {
 
         RodioSink {
             rodio_sink: sink,
+            rodio_device: rodio_device,
         }
     }
 }
@@ -92,12 +93,23 @@ impl Sink for RodioSink {
     }
 
     fn append(&mut self, path: &str) {
-        let b = std::fs::File::open(&path).unwrap();
+        // drop the old sink and new a sink
+        self.rodio_sink.stop();
+        self.rodio_sink = rodio::Sink::new(&self.rodio_device);
+
+        let f = std::fs::File::open(&path).unwrap();
+
+        // let mut flag = false;
+        // let metadata = f.metadata().unwrap();
+        // while !flag {
+            // if metadata.len() > 0 {
+                // flag = true;
+            // }
+        // }
         let source = rodio::Decoder::new(
-            std::io::BufReader::with_capacity(100, b)
+            std::io::BufReader::with_capacity(100, f)
         ).unwrap();
 
-        // self.rodio_sink.stop();
         self.rodio_sink.append(source);
     }
 }

@@ -53,8 +53,6 @@ impl Nplayer {
 
     pub fn play_url(&self, url: &str) {
         self.player.load(&url, true);
-        // self.player.play();
-        debug!("player load url 22222222");
     }
 
     pub fn is_playing(&self) -> bool {

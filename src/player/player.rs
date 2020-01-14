@@ -116,7 +116,6 @@ impl Player {
     // run command
     fn command(&self, cmd: PlayerCommand) {
         self.commands.as_ref().expect("commands error").send(cmd).expect("send error");
-        debug!("cmd do finish");
     }
 
     pub fn load(
@@ -192,14 +191,14 @@ impl PlayerInternal {
             if let Some(cmd) = cmd {
                 self.handle_command(cmd);
             }
-            debug!("this loop end");
+            thread::sleep(Duration::from_millis(250))
         }
     }
 
     fn handle_command(&mut self, cmd: PlayerCommand) {
         debug!("handle command={:#?}", cmd);
         match cmd {
-            PlayerCommand::Load(url, start_playing, start_tx) => {
+            PlayerCommand::Load(url, start_playing, end_tx) => {
                 if self.state.is_playing() {
                     // self.stop_sink_if_running();
                     debug!("is playing");
@@ -207,29 +206,42 @@ impl PlayerInternal {
                 // new thread for download file
                 let mut buffer = NamedTempFile::new().unwrap();
                 let path = buffer.path().to_string_lossy().to_string();
+                let (ptx, mut prx) = oneshot::channel::<String>();
 
                 debug!("buffer {}", path);
 
                 thread::spawn(move || {
-                    fetch_data(&url, buffer, start_tx).expect("error thread task");
+                    fetch_data(&url, buffer, ptx).expect("error thread task");
                 });
                 // load and autoplaying
                 if start_playing {
-                    thread::sleep(Duration::from_millis(1000));
-                    // let path = start_rx.try_recv().unwrap().unwrap();
-                    debug!("append to sink");
-                    self.sink.append(&path);
+                    // thread::sleep(Duration::from_millis(1000));
+                    loop {
+                        match prx.try_recv() {
+                            Ok(p) => {
+                                match p {
+                                    Some(_) => {
+                                        debug!("append to sink");
+                                        self.sink.append(&path);
+                                        break;
+                                    }
+                                    None => {}
+                                }
+                            }
+                            Err(_) => {}
+                        }
+                    }
                 }
                 // self.sink.append();
             }
             PlayerCommand::Pause => {
-                self.sink.pause();
+                self.sink.pause().unwrap();
             }
             PlayerCommand::Stop => {
-                self.sink.stop();
+                self.sink.stop().unwrap();
             }
             PlayerCommand::Play => {
-                self.sink.start();
+                self.sink.start().unwrap();
             }
             _ => {}
         }

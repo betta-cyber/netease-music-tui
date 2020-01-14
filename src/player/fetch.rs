@@ -32,6 +32,7 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
     // println!("{:#?}", builder);
     let mut res = builder.send().await?;
 
+    send_msg(tx);
     debug!("start download");
     while let Some(chunk) = res.chunk().await? {
         // bytes
@@ -45,6 +46,6 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
 
 }
 
-fn send_msg(path: &str, tx: Sender<String>) {
-    tx.send(path.to_owned()).expect("send error");
+fn send_msg(tx: Sender<String>) {
+    tx.send("ok".to_owned()).expect("send error");
 }
