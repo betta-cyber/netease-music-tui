@@ -1,6 +1,8 @@
 use std::io;
 use std::time::Duration;
 use std::thread;
+use rodio::Source;
+use mp3_duration;
 
 pub trait Open {
     fn open() -> Self;
@@ -99,16 +101,10 @@ impl Sink for RodioSink {
 
         let f = std::fs::File::open(&path).unwrap();
 
-        // let mut flag = false;
-        // let metadata = f.metadata().unwrap();
-        // while !flag {
-            // if metadata.len() > 0 {
-                // flag = true;
-            // }
-        // }
-        let source = rodio::Decoder::new(
-            std::io::BufReader::with_capacity(100, f)
-        ).unwrap();
+        let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
+        let duration = mp3_duration::from_path(&path).unwrap();
+        println!("1111111111 {:#?}", duration);
+        // Some(Duration::from_millis(ms as u64))
 
         self.rodio_sink.append(source);
     }

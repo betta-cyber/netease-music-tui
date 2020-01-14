@@ -1,11 +1,11 @@
 use std::io::prelude::*;
+use std::fs::File;
 use futures::channel::oneshot::Sender;
-use tempfile::NamedTempFile;
 use reqwest::header::{CACHE_CONTROL, PRAGMA, HeaderMap, UPGRADE_INSECURE_REQUESTS, HOST, ACCEPT, ACCEPT_ENCODING, USER_AGENT, CONNECTION};
 use reqwest::Method;
 
 #[tokio::main]
-pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) -> Result<(), failure::Error> {
+pub async fn fetch_data(url: &str, buffer: File, tx: Sender<String>) -> Result<(), failure::Error> {
 
     debug!("start fetch_data");
     let mut flag = true;
@@ -25,25 +25,26 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
     );
     headers.insert(CONNECTION, "keep-alive".parse().unwrap());
     let client = reqwest::Client::builder()
-        .proxy(reqwest::Proxy::all("socks5://127.0.0.1:8888").expect("proxy error"))
+        // .proxy(reqwest::Proxy::all("socks5://127.0.0.1:8888").expect("proxy error"))
         .build().expect("builder error");
     // debug!("client {:#?}", client);
     let builder = client.request(Method::GET, url).headers(headers);
     // println!("{:#?}", builder);
     let mut res = builder.send().await?;
 
-    send_msg(tx);
     debug!("start download");
+    if let Some(chunk) = res.chunk().await? {
+        debug!("first chunk");
+        buffer.write(&chunk[..]).unwrap();
+        send_msg(tx);
+    }
+
     while let Some(chunk) = res.chunk().await? {
         // bytes
         buffer.write(&chunk[..]).unwrap();
-        if flag {
-            flag = false;
-        }
     }
     debug!("finish download");
     Ok(())
-
 }
 
 fn send_msg(tx: Sender<String>) {

@@ -205,13 +205,14 @@ impl PlayerInternal {
                 }
                 // new thread for download file
                 let mut buffer = NamedTempFile::new().unwrap();
-                let path = buffer.path().to_string_lossy().to_string();
+                let (file, path) = buffer.keep().unwrap();
+                let path = path.to_string_lossy().to_string();
+                // let mut file = File::create("/tmp/mm")?;
+
                 let (ptx, mut prx) = oneshot::channel::<String>();
 
-                debug!("buffer {}", path);
-
                 thread::spawn(move || {
-                    fetch_data(&url, buffer, ptx).expect("error thread task");
+                    fetch_data(&url, file, ptx).expect("error thread task");
                 });
                 // load and autoplaying
                 if start_playing {

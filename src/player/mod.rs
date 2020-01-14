@@ -81,7 +81,7 @@ impl Nplayer {
     }
 
     pub fn get_duration(&self) -> Option<u64> {
-        // self.player.get_duration().mseconds();
+        // self.player.sink.total_duration()
         Some(100000000_u64)
     }
 
