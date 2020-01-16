@@ -6,6 +6,7 @@ mod player;
 mod fetch;
 mod sink;
 mod range_set;
+mod track;
 // mod fetch_data;
 
 use player::Player;

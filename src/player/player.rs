@@ -46,13 +46,16 @@ enum PlayerState {
 pub struct Player {
     commands: Option<std::sync::mpsc::Sender<PlayerCommand>>,
     thread_handle: Option<thread::JoinHandle<()>>,
+    // internal: Option<PlayerInternal>,
 }
 
 struct PlayerInternal {
     commands: std::sync::mpsc::Receiver<PlayerCommand>,
 
     state: PlayerState,
-    sink: Box<dyn Sink>,
+    // sink: Box<dyn Sink>,
+    sink: rodio::Sink,
+    endpoint: rodio::Device,
     sink_running: bool,
     event_sender: futures::channel::mpsc::UnboundedSender<PlayerEvent>,
 }
@@ -88,17 +91,21 @@ impl Player {
         let (cmd_tx, cmd_rx) = std::sync::mpsc::channel();
         let (event_sender, event_receiver) = futures::channel::mpsc::unbounded();
 
+        let endpoint =
+            rodio::default_output_device().expect("Failed to find default music endpoint");
+        let sink = rodio::Sink::new(&endpoint);
+
+        let internal = PlayerInternal {
+            commands: cmd_rx,
+            state: PlayerState::Stopped,
+            endpoint: endpoint,
+            sink: sink,
+            sink_running: false,
+            // audio_filter: audio_filter,
+            event_sender: event_sender,
+        };
+
         let handle = thread::spawn(move || {
-            let internal = PlayerInternal {
-                commands: cmd_rx,
-
-                state: PlayerState::Stopped,
-                sink: sink_builder(),
-                sink_running: false,
-                // audio_filter: audio_filter,
-                event_sender: event_sender,
-            };
-
             internal.run();
         });
         // handle.join().expect("error create thread");
@@ -108,6 +115,7 @@ impl Player {
             Player {
                 commands: Some(cmd_tx),
                 thread_handle: Some(handle),
+                // internal: Some(internal),
             },
             event_receiver,
         )
@@ -141,6 +149,9 @@ impl Player {
 
     pub fn seek(&self, position_ms: u32) {
         self.command(PlayerCommand::Seek(position_ms));
+    }
+
+    pub fn status(&self) {
     }
 }
 
@@ -223,7 +234,8 @@ impl PlayerInternal {
                                 match p {
                                     Some(_) => {
                                         debug!("append to sink");
-                                        self.sink.append(&path);
+                                        // self.sink.append(&path);
+                                        self.start_sink(&path);
                                         break;
                                     }
                                     None => {}
@@ -236,24 +248,30 @@ impl PlayerInternal {
                 // self.sink.append();
             }
             PlayerCommand::Pause => {
-                self.sink.pause().unwrap();
+                self.sink.pause();
             }
             PlayerCommand::Stop => {
-                self.sink.stop().unwrap();
+                self.sink.stop();
             }
             PlayerCommand::Play => {
-                self.sink.start().unwrap();
+                self.sink.play();
             }
             _ => {}
         }
         debug!("end this cmd");
     }
 
-    fn start_sink(&mut self) {
-        match self.sink.start() {
-            Ok(()) => self.sink_running = true,
-            Err(err) => error!("Could not start audio: {}", err),
-        }
+    fn start_sink(&mut self, path: &str) {
+        self.sink.stop();
+        self.sink = rodio::Sink::new(&self.endpoint);
+
+        let f = std::fs::File::open(&path).unwrap();
+
+        let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
+        let duration = mp3_duration::from_path(&path).unwrap();
+        // Some(Duration::from_millis(ms as u64))
+
+        self.sink.append(source);
     }
 
     fn send_event(&mut self, event: PlayerEvent) {

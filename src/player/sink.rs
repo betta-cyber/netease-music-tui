@@ -103,7 +103,6 @@ impl Sink for RodioSink {
 
         let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
         let duration = mp3_duration::from_path(&path).unwrap();
-        println!("1111111111 {:#?}", duration);
         // Some(Duration::from_millis(ms as u64))
 
         self.rodio_sink.append(source);
