@@ -75,17 +75,14 @@ impl Track {
         &self.file
     }
 
-    // pub fn load(file: PathBuf) -> Result<Self, Error> {
-        // let duration = ::mp3_duration::from_path(&file).map_err(|_| {
-                // Some(&file),
-            // )
-        // })?;
-        // Ok(Self {
-            // duration,
-            // file,
-            // status: Status::Stopped(::std::time::Duration::from_nanos(0)),
-        // })
-    // }
+    pub fn load(file: PathBuf) -> Result<Self, failure::Error > {
+        let duration = ::mp3_duration::from_path(&file).unwrap();
+        Ok(Self {
+            duration,
+            file,
+            status: Status::Stopped(::std::time::Duration::from_nanos(0)),
+        })
+    }
 }
 
 impl AsRef<Path> for Track {

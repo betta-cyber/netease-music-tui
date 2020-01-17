@@ -1,27 +1,30 @@
 use futures;
 use futures::channel::oneshot;
-use futures::{future, Future};
+// use futures::{future, Future};
 use std::sync::mpsc::{RecvError, RecvTimeoutError, TryRecvError};
-use futures::channel::mpsc;
-use futures::executor::block_on;
-use std::sync::Arc;
+// use futures::channel::mpsc;
+use std::fs::File;
 use tempfile::NamedTempFile;
 use super::sink::Sink;
 use super::fetch::fetch_data;
+use super::track::Track;
 
 use std::thread;
 use std::time::Duration;
 
 #[derive(Debug)]
 pub enum PlayerCommand {
-    Load(String, bool, oneshot::Sender<String>),
+    Load(Track, bool),
     Play,
     Pause,
     Stop,
     Seek(u32),
+    Status,
+    Volume(f32),
 }
 
-enum PlayerState {
+
+pub enum PlayerState {
     Stopped,
     Paused {
         start_of_track: oneshot::Sender<String>,
@@ -31,11 +34,11 @@ enum PlayerState {
         bytes_per_second: usize,
     },
     Playing {
-        start_of_track: oneshot::Sender<String>,
-        end_of_track: oneshot::Sender<()>,
-        normalisation_factor: f32,
-        // stream_loader_controller: StreamLoaderController,
-        bytes_per_second: usize,
+        // start_of_track: oneshot::Sender<String>,
+        // end_of_track: oneshot::Sender<()>,
+        // normalisation_factor: f32,
+        // // stream_loader_controller: StreamLoaderController,
+        // bytes_per_second: usize,
     },
     EndOfTrack {
         url: String,
@@ -46,18 +49,18 @@ enum PlayerState {
 pub struct Player {
     commands: Option<std::sync::mpsc::Sender<PlayerCommand>>,
     thread_handle: Option<thread::JoinHandle<()>>,
-    // internal: Option<PlayerInternal>,
+    pub state: PlayerState,
+    pub current: Option<Track>,
 }
 
 struct PlayerInternal {
     commands: std::sync::mpsc::Receiver<PlayerCommand>,
-
-    state: PlayerState,
     // sink: Box<dyn Sink>,
     sink: rodio::Sink,
     endpoint: rodio::Device,
     sink_running: bool,
-    event_sender: futures::channel::mpsc::UnboundedSender<PlayerEvent>,
+    state: PlayerState,
+    event_sender: futures::channel::mpsc::UnboundedSender<bool>,
 }
 
 #[derive(Debug, Clone)]
@@ -65,18 +68,16 @@ pub enum PlayerEvent {
     Started {
         track_url: String,
     },
-
     Changed {
         old_track_url: String,
         new_track_url: String,
     },
-
     Stopped {
         track_url: String,
     },
 }
 
-type PlayerEventChannel = futures::channel::mpsc::UnboundedReceiver<PlayerEvent>;
+type PlayerEventChannel = futures::channel::mpsc::UnboundedReceiver<bool>;
 
 // player
 impl Player {
@@ -97,25 +98,23 @@ impl Player {
 
         let internal = PlayerInternal {
             commands: cmd_rx,
-            state: PlayerState::Stopped,
             endpoint: endpoint,
             sink: sink,
+            state: PlayerState::Stopped,
             sink_running: false,
-            // audio_filter: audio_filter,
             event_sender: event_sender,
         };
 
         let handle = thread::spawn(move || {
             internal.run();
         });
-        // handle.join().expect("error create thread");
-        // debug!("internal init");
 
         (
             Player {
                 commands: Some(cmd_tx),
                 thread_handle: Some(handle),
-                // internal: Some(internal),
+                state: PlayerState::Stopped,
+                current: None,
             },
             event_receiver,
         )
@@ -127,12 +126,45 @@ impl Player {
     }
 
     pub fn load(
-        &self,
-        url: &str,
+        &mut self,
+        url: String,
         start_playing: bool,
     ) {
-        let (tx, rx) = oneshot::channel::<String>();
-        self.command(PlayerCommand::Load(url.to_owned(), start_playing, tx));
+
+        let buffer = NamedTempFile::new().unwrap();
+        let (file, path) = buffer.keep().unwrap();
+        // let path = path.to_string_lossy().to_string();
+
+        let (ptx, mut prx) = oneshot::channel::<String>();
+
+        thread::spawn(move || {
+            fetch_data(&url.to_owned(), file, ptx).expect("error thread task");
+        });
+        if start_playing {
+            loop {
+                match prx.try_recv() {
+                    Ok(p) => {
+                        match p {
+                            Some(_) => {
+                                match Track::load(path) {
+                                    Ok(track) => {
+                                        let mut track = track;
+                                        self.command(PlayerCommand::Load(track.clone(), start_playing));
+                                        track.resume();
+                                        self.current = Some(track);
+                                        self.state = PlayerState::Playing{};
+                                    }
+                                    Err(_) => {}
+                                }
+                                break;
+                            }
+                            None => {}
+                        }
+                    }
+                    Err(_) => {}
+                }
+            }
+        }
     }
 
     pub fn play(&self) {
@@ -151,7 +183,12 @@ impl Player {
         self.command(PlayerCommand::Seek(position_ms));
     }
 
-    pub fn status(&self) {
+    pub fn status(&self) -> bool {
+        self.state.is_playing()
+    }
+
+    pub fn set_volume(&self, volume: f32) {
+        self.command(PlayerCommand::Volume(volume));
     }
 }
 
@@ -174,8 +211,8 @@ impl Drop for Player {
 impl PlayerInternal {
     fn run(mut self) {
         loop {
-            debug!("loop");
-            let cmd = if self.state.is_playing() {
+            // debug!("loop");
+            let cmd = if self.state.is_playing () {
                 if self.sink_running {
                     match self.commands.try_recv() {
                         Ok(cmd) => Some(cmd),
@@ -209,43 +246,11 @@ impl PlayerInternal {
     fn handle_command(&mut self, cmd: PlayerCommand) {
         debug!("handle command={:#?}", cmd);
         match cmd {
-            PlayerCommand::Load(url, start_playing, end_tx) => {
-                if self.state.is_playing() {
-                    // self.stop_sink_if_running();
-                    debug!("is playing");
-                }
-                // new thread for download file
-                let mut buffer = NamedTempFile::new().unwrap();
-                let (file, path) = buffer.keep().unwrap();
-                let path = path.to_string_lossy().to_string();
-                // let mut file = File::create("/tmp/mm")?;
-
-                let (ptx, mut prx) = oneshot::channel::<String>();
-
-                thread::spawn(move || {
-                    fetch_data(&url, file, ptx).expect("error thread task");
-                });
-                // load and autoplaying
+            PlayerCommand::Load(track, start_playing) => {
                 if start_playing {
-                    // thread::sleep(Duration::from_millis(1000));
-                    loop {
-                        match prx.try_recv() {
-                            Ok(p) => {
-                                match p {
-                                    Some(_) => {
-                                        debug!("append to sink");
-                                        // self.sink.append(&path);
-                                        self.start_sink(&path);
-                                        break;
-                                    }
-                                    None => {}
-                                }
-                            }
-                            Err(_) => {}
-                        }
-                    }
+                    let path = track.file.to_string_lossy().to_string();
+                    self.start_sink(&path);
                 }
-                // self.sink.append();
             }
             PlayerCommand::Pause => {
                 self.sink.pause();
@@ -255,6 +260,9 @@ impl PlayerInternal {
             }
             PlayerCommand::Play => {
                 self.sink.play();
+            }
+            PlayerCommand::Volume(volume) => {
+                self.sink.set_volume(volume);
             }
             _ => {}
         }
@@ -266,17 +274,14 @@ impl PlayerInternal {
         self.sink = rodio::Sink::new(&self.endpoint);
 
         let f = std::fs::File::open(&path).unwrap();
-
         let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
-        let duration = mp3_duration::from_path(&path).unwrap();
-        // Some(Duration::from_millis(ms as u64))
 
         self.sink.append(source);
     }
 
-    fn send_event(&mut self, event: PlayerEvent) {
-        let _ = self.event_sender.unbounded_send(event.clone());
-    }
+    // fn send_event(&mut self, event: PlayerEvent) {
+        // let _ = self.event_sender.unbounded_send(event.clone());
+    // }
 }
 
 // drop PlayerInternal

@@ -169,7 +169,7 @@ where
 }
 
 // draw track playing block in the bottom
-pub fn draw_playing_block<B>(f: &mut Frame<B>, app: &App, layout_chunk: Rect)
+pub fn draw_playing_block<B>(f: &mut Frame<B>, app: &mut App, layout_chunk: Rect)
 where
     B: Backend,
 {

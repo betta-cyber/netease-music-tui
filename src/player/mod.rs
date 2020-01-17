@@ -9,7 +9,7 @@ mod range_set;
 mod track;
 // mod fetch_data;
 
-use player::Player;
+use player::{Player, PlayerState};
 use sink::find;
 use std::sync::mpsc::Sender;
 
@@ -40,27 +40,26 @@ pub enum MetaInfo {
 pub struct Nplayer {
     pub player: player::Player,
     // pub song_progress_ms: u64,
+    pub event_receiver: futures::channel::mpsc::UnboundedReceiver<bool>,
 }
 
 impl Nplayer {
     pub fn new() -> Nplayer {
         let backend = find(None).unwrap();
-        let (mplayer, _) = Player::new(move || (backend)(None));
+        let (mplayer, reciver) = Player::new(move || (backend)(None));
         debug!("init player");
         Nplayer {
             player: mplayer,
+            event_receiver: reciver,
         }
     }
 
-    pub fn play_url(&self, url: &str) {
-        self.player.load(&url, true);
+    pub fn play_url(&mut self, url: &str) {
+        self.player.load(url.to_owned(), true);
     }
 
-    pub fn is_playing(&self) -> bool {
-        // let player = &self.player;
-        true
-        // let element = player.get_pipeline();
-        // element.get_state(gst::CLOCK_TIME_NONE).1 == gst::State::Playing
+    pub fn is_playing(&mut self) -> bool {
+        self.player.status()
     }
 
     pub fn pause(&self) {
@@ -77,13 +76,21 @@ impl Nplayer {
     }
 
     pub fn get_position(&self) -> Option<u64> {
-        // self.player.get_position().mseconds()
-        Some(1000_u64)
+        match self.player.current.clone() {
+            Some(current) => {
+                Some(current.elapsed().as_millis() as u64)
+            }
+            None => { None }
+        }
     }
 
     pub fn get_duration(&self) -> Option<u64> {
-        // self.player.sink.total_duration()
-        Some(100000000_u64)
+        match self.player.current.clone() {
+            Some(current) => {
+                Some(current.duration.as_millis() as u64)
+            }
+            None => { None }
+        }
     }
 
     pub fn seek_forwards(&mut self) {
