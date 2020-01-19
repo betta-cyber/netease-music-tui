@@ -1,11 +1,11 @@
 use std::io::prelude::*;
-use std::fs::File;
 use futures::channel::oneshot::Sender;
 use reqwest::header::{CACHE_CONTROL, PRAGMA, HeaderMap, UPGRADE_INSECURE_REQUESTS, HOST, ACCEPT, ACCEPT_ENCODING, USER_AGENT, CONNECTION};
 use reqwest::Method;
+use tempfile::NamedTempFile;
 
 #[tokio::main]
-pub async fn fetch_data(url: &str, buffer: File, tx: Sender<String>) -> Result<(), failure::Error> {
+pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) -> Result<(), failure::Error> {
 
     debug!("start fetch_data");
     let mut flag = true;
