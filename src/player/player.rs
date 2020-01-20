@@ -171,11 +171,19 @@ impl Player {
     pub fn play(&mut self) {
         self.sink.play();
         self.state = PlayerState::Playing{};
+        self.current = self.current.take().and_then(|mut s| {
+            s.resume();
+            Some(s)
+        });
     }
 
     pub fn pause(&mut self) {
         self.sink.pause();
         self.state = PlayerState::Paused{};
+        self.current = self.current.take().and_then(|mut s| {
+            s.stop();
+            Some(s)
+        });
     }
 
     pub fn stop(&self) {
