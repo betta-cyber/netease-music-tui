@@ -5,7 +5,7 @@ use std::sync::mpsc::{RecvError, RecvTimeoutError, TryRecvError};
 // use futures::channel::mpsc;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
-use super::sink::Sink;
+// use super::sink::Sink;
 use super::fetch::fetch_data;
 use super::track::Track;
 use std::sync::{Arc, Mutex};
@@ -28,11 +28,11 @@ pub enum PlayerCommand {
 pub enum PlayerState {
     Stopped,
     Paused {
-        start_of_track: oneshot::Sender<String>,
-        end_of_track: oneshot::Sender<()>,
-        normalisation_factor: f32,
+        // start_of_track: oneshot::Sender<String>,
+        // end_of_track: oneshot::Sender<()>,
+        // normalisation_factor: f32,
         // stream_loader_controller: StreamLoaderController,
-        bytes_per_second: usize,
+        // bytes_per_second: usize,
     },
     Playing {
         // start_of_track: oneshot::Sender<String>,
@@ -48,18 +48,17 @@ pub enum PlayerState {
 }
 
 pub struct Player {
-    commands: Option<std::sync::mpsc::Sender<PlayerCommand>>,
-    thread_handle: Option<thread::JoinHandle<()>>,
+    // commands: Option<std::sync::mpsc::Sender<PlayerCommand>>,
+    endpoint: rodio::Device,
     pub state: PlayerState,
     pub current: Option<Track>,
-    pub sink: Arc<Mutex<rodio::Sink>>,
+    pub sink: rodio::Sink,
 }
 
 struct PlayerInternal {
     commands: std::sync::mpsc::Receiver<PlayerCommand>,
     // sink: Box<dyn Sink>,
     sink: Arc<Mutex<rodio::Sink>>,
-    endpoint: rodio::Device,
     sink_running: bool,
     state: PlayerState,
     event_sender: futures::channel::mpsc::UnboundedSender<bool>,
@@ -84,49 +83,29 @@ type PlayerEventChannel = futures::channel::mpsc::UnboundedReceiver<bool>;
 // player
 impl Player {
     // new player
-    pub fn new<F>(
+    pub fn new<>(
         // audio_filter: Option<Box<AudioFilter + Send>>,
-        sink_builder: F,
-    ) -> (Player, PlayerEventChannel)
-    where
-        F: FnOnce() -> Box<dyn Sink> + Send + 'static,
+        // sink_builder: F,
+    ) -> Player
+    // where
+        // F: FnOnce() -> Box<dyn Sink> + Send + 'static,
     {
-        let (cmd_tx, cmd_rx) = std::sync::mpsc::channel();
-        let (event_sender, event_receiver) = futures::channel::mpsc::unbounded();
-
         let endpoint =
             rodio::default_output_device().expect("Failed to find default music endpoint");
-        let sink = Arc::new(Mutex::new(rodio::Sink::new(&endpoint)));
+        let sink = rodio::Sink::new(&endpoint);
 
-        let internal = PlayerInternal {
-            commands: cmd_rx,
-            endpoint: endpoint,
-            sink: sink.clone(),
+        Player {
             state: PlayerState::Stopped,
-            sink_running: false,
-            event_sender: event_sender,
-        };
-
-        let handle = thread::spawn(move || {
-            internal.run();
-        });
-
-        (
-            Player {
-                commands: Some(cmd_tx),
-                thread_handle: Some(handle),
-                state: PlayerState::Stopped,
-                current: None,
-                sink: sink,
-            },
-            event_receiver,
-        )
+            current: None,
+            sink: sink,
+            endpoint: endpoint,
+        }
     }
 
     // run command
-    fn command(&self, cmd: PlayerCommand) {
-        self.commands.as_ref().expect("commands error").send(cmd).expect("send error");
-    }
+    // fn command(&self, cmd: PlayerCommand) {
+        // self.commands.as_ref().expect("commands error").send(cmd).expect("send error");
+    // }
 
     pub fn load(
         &mut self,
@@ -152,8 +131,8 @@ impl Player {
                                 match Track::load(pathbuf) {
                                     Ok(track) => {
                                         let mut track = track;
-                                        self.sink.lock().unwrap().stop();
-                                        self.command(PlayerCommand::Load(track.clone(), start_playing));
+                                        self.start();
+                                        self.load_track(track.clone(), start_playing);
                                         track.resume();
                                         self.current = Some(track);
                                         self.state = PlayerState::Playing{};
@@ -171,28 +150,52 @@ impl Player {
         }
     }
 
-    pub fn play(&self) {
-        self.command(PlayerCommand::Play)
+    pub fn load_track(&mut self, track: Track, playing: bool) {
+        if playing {
+            let path = track.file.to_string_lossy().to_string();
+            let f = std::fs::File::open(&path).unwrap();
+            let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
+
+            self.sink.play();
+            self.sink.append(source);
+        }
     }
 
-    pub fn pause(&self) {
-        self.command(PlayerCommand::Pause)
+    pub fn start(&mut self) {
+        let vol = self.sink.volume();
+        self.sink.stop();
+        self.sink = rodio::Sink::new(&self.endpoint);
+        self.set_volume(vol);
+    }
+
+    pub fn play(&mut self) {
+        self.sink.play();
+        self.state = PlayerState::Playing{};
+    }
+
+    pub fn pause(&mut self) {
+        self.sink.pause();
+        self.state = PlayerState::Paused{};
     }
 
     pub fn stop(&self) {
-        self.command(PlayerCommand::Stop)
+        self.sink.stop()
     }
 
     pub fn seek(&self, position_ms: u32) {
-        self.command(PlayerCommand::Seek(position_ms));
+        // self.command(PlayerCommand::Seek(position_ms));
     }
 
     pub fn status(&self) -> bool {
         self.state.is_playing()
     }
 
+    pub fn get_volume(&self) -> f32 {
+        self.sink.volume()
+    }
+
     pub fn set_volume(&self, volume: f32) {
-        self.command(PlayerCommand::Volume(volume));
+        self.sink.set_volume(volume)
     }
 }
 
@@ -200,13 +203,13 @@ impl Player {
 impl Drop for Player {
     fn drop(&mut self) {
         debug!("Shutting down player thread ...");
-        self.commands = None;
-        if let Some(handle) = self.thread_handle.take() {
-            match handle.join() {
-                Ok(_) => (),
-                Err(_) => error!("Player thread panicked!"),
-            }
-        }
+        // self.commands = None;
+        // if let Some(handle) = self.thread_handle.take() {
+            // match handle.join() {
+                // Ok(_) => (),
+                // Err(_) => error!("Player thread panicked!"),
+            // }
+        // }
     }
 }
 
@@ -265,7 +268,7 @@ impl PlayerInternal {
             }
             PlayerCommand::Volume(volume) => {
                 let sink = self.sink.lock().unwrap();
-                sink.set_volume(volume);
+                debug!("11111 {:#?}", sink.volume());
             }
             _ => {}
         }
@@ -273,12 +276,13 @@ impl PlayerInternal {
     }
 
     fn start_sink(&mut self, path: &str) {
-        self.sink = Arc::new(Mutex::new(rodio::Sink::new(&self.endpoint)));
+        // self.sink = Arc::new(Mutex::new(rodio::Sink::new(&self.endpoint)));
         let sink = self.sink.lock().unwrap();
 
         let f = std::fs::File::open(&path).unwrap();
         let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
 
+        sink.play();
         sink.append(source);
     }
 

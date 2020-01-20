@@ -4,13 +4,13 @@ extern crate tempfile;
 
 mod player;
 mod fetch;
-mod sink;
-mod range_set;
+// mod sink;
+// mod range_set;
 mod track;
 // mod fetch_data;
 
-use player::{Player, PlayerState};
-use sink::find;
+use player::Player;
+// use sink::find;
 use std::sync::mpsc::Sender;
 
 #[allow(unused)]
@@ -39,18 +39,15 @@ pub enum MetaInfo {
 
 pub struct Nplayer {
     pub player: player::Player,
-    // pub song_progress_ms: u64,
-    pub event_receiver: futures::channel::mpsc::UnboundedReceiver<bool>,
 }
 
 impl Nplayer {
     pub fn new() -> Nplayer {
-        let backend = find(None).unwrap();
-        let (mplayer, reciver) = Player::new(move || (backend)(None));
+        // let backend = find(None).unwrap();
+        let mplayer = Player::new();
         debug!("init player");
         Nplayer {
             player: mplayer,
-            event_receiver: reciver,
         }
     }
 
@@ -62,11 +59,11 @@ impl Nplayer {
         self.player.status()
     }
 
-    pub fn pause(&self) {
+    pub fn pause(&mut self) {
         self.player.pause()
     }
 
-    pub fn play(&self) {
+    pub fn play(&mut self) {
         self.player.play()
     }
 
@@ -121,22 +118,22 @@ impl Nplayer {
     }
 
     pub fn increase_volume(&mut self) {
-        // let current = self.player.get_volume();
-        // let volume = if current < 9.9 {
-            // current + 0.1_f64
-        // } else {
-            // 10.0_f64
-        // };
-        // self.player.set_volume(volume);
+        let current = self.player.get_volume();
+        let volume = if current < 9.9 {
+            current + 0.1_f32
+        } else {
+            10.0_f32
+        };
+        self.player.set_volume(volume);
     }
 
     pub fn decrease_volume(&mut self) {
-        // let current = self.player.get_volume();
-        // let volume = if current > 0.1 {
-            // current - 0.1_f64
-        // } else {
-            // 0.0_f64
-        // };
-        // self.player.set_volume(volume);
+        let current = self.player.get_volume();
+        let volume = if current > 0.1 {
+            current - 0.1_f32
+        } else {
+            0.0_f32
+        };
+        self.player.set_volume(volume);
     }
 }
