@@ -30,13 +30,12 @@ jobs:
       - name: Installing needed macOS dependencies
         if: matrix.os == 'macos-latest'
         run: |
-          brew install gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly gst-libav
           export PKG_CONFIG_PATH="/Library/Frameworks/GStreamer.framework/Versions/Current/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
       - name: Installing needed Ubuntu dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y -qq pkg-config libgstreamer-plugins-bad1.0-dev
+          sudo apt-get install -y -qq pkg-config libasound2-dev libdbus-1-dev dbus
       - name: Checking out sources
         uses: actions/checkout@v1
       - name: Running cargo build
@@ -52,12 +51,10 @@ jobs:
           cd target/${{ matrix.target }}/release
           strip ncmt
           tar czvf netease-music-tui-${{ matrix.artifact_prefix }}.tar.gz ncmt
-          shasum -a 256 netease-music-tui-${{ matrix.artifact_prefix }}.tar.gz > netease-music-tui-${{ matrix.artifact_prefix }}.sha256
       - name: Releasing assets
         uses: softprops/action-gh-release@v1
         with:
           files: |
             target/${{ matrix.target }}/release/netease-music-tui-${{ matrix.artifact_prefix }}.tar.gz
-            target/${{ matrix.target }}/release/netease-music-tui-${{ matrix.artifact_prefix }}.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

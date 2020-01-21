@@ -18,6 +18,6 @@ jobs:
     - name: Build
       run: |
         sudo apt-get update
-        sudo apt-get -y install libgstreamer-plugins-bad1.0-dev libdbus-1-dev dbus
+        sudo apt-get -y install libasound2-dev libdbus-1-dev dbus
         cargo test --verbose
         cargo build --verbose
