@@ -72,7 +72,7 @@ impl Player {
     ) {
         match &self.current {
             Some(track) => {
-                fs::remove_file(track.file()).unwrap();
+                fs::remove_file(track.file()).ok();
                 self.start();
             }
             None => {}
