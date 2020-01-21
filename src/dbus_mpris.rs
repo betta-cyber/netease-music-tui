@@ -7,6 +7,7 @@
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 use super::app::App;
+#[cfg(feature = "dbus_mpris")]
 use super::model::playlist::Track;
 #[cfg(feature = "dbus_mpris")]
 use super::app::RepeatState;

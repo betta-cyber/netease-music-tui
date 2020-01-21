@@ -1,6 +1,4 @@
 use std::convert::AsRef;
-use std::fmt;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -19,18 +17,21 @@ impl Status {
             Status::Playing(start, extra) => start.elapsed() + extra,
         }
     }
+    // stop
     pub fn stop(&mut self) {
         *self = match *self {
             Status::Stopped(_) => *self,
             Status::Playing(start, extra) => Status::Stopped(start.elapsed() + extra),
         };
     }
+    // resume track
     pub fn resume(&mut self) {
         *self = match *self {
             Status::Playing(_, _) => *self,
             Status::Stopped(duration) => Status::Playing(::std::time::Instant::now(), duration),
         };
     }
+    #[allow(unused)]
     pub fn is_stopped(self) -> bool {
         match self {
             Status::Stopped(_) => true,
@@ -51,6 +52,7 @@ pub struct Track {
 
 impl Track {
     /// Returns the `Duration` of the song
+    #[allow(unused)]
     pub fn duration(&self) -> Duration {
         self.duration
     }
@@ -67,6 +69,7 @@ impl Track {
         self.status.resume()
     }
     /// Check if the song is stopped/paused
+    #[allow(unused)]
     pub fn is_stopped(&self) -> bool {
         self.status.is_stopped()
     }

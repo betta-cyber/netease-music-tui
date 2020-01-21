@@ -8,7 +8,6 @@ use tempfile::NamedTempFile;
 pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) -> Result<(), failure::Error> {
 
     debug!("start fetch_data");
-    let mut flag = true;
     let mut buffer = buffer;
     // send_msg(&filepath, tx);
     // println!("send msg");

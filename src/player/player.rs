@@ -1,30 +1,13 @@
-use futures;
 use futures::channel::oneshot;
-// use futures::{future, Future};
-use std::sync::mpsc::{RecvError, RecvTimeoutError, TryRecvError};
-// use futures::channel::mpsc;
 use std::path::PathBuf;
 use tempfile::NamedTempFile;
-// use super::sink::Sink;
 use super::fetch::fetch_data;
 use super::track::Track;
-use std::sync::{Arc, Mutex};
 
 use std::thread;
-use std::time::Duration;
+use std::fs;
 
-#[derive(Debug)]
-pub enum PlayerCommand {
-    Load(Track, bool),
-    Play,
-    Pause,
-    Stop,
-    Seek(u32),
-    Status,
-    Volume(f32),
-}
-
-
+#[allow(unused)]
 pub enum PlayerState {
     Stopped,
     Paused {
@@ -54,31 +37,6 @@ pub struct Player {
     pub current: Option<Track>,
     pub sink: rodio::Sink,
 }
-
-struct PlayerInternal {
-    commands: std::sync::mpsc::Receiver<PlayerCommand>,
-    // sink: Box<dyn Sink>,
-    sink: Arc<Mutex<rodio::Sink>>,
-    sink_running: bool,
-    state: PlayerState,
-    event_sender: futures::channel::mpsc::UnboundedSender<bool>,
-}
-
-#[derive(Debug, Clone)]
-pub enum PlayerEvent {
-    Started {
-        track_url: String,
-    },
-    Changed {
-        old_track_url: String,
-        new_track_url: String,
-    },
-    Stopped {
-        track_url: String,
-    },
-}
-
-type PlayerEventChannel = futures::channel::mpsc::UnboundedReceiver<bool>;
 
 // player
 impl Player {
@@ -112,6 +70,13 @@ impl Player {
         url: String,
         start_playing: bool,
     ) {
+        match &self.current {
+            Some(track) => {
+                fs::remove_file(track.file()).unwrap();
+                self.start();
+            }
+            None => {}
+        }
 
         let buffer = NamedTempFile::new().unwrap();
         let path = buffer.path().to_string_lossy().to_string();
@@ -131,7 +96,6 @@ impl Player {
                                 match Track::load(pathbuf) {
                                     Ok(track) => {
                                         let mut track = track;
-                                        self.start();
                                         self.load_track(track.clone(), start_playing);
                                         track.resume();
                                         self.current = Some(track);
@@ -190,6 +154,7 @@ impl Player {
         self.sink.stop()
     }
 
+    #[allow(unused)]
     pub fn seek(&self, position_ms: u32) {
         // self.command(PlayerCommand::Seek(position_ms));
     }
@@ -211,98 +176,7 @@ impl Player {
 impl Drop for Player {
     fn drop(&mut self) {
         debug!("Shutting down player thread ...");
-        // self.commands = None;
-        // if let Some(handle) = self.thread_handle.take() {
-            // match handle.join() {
-                // Ok(_) => (),
-                // Err(_) => error!("Player thread panicked!"),
-            // }
-        // }
-    }
-}
-
-// player internal
-// loop for listen command
-impl PlayerInternal {
-    fn run(mut self) {
-        loop {
-            // debug!("loop");
-            let cmd = if self.state.is_playing () {
-                if self.sink_running {
-                    match self.commands.try_recv() {
-                        Ok(cmd) => Some(cmd),
-                        Err(TryRecvError::Empty) => None,
-                        Err(TryRecvError::Disconnected) => return,
-                    }
-                } else {
-                    match self.commands.recv_timeout(Duration::from_secs(5)) {
-                        Ok(cmd) => Some(cmd),
-                        Err(RecvTimeoutError::Timeout) => None,
-                        Err(RecvTimeoutError::Disconnected) => return,
-                    }
-                }
-            } else {
-                match self.commands.recv() {
-                    Ok(cmd) => Some(cmd),
-                    Err(RecvError) => return,
-                }
-            };
-            if let Some(cmd) = cmd {
-                self.handle_command(cmd);
-            }
-        }
-    }
-
-    fn handle_command(&mut self, cmd: PlayerCommand) {
-        debug!("handle command={:#?}", cmd);
-        match cmd {
-            PlayerCommand::Load(track, start_playing) => {
-                if start_playing {
-                    let path = track.file.to_string_lossy().to_string();
-                    self.start_sink(&path);
-                }
-            }
-            PlayerCommand::Pause => {
-                let sink = self.sink.lock().unwrap();
-                sink.pause();
-            }
-            PlayerCommand::Stop => {
-                let sink = self.sink.lock().unwrap();
-                sink.stop();
-            }
-            PlayerCommand::Play => {
-                let sink = self.sink.lock().unwrap();
-                sink.play();
-            }
-            PlayerCommand::Volume(volume) => {
-                let sink = self.sink.lock().unwrap();
-                debug!("11111 {:#?}", sink.volume());
-            }
-            _ => {}
-        }
-        debug!("end this cmd");
-    }
-
-    fn start_sink(&mut self, path: &str) {
-        // self.sink = Arc::new(Mutex::new(rodio::Sink::new(&self.endpoint)));
-        let sink = self.sink.lock().unwrap();
-
-        let f = std::fs::File::open(&path).unwrap();
-        let source = rodio::Decoder::new(std::io::BufReader::new(f)).unwrap();
-
-        sink.play();
-        sink.append(source);
-    }
-
-    // fn send_event(&mut self, event: PlayerEvent) {
-        // let _ = self.event_sender.unbounded_send(event.clone());
-    // }
-}
-
-// drop PlayerInternal
-impl Drop for PlayerInternal {
-    fn drop(&mut self) {
-        debug!("drop Player");
+        // remove cache file
     }
 }
 
