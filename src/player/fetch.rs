@@ -24,7 +24,7 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
     );
     headers.insert(CONNECTION, "keep-alive".parse().unwrap());
     let client = reqwest::Client::builder()
-        .proxy(reqwest::Proxy::all("socks5://127.0.0.1:3333").expect("proxy error"))
+        // .proxy(reqwest::Proxy::all("socks5://127.0.0.1:3333").expect("proxy error"))
         .build().expect("builder error");
     // debug!("client {:#?}", client);
     let builder = client.request(Method::GET, url).headers(headers);

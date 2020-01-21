@@ -88,5 +88,10 @@ This table shows some key binds
 - [ ] mpris support
 - [x] remove gstreamer (but current player no seek function)
 
+## Features
+
+dbus mpris
+`cargo run --features dbus_mpris`
+
 ## License
 MIT
