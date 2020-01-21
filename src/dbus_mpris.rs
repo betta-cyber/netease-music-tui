@@ -7,6 +7,7 @@
 #[cfg(feature = "dbus_mpris")]
 extern crate dbus;
 use super::app::App;
+#[cfg(feature = "dbus_mpris")]
 use super::model::playlist::Track;
 #[cfg(feature = "dbus_mpris")]
 use super::app::RepeatState;
@@ -42,13 +43,13 @@ impl DbusMpris {
 
     pub fn init() -> DbusMpris {
         let (tx, rx) = mpsc::channel();
-        info!("start thred");
+        info!("start mpris thread");
         let _server_handle = {
             thread::spawn(move || {
                 dbus_mpris_server(tx).unwrap();
             })
         };
-        info!("finish thred");
+        info!("finish mpris thread");
         DbusMpris { rx }
     }
 

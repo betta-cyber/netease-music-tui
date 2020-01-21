@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 use std::time::Duration;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

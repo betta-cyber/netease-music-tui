@@ -327,6 +327,7 @@ impl App {
             }
         }
         if self.player.is_playing() {
+            // get positon
             self.song_progress_ms = match self.player.get_position() {
                 Some(ms) => ms,
                 None => 0 as u64,

@@ -3,7 +3,7 @@ use super::album::Album;
 use super::artist::Artist;
 use super::dj::DjRadio;
 use super::playlist::{Playlist, Track};
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SearchTrackResult {
