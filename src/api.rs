@@ -24,7 +24,7 @@ use super::model::artist::{Artist, TopArtistRes};
 use super::model::dj::{DjProgram, DjRadio, ProgramDetailRes, ProgramsRes, SubDjRadioRes};
 use super::model::lyric::{Lyric, LyricRes};
 use super::model::playlist::{
-    PersonalFmRes, Playlist, PlaylistDetail, PlaylistDetailRes, PlaylistRes, TopPlaylistRes, Track,
+    PersonalFmRes, Playlist, PlaylistDetail, PlaylistDetailRes, PlaylistRes, TopPlaylistRes, Track, UidPlaylistRes
 };
 use super::model::search::{
     SearchAlbumResult, SearchAlbums, SearchArtistResult, SearchArtists, SearchDjRadios,
@@ -377,6 +377,22 @@ impl CloudMusic {
         // format
         let res = self.convert_result::<AlbumTrack>(&result).unwrap();
         Ok(res)
+    }
+
+    // other user playlist
+    pub fn uid_playlists(&self, user_id: &str) -> Result<Vec<Playlist>, failure::Error> {
+        let url = format!("/weapi/user/playlist");
+        let mut params = HashMap::new();
+        params.insert("uid".to_owned(), user_id.to_string());
+        params.insert("limit".to_owned(), 30.to_string());
+        params.insert("offset".to_owned(), 0.to_string());
+
+        let result = self.post(&url, &mut params)?;
+        // format
+        match self.convert_result::<UidPlaylistRes>(&result) {
+            Ok(res) => Ok(res.playlist.clone()),
+            Err(_) => Err(err_msg("get user playlists error")),
+        }
     }
 
     // log_track
