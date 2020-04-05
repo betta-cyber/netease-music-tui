@@ -14,7 +14,7 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
     headers.insert(CACHE_CONTROL, "no-cache".parse().unwrap());
     headers.insert(PRAGMA, "no-cache".parse().unwrap());
     headers.insert(UPGRADE_INSECURE_REQUESTS, "1".parse().unwrap());
-    headers.insert(HOST, "m7.music.126.net".parse().unwrap());
+    // headers.insert(HOST, "m701.music.126.net".parse().unwrap());
     headers.insert(ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3".parse().unwrap());
     headers.insert(ACCEPT_ENCODING, "gzip,deflate,br".parse().unwrap());
     headers.insert(
