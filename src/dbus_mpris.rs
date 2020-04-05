@@ -249,7 +249,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
         });
 
     let property_can_play = f
-        .property::<f64, _>("CanPlay", ())
+        .property::<bool, _>("CanPlay", ())
         .access(Access::Read)
         .on_get(|iter, _| {
             iter.append(true);
@@ -257,7 +257,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
         });
 
     let property_can_pause = f
-        .property::<f64, _>("CanPause", ())
+        .property::<bool, _>("CanPause", ())
         .access(Access::Read)
         .on_get(|iter, _| {
             iter.append(true);
@@ -265,7 +265,7 @@ pub fn dbus_mpris_server(tx: Sender<PlayerCommand>) -> Result<(), Box<dyn Error>
         });
 
     let property_can_seek = f
-        .property::<f64, _>("CanSeek", ())
+        .property::<bool, _>("CanSeek", ())
         .access(Access::Read)
         .on_get(|iter, _| {
             iter.append(true);
