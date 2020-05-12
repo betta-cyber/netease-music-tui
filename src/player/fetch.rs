@@ -1,6 +1,6 @@
 use std::io::prelude::*;
 use futures::channel::oneshot::Sender;
-use reqwest::header::{CACHE_CONTROL, PRAGMA, HeaderMap, UPGRADE_INSECURE_REQUESTS, HOST, ACCEPT, ACCEPT_ENCODING, USER_AGENT};
+use reqwest::header::{CACHE_CONTROL, PRAGMA, HeaderMap, UPGRADE_INSECURE_REQUESTS, ACCEPT, ACCEPT_ENCODING, USER_AGENT};
 use reqwest::Method;
 use tempfile::NamedTempFile;
 
@@ -22,6 +22,7 @@ pub async fn fetch_data(url: &str, buffer: NamedTempFile, tx: Sender<String>) ->
         "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0".parse().unwrap(),
     );
     let client = reqwest::Client::builder()
+        // no need proxy but can add it in config
         // .proxy(reqwest::Proxy::all("socks5://127.0.0.1:3333").expect("proxy error"))
         .build().expect("builder error");
     let builder = client.request(Method::GET, url).headers(headers);

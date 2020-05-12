@@ -310,11 +310,16 @@ impl CloudMusic {
             "ids".to_owned(),
             serde_json::to_string(&vec![song_id]).unwrap_or("[]".to_owned()),
         );
-        params.insert("br".to_owned(), 999000.to_string());
+        // set br to 320000
+        // if set br 990000 will get the flac music link
+        // but now I haven't finish the flac decode
+        params.insert("br".to_owned(), 320000.to_string());
 
         // send request
         let result = self.post(&url, &mut params)?;
         let songs = self.convert_result::<Songs>(&result);
+
+        // debug!("songinfo {:#?}", songs);
         match songs {
             Ok(songs) => Ok(songs.data[0].clone()),
             Err(_) => Err(err_msg("get track url failed")),
@@ -380,6 +385,7 @@ impl CloudMusic {
     }
 
     // other user playlist
+    #[allow(unused)]
     pub fn uid_playlists(&self, user_id: &str) -> Result<Vec<Playlist>, failure::Error> {
         let url = format!("/weapi/user/playlist");
         let mut params = HashMap::new();
