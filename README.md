@@ -20,8 +20,8 @@ First, install [Rust](https://www.rust-lang.org/tools/install) (using the recomm
 git clone https://github.com/betta-cyber/netease-music-tui.git
 cd netease-music-tui
 
-// build release
-cargo build --release
+// build release and install
+make && make install
 ```
 
 and then you can make some soft link to the binary and use it.
