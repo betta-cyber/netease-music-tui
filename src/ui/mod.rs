@@ -718,8 +718,6 @@ where
         vec!["Decrease volume", "-", "General"],
         vec!["Skip to next track", "n", "General"],
         vec!["Skip to previous track", "p", "General"],
-        vec!["Seek forwards", ">", "General"],
-        vec!["Seek backwards", "<", "General"],
         vec!["Toggle repeat mode", "r", "General"],
         vec!["Move selection left", "h | <Left Arrow Key> ", "General"],
         vec!["Move selection down", "j | <Down Arrow Key> ", "General"],
