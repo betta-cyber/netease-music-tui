@@ -156,14 +156,6 @@ fn main() -> Result<(), failure::Error> {
                     Key::Ctrl('c') => {
                         break;
                     }
-                    // means space
-                    Key::Char(' ') => {
-                        if app.player.is_playing() {
-                            app.player.pause();
-                        } else {
-                            app.player.play();
-                        }
-                    }
                     _ => {
                         handlers::handle_app(input, &mut app);
                     }

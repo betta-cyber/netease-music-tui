@@ -37,6 +37,14 @@ pub fn handle_app(key: Key, app: &mut App) {
             }
         },
         _ => match key {
+            // means space
+            Key::Char(' ') => {
+                if app.player.is_playing() {
+                    app.player.pause();
+                } else {
+                    app.player.play();
+                }
+            }
             Key::Char('-') => {
                 app.player.decrease_volume();
             }
