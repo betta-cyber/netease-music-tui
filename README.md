@@ -53,9 +53,6 @@ This table shows some key binds
 | Decrease volume | - | General |
 | Skip to next track | n | General |
 | Skip to previous track | p | General |
-| Seek forwards | > | General |
-| Seek backwards | < | General |
-| Seek backwards | < | General |
 | Toggle repeat mode | r | General |
 | Move selection left | h \| \<Left Arrow Key>  | General |
 | Move selection down | j \| \<Down Arrow Key>  | General |
