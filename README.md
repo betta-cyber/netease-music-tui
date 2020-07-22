@@ -26,6 +26,17 @@ make && make install
 
 and then you can make some soft link to the binary and use it.
 
+### Arch Linux
+
+for Arch based distributions, users can install from [AUR](https://aur.archlinux.org/packages/netease-music-tui)
+```
+// build and install from source
+yay -S netease-music-tui 
+
+// install from release binary file
+yay -S netease-music-tui-bin 
+```
+
 ## Configuration
 
 A configuration file is located at ${HOME}/.config/netease-music-tui/Settings.toml
