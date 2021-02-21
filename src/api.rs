@@ -151,7 +151,7 @@ impl CloudMusic {
                 .unwrap(),
         );
         headers.insert(HOST, "music.163.com".parse().unwrap());
-        headers.insert(ACCEPT_ENCODING, "gzip,deflate,br".parse().unwrap());
+        headers.insert(ACCEPT_ENCODING, "gzip,deflate".parse().unwrap());
 
         match method {
             Method::POST => {

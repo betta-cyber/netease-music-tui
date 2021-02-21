@@ -32,7 +32,7 @@ pub enum PlayerState {
 
 pub struct Player {
     // commands: Option<std::sync::mpsc::Sender<PlayerCommand>>,
-    endpoint: rodio::Device,
+    // endpoint: rodio::Device,
     pub state: PlayerState,
     pub current: Option<Track>,
     pub sink: rodio::Sink,
@@ -48,15 +48,17 @@ impl Player {
     // where
         // F: FnOnce() -> Box<dyn Sink> + Send + 'static,
     {
-        let endpoint =
-            rodio::default_output_device().expect("Failed to find default music endpoint");
-        let sink = rodio::Sink::new(&endpoint);
+        let (stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
+        let sink = rodio::Sink::try_new(&stream_handle).unwrap();
+        // let endpoint =
+            // rodio::default_output_device().expect("Failed to find default music endpoint");
+        // let sink = rodio::Sink::new(&endpoint);
 
         Player {
             state: PlayerState::Stopped,
             current: None,
             sink: sink,
-            endpoint: endpoint,
+            // endpoint: endpoint,
         }
     }
 
@@ -80,6 +82,7 @@ impl Player {
 
         let buffer = NamedTempFile::new().unwrap();
         let path = buffer.path().to_string_lossy().to_string();
+        debug!("{:#?}", path);
         let pathbuf = PathBuf::from(path);
 
         let (ptx, mut prx) = oneshot::channel::<String>();
@@ -128,7 +131,7 @@ impl Player {
     pub fn start(&mut self) {
         let vol = self.sink.volume();
         self.sink.stop();
-        self.sink = rodio::Sink::new(&self.endpoint);
+        // self.sink = rodio::Sink::new(&self.endpoint);
         self.set_volume(vol);
     }
 
