@@ -8,6 +8,12 @@
 
 ## Installation
 
+### Prerequisites
+These library should be installed before build this project.
+1. openssl
+2. alsaLib
+3. pkg-config
+
 ### Manual
 1. you can download the latest binary  `ncmt` for your OS
 2. `cd` to the file you just downloaded and unzip
