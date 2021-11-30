@@ -36,6 +36,8 @@ pub struct Player {
     pub state: PlayerState,
     pub current: Option<Track>,
     pub sink: rodio::Sink,
+    pub stream: rodio::OutputStream,
+    pub stream_handle: rodio::OutputStreamHandle,
 }
 
 // player
@@ -57,7 +59,9 @@ impl Player {
         Player {
             state: PlayerState::Stopped,
             current: None,
-            sink: sink,
+            sink,
+            stream,
+            stream_handle,
             // endpoint: endpoint,
         }
     }
@@ -131,7 +135,7 @@ impl Player {
     pub fn start(&mut self) {
         let vol = self.sink.volume();
         self.sink.stop();
-        // self.sink = rodio::Sink::new(&self.endpoint);
+        self.sink = rodio::Sink::try_new(&self.stream_handle).unwrap();
         self.set_volume(vol);
     }
 
