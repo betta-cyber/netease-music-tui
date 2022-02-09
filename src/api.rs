@@ -439,33 +439,53 @@ impl CloudMusic {
         params.insert("kv".to_owned(), "-1".to_owned());
         params.insert("tv".to_owned(), "-1".to_owned());
 
+        fn mk_lyric(value: String, timestamp: regex::Captures, offset: u32) -> Lyric {
+            let minite = timestamp[1].parse::<u64>().unwrap_or(0);
+            let second = timestamp[2].parse::<u64>().unwrap_or(0);
+            let nano = timestamp[3][..1].parse::<u32>().unwrap_or(0) * 10000000;
+            let duration_min = minite * 60 + second;
+            Lyric {
+                value: value,
+                timeline: Duration::new(duration_min, nano + offset)
+            }
+        }
+
         let result = self.post(&url, &mut params)?;
         match self.convert_result::<LyricRes>(&result) {
             Ok(res) => {
-                let lyric: Vec<Lyric> = res
+                let mut lyric: Vec<Lyric> = Vec::new();
+                let re = regex::Regex::new(r#"((?:\[\w+:\w+\.\w+\])+)(.*?)$"#).unwrap();
+                let retime = regex::Regex::new(r#"\[(\w+):(\w+)\.(\w+)\]"#).unwrap();
+                for s in res
                     .lrc
                     .lyric
-                    .lines()
-                    .map(|s| {
-                        let re = regex::Regex::new(r#"\[(\w+):(\w+)\.(\w+)\](.*?)$"#).unwrap();
+                    .lines() {
                         if let Some(cap) = re.captures(&s) {
-                            let minite = cap[1].parse::<u64>().unwrap_or(0);
-                            let second = cap[2].parse::<u64>().unwrap_or(0);
-                            let nano = cap[3][..1].parse::<u32>().unwrap_or(0) * 10000000;
-                            let lyric_value = cap[4].to_string();
-                            let duration_min = minite * 60 + second;
-                            Lyric {
-                                value: lyric_value,
-                                timeline: Duration::new(duration_min, nano),
+                            let timestamps = cap[1].to_string();
+                            for t in retime.captures_iter(&timestamps) {
+                                lyric.push(mk_lyric(cap[2].to_string(), t, 0));
                             }
                         } else {
-                            Lyric {
+                            lyric.push(Lyric {
                                 value: String::new(),
                                 timeline: Duration::new(0, 0),
+                            });
+                        }
+                    }
+                if !res.tlyric.lyric.is_empty() { 
+                    for s in res
+                    .tlyric
+                    .lyric
+                    .lines() {
+                        if let Some(cap) = re.captures(&s) {
+                            let timestamps = cap[1].to_string();
+                            for t in retime.captures_iter(&timestamps) {
+                                lyric.push(mk_lyric(cap[2].to_string(), t, 1));
                             }
                         }
-                    })
-                    .collect();
+                    }
+                }
+                lyric.sort_by(|a, b| a.timeline.cmp(&b.timeline));
                 Ok(lyric)
             }
             Err(_) => {
