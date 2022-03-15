@@ -89,6 +89,7 @@ fn main() -> Result<(), failure::Error> {
     let mut app = App::new();
     let mut is_first_render = true;
 
+
     let cloud_music = app.cloud_music.to_owned().unwrap();
     let profile = match cloud_music.login_status()? {
         Some(profile) => {

@@ -1,6 +1,6 @@
 use std::convert::AsRef;
-use std::path::{Path, PathBuf};
 use std::time::Duration;
+use rodio::{Decoder, source::Source};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, PartialOrd, Ord)]
 pub enum Status {
@@ -45,7 +45,7 @@ pub struct Track {
     /// Duration of the song
     pub duration: Duration,
     /// File path to the song
-    pub file: PathBuf,
+    pub file: String,
     /// Elapsed time of song playing or Start time
     pub status: Status,
 }
@@ -74,12 +74,20 @@ impl Track {
         self.status.is_stopped()
     }
     /// Returns the path of the song
-    pub fn file(&self) -> &Path {
+    pub fn file(&self) -> &str {
         &self.file
     }
 
-    pub fn load(file: PathBuf) -> Result<Self, failure::Error > {
-        let duration = ::mp3_duration::from_path(&file).unwrap();
+    pub fn load(file: String) -> Result<Self, failure::Error > {
+        let f = std::fs::File::open(&file).unwrap();
+        let source = Decoder::new(std::io::BufReader::new(f)).unwrap();
+        let duration = match source.total_duration() {
+            Some(d) => d,
+            None => mp3_duration::from_path(&file).unwrap(),
+        };
+            // Ok(d) => d,
+            // Err(_) => std::time::Duration::new(100, 0)
+        // };
         Ok(Self {
             duration,
             file,
@@ -88,8 +96,8 @@ impl Track {
     }
 }
 
-impl AsRef<Path> for Track {
-    fn as_ref(&self) -> &Path {
+impl AsRef<String> for Track {
+    fn as_ref(&self) -> &String {
         &self.file
     }
 }

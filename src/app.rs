@@ -764,6 +764,7 @@ impl App {
             Some(api) => {
                 let id = track.id.unwrap().to_string();
                 let song = api.get_song_url(&id).unwrap();
+                info!("{:#?}", song);
                 match song.url {
                     Some(url) => {
                         let url = url.to_string();
