@@ -98,6 +98,12 @@ active = "#abe047"
 other = "#eb4129"
 ```
 
+hover means hover block border color
+active means current select block border color
+other means other block border color
+
+text color will add in the future.
+
 ## Dev plan
 - [x] Djradio and djprogram
 - [ ] User page
