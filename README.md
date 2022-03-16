@@ -88,7 +88,9 @@ This table shows some key binds
 | Jump to next page | \<Ctrl+f> | Search result \| top list |
 | Jump to previous page | \<Ctrl+b> | Search result \| top list |
 
-## custom style
+## custom theme
+
+user can custom some theme color in config file. such as:
 
 ```
 hover = "#565656"
