@@ -88,6 +88,14 @@ This table shows some key binds
 | Jump to next page | \<Ctrl+f> | Search result \| top list |
 | Jump to previous page | \<Ctrl+b> | Search result \| top list |
 
+## custom style
+
+```
+hover = "#565656"
+active = "#abe047"
+other = "#eb4129"
+```
+
 ## Dev plan
 - [x] Djradio and djprogram
 - [ ] User page

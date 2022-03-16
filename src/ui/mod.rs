@@ -12,7 +12,7 @@ use tui::widgets::{
 use tui::Frame;
 use util::{
     create_artist_string, create_datetime_string, create_tag_string, display_track_progress,
-    get_color, get_percentage_width,
+    get_color, get_percentage_width, get_text_color
 };
 
 // table item for render
@@ -87,12 +87,12 @@ where
     let block = Block::default()
         .title("Help")
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Gray))
-        .title_style(Style::default().fg(Color::Gray));
+        .border_style(get_color(highlight_state))
+        .title_style(get_color(highlight_state));
 
     Paragraph::new([Text::raw("Type ?")].iter())
         .block(block)
-        .style(Style::default().fg(Color::Gray))
+        .style(get_text_color())
         .render(f, chunks[1]);
 }
 

@@ -36,9 +36,10 @@ use app::{ActiveBlock, App};
 
 use dbus_mpris::{dbus_mpris_handler, DbusMpris};
 
-const FILE_NAME: &str = "Settings.toml";
-const CONFIG_DIR: &str = ".config";
-const APP_CONFIG_DIR: &str = "netease-music-tui";
+pub const FILE_NAME: &str = "Settings.toml";
+pub const CONFIG_DIR: &str = ".config";
+pub const APP_CONFIG_DIR: &str = "netease-music-tui";
+
 
 fn main() -> Result<(), failure::Error> {
     let config_file_path = match dirs::home_dir() {
@@ -61,17 +62,12 @@ fn main() -> Result<(), failure::Error> {
     };
 
     // init application
-    let mut settings = config::Config::default();
-    let config_string = match fs::read_to_string(&config_file_path) {
+    let settings = match config::Config::builder()
+        .add_source(config::File::with_name(&config_file_path.to_string_lossy()))
+        .build() {
         Ok(data) => data,
         Err(_) => return Err(err_msg("Please set your account in config file")),
     };
-    settings
-        .merge(config::File::from_str(
-            &config_string,
-            config::FileFormat::Toml,
-        ))
-        .unwrap();
 
     match settings.get_bool("debug") {
         Ok(debug) => {
