@@ -50,5 +50,6 @@ pub struct DjRadio {
 pub struct MainSong {
     pub name: String,
     pub id: usize,
+    pub fee: usize,
     pub duration: usize,
 }

@@ -539,6 +539,7 @@ impl App {
                         .into_iter()
                         .map(|t| Track {
                             name: t.name,
+                            fee: t.fee,
                             id: t.id,
                             artists: t.ar,
                             album: t.al,
@@ -787,6 +788,7 @@ impl App {
                     None => {
                         self.msg = "get track url failed".to_string();
                         self.set_current_route_state(Some(ActiveBlock::Msg), None);
+                        self.skip_track(TrackState::Forword);
                     }
                 };
             }

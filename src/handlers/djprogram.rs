@@ -39,6 +39,7 @@ pub fn handler(key: Key, app: &mut App) {
                         };
                         Track {
                             name: Some(item.mainSong.name.to_string()),
+                            fee: Some(item.mainSong.fee as i64),
                             id: Some(item.mainSong.id as i64),
                             artists: Some(vec![artist]),
                             album: None,

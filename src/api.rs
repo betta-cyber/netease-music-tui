@@ -240,6 +240,7 @@ impl CloudMusic {
         params.insert("rememberLogin".to_owned(), "true".to_owned());
 
         let result = self.post(&url, &mut params)?;
+        info!("{}", result);
         let login = self.convert_result::<Login>(&result)?;
         match login.profile {
             Some(profile) => Ok(profile),
@@ -353,6 +354,7 @@ impl CloudMusic {
         params.insert("n".to_owned(), 1000.to_string());
 
         let result = self.post(&url, &mut params)?;
+        info!("{:#?}", result);
         let res = self.convert_result::<PlaylistDetailRes>(&result).unwrap();
         Ok(res.playlist.unwrap().clone())
     }

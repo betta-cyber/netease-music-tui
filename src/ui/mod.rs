@@ -382,7 +382,10 @@ where
                 id: item.id.as_ref().unwrap().to_string(),
                 format: vec![
                     num.to_string(),
-                    item.name.as_ref().unwrap().to_string(),
+                    match item.fee.unwrap() {
+                        1 => format!("♚ {}", item.name.as_ref().unwrap().to_string()),
+                        _ => item.name.as_ref().unwrap().to_string(),
+                    },
                     create_artist_string(&item.artists.to_owned().unwrap()),
                     item.album.to_owned().unwrap().name.unwrap(),
                 ],
